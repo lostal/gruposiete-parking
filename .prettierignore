@@ -1,0 +1,10 @@
+node_modules
+.next
+dist
+build
+public/static
+*.min.js
+*.map
+coverage
+*.lock
+.env*

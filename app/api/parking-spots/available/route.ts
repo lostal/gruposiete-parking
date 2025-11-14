@@ -1,0 +1,55 @@
+export const dynamic = 'force-dynamic';
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth/auth';
+import dbConnect from '@/lib/db/mongodb';
+import ParkingSpot from '@/models/ParkingSpot';
+import Availability from '@/models/Availability';
+import Reservation from '@/models/Reservation';
+import { startOfDay } from 'date-fns';
+
+export async function GET(request: Request) {
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const dateParam = searchParams.get('date');
+
+    if (!dateParam) {
+      return NextResponse.json({ error: 'Fecha requerida' }, { status: 400 });
+    }
+
+    const date = startOfDay(new Date(dateParam));
+
+    await dbConnect();
+
+    // Obtener plazas marcadas como no disponibles
+    const unavailable = await Availability.find({
+      date: { $gte: date, $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
+      isAvailable: false,
+    }).select('parkingSpotId');
+
+    // Obtener plazas ya reservadas
+    const reserved = await Reservation.find({
+      date: { $gte: date, $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
+      status: 'ACTIVE',
+    }).select('parkingSpotId');
+
+    const unavailableIds = unavailable.map((a) => a.parkingSpotId.toString());
+    const reservedIds = reserved.map((r) => r.parkingSpotId.toString());
+
+    // Plazas disponibles = marcadas como no disponibles y no reservadas aún
+    const availableSpotIds = unavailableIds.filter((id) => !reservedIds.includes(id));
+
+    const availableSpots = await ParkingSpot.find({
+      _id: { $in: availableSpotIds },
+    }).sort({ number: 1 });
+
+    return NextResponse.json(availableSpots);
+  } catch (error) {
+    console.error('Error fetching available spots:', error);
+    return NextResponse.json({ error: 'Error al obtener plazas disponibles' }, { status: 500 });
+  }
+}
