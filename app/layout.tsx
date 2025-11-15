@@ -7,7 +7,7 @@ import RegisterServiceWorker from '@/components/pwa/RegisterServiceWorker';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Gruposiete - Gestión de Parking',
+  title: 'Parking Gruposiete',
   description: 'Sistema de gestión de plazas de parking para empleados de Gruposiete',
   icons: {
     icon: [
