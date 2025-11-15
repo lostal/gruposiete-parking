@@ -4,7 +4,24 @@ import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+
+  // 🔍 DEBUG: Verificar NEXTAUTH_SECRET
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    console.error('❌ [middleware] NEXTAUTH_SECRET no está definido');
+  } else {
+    console.log('✅ [middleware] NEXTAUTH_SECRET existe');
+  }
+
+  const token = await getToken({ req: request, secret });
+
+  // 🔍 DEBUG: Verificar token
+  if (token) {
+    console.log(`✅ [middleware] Token válido para ${pathname}`);
+    console.log(`   User: ${token.email}, Role: ${token.role}`);
+  } else {
+    console.log(`❌ [middleware] No hay token para ${pathname}`);
+  }
 
   // Rutas públicas
   const publicRoutes = ['/login', '/registro', '/'];
