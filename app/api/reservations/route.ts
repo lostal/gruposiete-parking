@@ -8,7 +8,6 @@ import User from '@/models/User';
 import Availability from '@/models/Availability';
 import { startOfDay } from 'date-fns';
 import { ReservationStatus, UserRole } from '@/types';
-import { sendEmail, getReservationConfirmationEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
 
 export async function GET(request: Request) {
@@ -141,31 +140,6 @@ export async function POST(request: Request) {
     const populatedReservation = await Reservation.findById(reservation._id)
       .populate('parkingSpotId')
       .populate('userId', 'name email');
-
-    // Enviar email de confirmación
-    try {
-      if (!populatedReservation) {
-        throw new Error('Reservation not found');
-      }
-
-      const parkingSpot = populatedReservation.parkingSpotId as any;
-      const user = populatedReservation.userId as any;
-
-      await sendEmail({
-        to: user.email,
-        subject: 'Confirmación de Reserva - Gruposiete Parking',
-        html: getReservationConfirmationEmail(
-          user.name,
-          `${parkingSpot.number} (${
-            parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
-          })`,
-          formatDate(date),
-        ),
-      });
-    } catch (emailError) {
-      console.error('Error sending confirmation email:', emailError);
-      // No fallar la reserva si falla el email
-    }
 
     if (!populatedReservation) {
       return NextResponse.json({ error: 'Error al obtener reserva creada' }, { status: 500 });

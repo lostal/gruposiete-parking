@@ -4,8 +4,12 @@ import { auth } from '@/lib/auth/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Availability from '@/models/Availability';
 import Reservation from '@/models/Reservation';
+import ParkingSpot from '@/models/ParkingSpot';
+import User from '@/models/User';
 import { startOfDay } from 'date-fns';
 import { UserRole } from '@/types';
+import { sendEmail, getNewSpotsAvailableEmail } from '@/lib/email/resend';
+import { formatDate } from '@/lib/utils/dates';
 
 export async function GET(request: Request) {
   try {
@@ -75,9 +79,14 @@ export async function POST(request: Request) {
     }
 
     const results = [];
+    const newlyAvailableDates = [];
 
     for (const dateStr of dates) {
       const date = startOfDay(new Date(dateStr));
+
+      // Verificar si ya existía y estaba marcada como no disponible
+      const existingAvailability = await Availability.findOne({ parkingSpotId, date });
+      const wasUnavailable = existingAvailability && existingAvailability.isAvailable === true;
 
       // Upsert: actualizar si existe, crear si no existe
       const availability = await Availability.findOneAndUpdate(
@@ -92,6 +101,39 @@ export async function POST(request: Request) {
       );
 
       results.push(availability);
+
+      // Si se marcó como disponible para reservar (isAvailable=false) y antes no lo estaba
+      if (!isAvailable && (wasUnavailable || !existingAvailability)) {
+        newlyAvailableDates.push(date);
+      }
+    }
+
+    // Enviar emails a usuarios GENERAL si hay plazas nuevamente disponibles
+    if (newlyAvailableDates.length > 0) {
+      try {
+        const parkingSpot = await ParkingSpot.findById(parkingSpotId);
+        const generalUsers = await User.find({ role: UserRole.GENERAL }).select('name email');
+
+        if (parkingSpot && generalUsers.length > 0) {
+          const spotInfo = `${parkingSpot.number} (${
+            parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
+          })`;
+
+          // Enviar email a cada usuario general
+          for (const user of generalUsers) {
+            for (const date of newlyAvailableDates) {
+              await sendEmail({
+                to: user.email,
+                subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
+                html: getNewSpotsAvailableEmail(user.name, formatDate(date), [spotInfo]),
+              });
+            }
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending availability emails:', emailError);
+        // No fallar la operación si falla el email
+      }
     }
 
     return NextResponse.json({ success: true, availability: results });
