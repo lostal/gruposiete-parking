@@ -1,6 +1,9 @@
 import type { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import dbConnect from '@/lib/db/mongodb';
+import User from '@/models/User';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -18,11 +21,6 @@ export default {
         }
 
         const { email, password } = validatedFields.data;
-
-        // 🔧 Lazy loading para evitar Edge Runtime issues
-        const bcrypt = (await import('bcryptjs')).default;
-        const dbConnect = (await import('@/lib/db/mongodb')).default;
-        const User = (await import('@/models/User')).default;
 
         await dbConnect();
         const user = await User.findOne({ email }).select('+password');
