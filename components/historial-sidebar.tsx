@@ -35,7 +35,11 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
       const response = await fetch('/api/reservations/my-history');
       if (response.ok) {
         const data = await response.json();
-        setReservations(data);
+        // Ordenar por fecha ascendente (de menor a mayor)
+        const sortedData = data.sort((a: Reservation, b: Reservation) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        setReservations(sortedData);
       }
     } catch (error) {
       console.error('Error fetching reservations:', error);

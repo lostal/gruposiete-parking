@@ -39,7 +39,11 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       const response = await fetch(`/api/reservations?userId=${userId}&upcoming=true`);
       if (response.ok) {
         const data = await response.json();
-        setMyReservations(data);
+        // Ordenar por fecha ascendente (de menor a mayor)
+        const sortedData = data.sort((a: MyReservation, b: MyReservation) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        setMyReservations(sortedData);
       }
     } catch (error) {
       console.error('Error fetching reservations:', error);
