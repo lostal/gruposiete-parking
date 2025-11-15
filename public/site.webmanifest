@@ -1,6 +1,6 @@
 {
-  "name": "Parking Gruposiete",
-  "short_name": "Parking Gruposiete",
+  "name": "Parking",
+  "short_name": "Parking",
   "description": "Aplicación web de Parking Gruposiete.",
   "icons": [
     { "src": "/favicon-16x16.png", "sizes": "16x16", "type": "image/png" },
