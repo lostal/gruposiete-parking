@@ -134,9 +134,21 @@
   }
 }
 
-/* Smooth scroll */
+/* Smooth scroll con padding para navbar sticky */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 64px; /* Altura de la navbar */
+}
+
+/* Prevenir scroll inicial en móvil */
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 64px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
 }
 
 /* Selection */

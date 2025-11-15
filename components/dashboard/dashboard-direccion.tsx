@@ -248,179 +248,198 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
   }
 
   return (
-    <div className="space-y-8">
-      {/* Info de la plaza */}
-      <div>
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-6">
-          Tu Plaza Asignada
-        </h2>
+    <div className="space-y-6">
+      {/* Layout Grid 2 columnas balanceadas en desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Columna Izquierda - Info Plaza */}
+        <div>
+          <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
+            Tu Plaza Asignada
+          </h2>
 
-        {parkingSpot && (
-          <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow">
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-[#343f48] rounded-2xl brutal-border flex items-center justify-center">
-                <span className="text-4xl font-mono-data font-bold text-white">
-                  {parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{parkingSpot.number}
-                </span>
-              </div>
-              <div>
-                <p className="text-4xl font-extrabold text-[#343f48]">Plaza {parkingSpot.number}</p>
-                <p className="text-lg text-gray-500 font-bold uppercase tracking-wide mt-1">
-                  {parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
-                </p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Asignada a{' '}
-                  <span className="font-bold text-[#343f48]">{parkingSpot.assignedToName}</span>
-                </p>
+          {parkingSpot && (
+            <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+              <div className="flex items-center gap-6">
+                {/* Icono de la plaza */}
+                <div className="w-20 h-20 bg-[#343f48] rounded-2xl brutal-border flex items-center justify-center flex-shrink-0">
+                  <span className="text-3xl font-mono-data font-bold text-white">
+                    {parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{parkingSpot.number}
+                  </span>
+                </div>
+
+                {/* Info principal */}
+                <div className="flex-1">
+                  <p className="text-2xl font-extrabold text-[#343f48] mb-1">
+                    Plaza {parkingSpot.number}
+                  </p>
+                  <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-3">
+                    {parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
+                  </p>
+                  <div className="pt-3 border-t-2 border-gray-100">
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
+                      Asignada a
+                    </p>
+                    <p className="text-sm font-bold text-[#343f48]">{parkingSpot.assignedToName}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Calendario */}
-      <div>
-        <h2 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-2">
-          Gestiona tu plaza
-        </h2>
-        <div className="bg-[#fdc373]/20 border-l-4 border-[#fdc373] p-3 rounded mb-4">
-          <p className="text-sm font-bold text-[#343f48]">
-            Marca los días que dejarás tu plaza libre para que otros la puedan reservar
-          </p>
+          {/* Mensaje de instrucción - Solo visible en desktop */}
+          <div className="hidden lg:block mt-4 p-3 bg-[#fdc373]/20 border-l-4 border-[#fdc373] rounded">
+            <p className="text-xs font-bold text-[#343f48] leading-relaxed">
+              Marca los días que dejarás tu plaza libre para que otros la puedan reservar
+            </p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3 brutal-border brutal-shadow max-w-sm">
-          {/* Encabezado del mes */}
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={goToPreviousMonth}
-              className="w-7 h-7 flex items-center justify-center rounded font-bold text-[#343f48] hover:bg-gray-100 text-sm"
-            >
-              ←
-            </button>
-            <h3 className="text-sm font-extrabold text-[#343f48]">
-              {format(currentMonth, 'MMMM yyyy', { locale: es }).toUpperCase()}
-            </h3>
-            <button
-              onClick={goToNextMonth}
-              className="w-7 h-7 flex items-center justify-center rounded font-bold text-[#343f48] hover:bg-gray-100 text-sm"
-            >
-              →
-            </button>
+        {/* Columna Derecha - Calendario */}
+        <div>
+          <h2 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
+            Gestiona tu plaza
+          </h2>
+
+          {/* Mensaje de instrucción - Solo visible en móvil */}
+          <div className="lg:hidden mb-4 p-3 bg-[#fdc373]/20 border-l-4 border-[#fdc373] rounded">
+            <p className="text-xs font-bold text-[#343f48] leading-relaxed">
+              Marca los días que dejarás tu plaza libre para que otros la puedan reservar
+            </p>
           </div>
 
-          {/* Días de la semana - Empezando por Lunes */}
-          <div className="grid grid-cols-7 gap-0.5 mb-1">
-            {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
-              <div
-                key={day}
-                className="text-center text-[9px] font-bold text-gray-400 uppercase py-0.5"
+          {/* Calendario */}
+          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow">
+
+            {/* Encabezado del mes */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={goToPreviousMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                aria-label="Mes anterior"
               >
-                {day}
-              </div>
-            ))}
-          </div>
+                ←
+              </button>
+              <h3 className="text-sm font-extrabold text-[#343f48]">
+                {format(currentMonth, 'MMMM yyyy', { locale: es }).toUpperCase()}
+              </h3>
+              <button
+                onClick={goToNextMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                aria-label="Mes siguiente"
+              >
+                →
+              </button>
+            </div>
 
-          {/* Días del mes */}
-          <div className="grid grid-cols-7 gap-0.5">
-            {monthDays.map((date, index) => {
-              if (!date) {
-                return <div key={`empty-${index}`} className="aspect-square" />;
-              }
-
-              const isSelected = selectedDates.some((d) => isSameDay(d, date));
-              const isUnavailable = isDateUnavailable(date);
-              const isReserved = isDateReserved(date);
-              const isPast = date < startOfDay(new Date());
-              const isWeekend = !isWeekday(date);
-              const isDisabled = isPast || isWeekend;
-
-              let bgColor = 'bg-white';
-              let textColor = 'text-[#343f48]';
-              let border = 'border-2 border-gray-200';
-              let title = '';
-
-              if (isSelected) {
-                bgColor = 'bg-[#fdc373]';
-                textColor = 'text-[#343f48]';
-                border = 'border-2 border-[#fdc373]';
-                title = 'Seleccionado para marcar';
-              } else if (isReserved) {
-                bgColor = 'bg-green-50';
-                textColor = 'text-green-700';
-                border = 'border-2 border-green-200';
-                title = 'Ya reservado por alguien';
-              } else if (isUnavailable) {
-                bgColor = 'bg-red-50';
-                textColor = 'text-red-700';
-                border = 'border-2 border-red-200';
-                title = 'Marcado como libre';
-              } else if (isDisabled) {
-                bgColor = 'bg-gray-50';
-                textColor = 'text-gray-300';
-                border = 'border border-gray-100';
-                title = 'No disponible';
-              } else {
-                title = 'Tu plaza está ocupada por ti';
-              }
-
-              return (
-                <button
-                  key={date.toISOString()}
-                  onClick={() => !isDisabled && toggleDate(date)}
-                  disabled={isDisabled}
-                  title={title}
-                  className={`aspect-square flex items-center justify-center rounded font-bold text-[11px] transition-all
-                            ${bgColor} ${textColor} ${border} ${!isDisabled && 'hover:scale-110'}`}
+            {/* Días de la semana */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-[10px] font-bold text-gray-400 uppercase py-1"
                 >
-                  {format(date, 'd')}
-                </button>
-              );
-            })}
-          </div>
+                  {day}
+                </div>
+              ))}
+            </div>
 
-          {/* Leyenda compacta */}
-          <div className="mt-2 pt-2 border-t border-gray-200 space-y-1 text-[9px]">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 bg-white border-2 border-gray-200 rounded"></div>
-              <span className="text-gray-600">Usas tu plaza</span>
+            {/* Días del mes */}
+            <div className="grid grid-cols-7 gap-1">
+              {monthDays.map((date, index) => {
+                if (!date) {
+                  return <div key={`empty-${index}`} className="aspect-square" />;
+                }
+
+                const isSelected = selectedDates.some((d) => isSameDay(d, date));
+                const isUnavailable = isDateUnavailable(date);
+                const isReserved = isDateReserved(date);
+                const isPast = date < startOfDay(new Date());
+                const isWeekend = !isWeekday(date);
+                const isDisabled = isPast || isWeekend;
+
+                let bgColor = 'bg-white';
+                let textColor = 'text-[#343f48]';
+                let border = 'border-2 border-gray-200';
+                let title = '';
+
+                if (isSelected) {
+                  bgColor = 'bg-[#fdc373]';
+                  textColor = 'text-[#343f48]';
+                  border = 'border-2 border-[#fdc373]';
+                  title = 'Seleccionado para marcar';
+                } else if (isReserved) {
+                  bgColor = 'bg-green-50';
+                  textColor = 'text-green-700';
+                  border = 'border-2 border-green-200';
+                  title = 'Ya reservado por alguien';
+                } else if (isUnavailable) {
+                  bgColor = 'bg-red-50';
+                  textColor = 'text-red-700';
+                  border = 'border-2 border-red-200';
+                  title = 'Marcado como libre';
+                } else if (isDisabled) {
+                  bgColor = 'bg-gray-50';
+                  textColor = 'text-gray-300';
+                  border = 'border border-gray-100';
+                  title = 'No disponible';
+                } else {
+                  title = 'Tu plaza está ocupada por ti';
+                }
+
+                return (
+                  <button
+                    key={date.toISOString()}
+                    onClick={() => !isDisabled && toggleDate(date)}
+                    disabled={isDisabled}
+                    title={title}
+                    className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
+                              ${bgColor} ${textColor} ${border} ${!isDisabled && 'hover:scale-105'}`}
+                  >
+                    {format(date, 'd')}
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 bg-red-50 border-2 border-red-200 rounded"></div>
-              <span className="text-gray-600">Plaza libre (otros pueden reservar)</span>
+
+            {/* Leyenda compacta */}
+            <div className="mt-3 pt-3 border-t-2 border-gray-100 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-white border-2 border-gray-200 rounded"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Usas tu plaza</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-50 border-2 border-red-200 rounded"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Plaza libre</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-50 border-2 border-green-200 rounded"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Reservado</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 bg-green-50 border-2 border-green-200 rounded"></div>
-              <span className="text-gray-600">Ya reservado</span>
+
+          {/* Botones de acción */}
+          {selectedDates.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={handleMarkUnavailable}
+                disabled={isLoading}
+                className="w-full py-3 px-4 rounded-xl bg-[#343f48] text-white font-bold text-sm brutal-border brutal-shadow-sm
+                         hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Guardando...' : `✓ Dejar libre (${selectedDates.length})`}
+              </button>
+              <button
+                onClick={handleMarkAvailable}
+                disabled={isLoading}
+                className="w-full py-3 px-4 rounded-xl bg-white text-[#343f48] font-bold text-sm brutal-border brutal-shadow-sm
+                         hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Guardando...' : `✗ Usar mi plaza (${selectedDates.length})`}
+              </button>
             </div>
+          )}
           </div>
         </div>
-
-        {/* Botones de acción con textos claros */}
-        {selectedDates.length > 0 && (
-          <div className="mt-3 space-y-2 max-w-sm">
-            <button
-              onClick={handleMarkUnavailable}
-              disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-[#343f48] text-white font-bold text-sm brutal-border brutal-shadow
-                       hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading
-                ? 'Guardando...'
-                : `✓ Dejar libre ${selectedDates.length} día(s) seleccionado(s)`}
-            </button>
-            <button
-              onClick={handleMarkAvailable}
-              disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-white text-[#343f48] font-bold text-sm brutal-border brutal-shadow
-                       hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading
-                ? 'Guardando...'
-                : `✗ Cancelar y usar mi plaza estos ${selectedDates.length} día(s)`}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

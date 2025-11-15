@@ -28,7 +28,9 @@ export function DashboardWrapper({
         userRole={userRole}
         onOpenHistorial={() => setIsHistorialOpen(true)}
       />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-6 sm:pt-8">
+        {children}
+      </main>
       <HistorialSidebar isOpen={isHistorialOpen} onClose={() => setIsHistorialOpen(false)} />
     </div>
   );

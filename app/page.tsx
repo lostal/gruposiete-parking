@@ -15,8 +15,8 @@ export default async function Home() {
     <main className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-12">
         {/* Logo + Título */}
-        <div className="text-center space-y-6">
-          <div className="flex justify-center">
+        <div className="text-center space-y-8">
+          <div className="flex flex-col items-center gap-4">
             <Image
               src="/logo.png"
               alt="Gruposiete"
@@ -24,8 +24,12 @@ export default async function Home() {
               height={80}
               className="h-auto w-auto max-w-[250px]"
             />
+            <div className="flex items-center gap-3">
+              <div className="h-[3px] w-16 bg-[#fdc373] rounded-full"></div>
+              <h1 className="text-3xl font-extrabold text-[#343f48] tracking-tight">PARKING</h1>
+              <div className="h-[3px] w-16 bg-[#fdc373] rounded-full"></div>
+            </div>
           </div>
-          <p className="text-xl text-gray-500 font-medium">Parking</p>
         </div>
 
         {/* Botones */}

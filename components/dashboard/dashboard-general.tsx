@@ -218,174 +218,183 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Mis Reservas */}
-      <div>
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-6">Mis Reservas</h2>
+    <div className="space-y-6">
+      {/* Layout Bento Box - Desktop: Grid 2 columnas, Mobile: Stack vertical */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Columna Izquierda - Mis Reservas (lg:col-span-2 en desktop) */}
+        <div className="lg:col-span-2">
+          <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
+            Mis Reservas
+          </h2>
 
-        {myReservations.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center">
-            <p className="text-gray-400 font-medium">No tienes reservas próximas</p>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {myReservations.map((reservation) => (
-              <div
-                key={reservation._id}
-                className="bg-white rounded-2xl p-6 brutal-border brutal-shadow"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center">
-                      <span className="text-2xl font-mono-data font-bold text-white">
-                        {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
-                        {reservation.parkingSpot.number}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#343f48] text-lg">
-                        Plaza {reservation.parkingSpot.number}
-                      </p>
-                      <p className="text-sm text-gray-500 font-medium uppercase tracking-wide">
-                        {reservation.parkingSpot.location === 'SUBTERRANEO'
-                          ? 'Subterráneo'
-                          : 'Exterior'}
-                      </p>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {format(new Date(reservation.date), 'PPP', { locale: es })}
-                      </p>
+          {myReservations.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center h-full flex items-center justify-center min-h-[200px]">
+              <p className="text-gray-400 font-medium">No tienes reservas próximas</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {myReservations.map((reservation) => (
+                <div
+                  key={reservation._id}
+                  className="bg-white rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-sm transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl font-mono-data font-bold text-white">
+                          {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
+                          {reservation.parkingSpot.number}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#343f48] text-lg">
+                          Plaza {reservation.parkingSpot.number}
+                        </p>
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                          {reservation.parkingSpot.location === 'SUBTERRANEO'
+                            ? 'Subterráneo'
+                            : 'Exterior'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleCancelReservation(reservation._id)}
-                    disabled={isLoading}
-                    className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
-                             brutal-border brutal-shadow-sm brutal-hover tap-none
-                             disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Cancelar
-                  </button>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600 font-medium">
+                      {format(new Date(reservation.date), 'PPP', { locale: es })}
+                    </p>
+                    <button
+                      onClick={() => handleCancelReservation(reservation._id)}
+                      disabled={isLoading}
+                      className="w-full px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
+                               brutal-border brutal-shadow-sm brutal-hover tap-none
+                               disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Calendario */}
-      <div>
-        <h2 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-3">
-          Selecciona un día
-        </h2>
-
-        <div className="bg-white rounded-xl p-3 brutal-border brutal-shadow max-w-sm">
-          {/* Encabezado del mes */}
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={goToPreviousMonth}
-              className="w-7 h-7 flex items-center justify-center rounded font-bold text-[#343f48] hover:bg-gray-100 text-sm"
-            >
-              ←
-            </button>
-            <h3 className="text-sm font-extrabold text-[#343f48]">
-              {format(currentMonth, 'MMMM yyyy', { locale: es }).toUpperCase()}
-            </h3>
-            <button
-              onClick={goToNextMonth}
-              className="w-7 h-7 flex items-center justify-center rounded font-bold text-[#343f48] hover:bg-gray-100 text-sm"
-            >
-              →
-            </button>
-          </div>
-
-          {/* Días de la semana - Empezando por Lunes */}
-          <div className="grid grid-cols-7 gap-0.5 mb-1">
-            {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
-              <div
-                key={day}
-                className="text-center text-[9px] font-bold text-gray-400 uppercase py-0.5"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Días del mes */}
-          <div className="grid grid-cols-7 gap-0.5">
-            {monthDays.map((date, index) => {
-              if (!date) {
-                return <div key={`empty-${index}`} className="aspect-square" />;
-              }
-
-              const isSelected =
-                selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
-              const isPast = date < startOfDay(new Date());
-              const isWeekend = !isWeekday(date);
-              const isDisabled = isPast || isWeekend;
-
-              // Verificar si el usuario tiene una reserva en este día
-              const isReserved = myReservations.some(
-                (res) => format(new Date(res.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
-              );
-
-              // Verificar si hay plazas disponibles en este día
-              const hasAvailability = daysWithAvailability.some(
-                (d) => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
-              );
-
-              let bgColor = 'bg-white';
-              let textColor = 'text-[#343f48]';
-              let border = 'border-2 border-gray-200';
-
-              if (isSelected) {
-                bgColor = 'bg-[#343f48]';
-                textColor = 'text-white';
-                border = 'border-2 border-[#343f48]';
-              } else if (isReserved) {
-                bgColor = 'bg-green-50';
-                textColor = 'text-green-700';
-                border = 'border-2 border-green-200';
-              } else if (hasAvailability && !isDisabled) {
-                bgColor = 'bg-blue-50';
-                textColor = 'text-blue-700';
-                border = 'border-2 border-blue-200';
-              } else if (isDisabled) {
-                bgColor = 'bg-gray-50';
-                textColor = 'text-gray-300';
-                border = 'border border-gray-100';
-              }
-
-              return (
-                <button
-                  key={date.toISOString()}
-                  onClick={() => !isDisabled && setSelectedDate(date)}
-                  disabled={isDisabled}
-                  className={`aspect-square flex items-center justify-center rounded font-bold text-[11px] transition-all
-                            ${bgColor} ${textColor} ${border} ${
-                    !isDisabled && 'hover:border-[#343f48] hover:scale-110'
-                  }`}
-                >
-                  {format(date, 'd')}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Leyenda */}
-          <div className="mt-2 pt-2 border-t border-gray-200 space-y-1">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-200"></div>
-              <span className="text-[9px] text-gray-600 font-medium">Tu reserva</span>
+              ))}
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-blue-50 border-2 border-blue-200"></div>
-              <span className="text-[9px] text-gray-600 font-medium">Plazas disponibles</span>
+          )}
+        </div>
+
+        {/* Columna Derecha - Calendario (lg:col-span-1 en desktop) */}
+        <div className="lg:col-span-1">
+          <h2 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
+            Selecciona un día
+          </h2>
+
+          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow lg:sticky lg:top-20">
+            {/* Encabezado del mes */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={goToPreviousMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                aria-label="Mes anterior"
+              >
+                ←
+              </button>
+              <h3 className="text-sm font-extrabold text-[#343f48]">
+                {format(currentMonth, 'MMMM yyyy', { locale: es }).toUpperCase()}
+              </h3>
+              <button
+                onClick={goToNextMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                aria-label="Mes siguiente"
+              >
+                →
+              </button>
+            </div>
+
+            {/* Días de la semana */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-[10px] font-bold text-gray-400 uppercase py-1"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Días del mes */}
+            <div className="grid grid-cols-7 gap-1">
+              {monthDays.map((date, index) => {
+                if (!date) {
+                  return <div key={`empty-${index}`} className="aspect-square" />;
+                }
+
+                const isSelected =
+                  selectedDate &&
+                  format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+                const isPast = date < startOfDay(new Date());
+                const isWeekend = !isWeekday(date);
+                const isDisabled = isPast || isWeekend;
+
+                const isReserved = myReservations.some(
+                  (res) =>
+                    format(new Date(res.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+                );
+
+                const hasAvailability = daysWithAvailability.some(
+                  (d) => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+                );
+
+                let bgColor = 'bg-white';
+                let textColor = 'text-[#343f48]';
+                let border = 'border-2 border-gray-200';
+
+                if (isSelected) {
+                  bgColor = 'bg-[#343f48]';
+                  textColor = 'text-white';
+                  border = 'border-2 border-[#343f48]';
+                } else if (isReserved) {
+                  bgColor = 'bg-green-50';
+                  textColor = 'text-green-700';
+                  border = 'border-2 border-green-200';
+                } else if (hasAvailability && !isDisabled) {
+                  bgColor = 'bg-blue-50';
+                  textColor = 'text-blue-700';
+                  border = 'border-2 border-blue-200';
+                } else if (isDisabled) {
+                  bgColor = 'bg-gray-50';
+                  textColor = 'text-gray-300';
+                  border = 'border border-gray-100';
+                }
+
+                return (
+                  <button
+                    key={date.toISOString()}
+                    onClick={() => !isDisabled && setSelectedDate(date)}
+                    disabled={isDisabled}
+                    className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
+                              ${bgColor} ${textColor} ${border} ${
+                      !isDisabled && 'hover:border-[#343f48] hover:scale-105'
+                    }`}
+                  >
+                    {format(date, 'd')}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Leyenda */}
+            <div className="mt-3 pt-3 border-t-2 border-gray-100 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-200"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Tu reserva</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-blue-50 border-2 border-blue-200"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Disponibles</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Plazas Disponibles */}
+      {/* Plazas Disponibles - Full Width */}
       {selectedDate && (
         <div>
           <h3 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
@@ -397,11 +406,11 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               <p className="text-gray-400 font-medium">No hay plazas disponibles para esta fecha</p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {availableSpots.map((spot) => (
                 <div
                   key={spot._id}
-                  className="bg-white rounded-2xl p-6 brutal-border brutal-shadow"
+                  className="bg-white rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-sm transition-all"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
