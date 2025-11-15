@@ -219,10 +219,10 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
 
   return (
     <div className="space-y-6">
-      {/* Layout Bento Box - Desktop: Grid 2 columnas, Mobile: Stack vertical */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna Izquierda - Mis Reservas (lg:col-span-2 en desktop) */}
-        <div className="lg:col-span-2">
+      {/* Layout Grid 2 columnas balanceadas en desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Columna Izquierda - Mis Reservas */}
+        <div>
           <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
             Mis Reservas
           </h2>
@@ -232,59 +232,60 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               <p className="text-gray-400 font-medium">No tienes reservas próximas</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-4">
               {myReservations.map((reservation) => (
                 <div
                   key={reservation._id}
                   className="bg-white rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-sm transition-all"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center flex-shrink-0">
-                        <span className="text-2xl font-mono-data font-bold text-white">
-                          {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
-                          {reservation.parkingSpot.number}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-bold text-[#343f48] text-lg">
-                          Plaza {reservation.parkingSpot.number}
+                  <div className="flex items-center gap-6 mb-4">
+                    <div className="w-20 h-20 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center flex-shrink-0">
+                      <span className="text-3xl font-mono-data font-bold text-white">
+                        {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
+                        {reservation.parkingSpot.number}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-[#343f48] text-2xl mb-1">
+                        Plaza {reservation.parkingSpot.number}
+                      </p>
+                      <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-3">
+                        {reservation.parkingSpot.location === 'SUBTERRANEO'
+                          ? 'Subterráneo'
+                          : 'Exterior'}
+                      </p>
+                      <div className="pt-3 border-t-2 border-gray-100">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
+                          Fecha de reserva
                         </p>
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                          {reservation.parkingSpot.location === 'SUBTERRANEO'
-                            ? 'Subterráneo'
-                            : 'Exterior'}
+                        <p className="text-sm font-bold text-[#343f48]">
+                          {format(new Date(reservation.date), 'PPP', { locale: es })}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600 font-medium">
-                      {format(new Date(reservation.date), 'PPP', { locale: es })}
-                    </p>
-                    <button
-                      onClick={() => handleCancelReservation(reservation._id)}
-                      disabled={isLoading}
-                      className="w-full px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
-                               brutal-border brutal-shadow-sm brutal-hover tap-none
-                               disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleCancelReservation(reservation._id)}
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 rounded-xl bg-white text-[#343f48] font-bold text-sm
+                             brutal-border brutal-shadow-sm brutal-hover tap-none
+                             disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancelar Reserva
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Columna Derecha - Calendario (lg:col-span-1 en desktop) */}
-        <div className="lg:col-span-1">
+        {/* Columna Derecha - Calendario */}
+        <div>
           <h2 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
             Selecciona un día
           </h2>
 
-          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow lg:sticky lg:top-20">
+          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow">
             {/* Encabezado del mes */}
             <div className="flex items-center justify-between mb-3">
               <button
