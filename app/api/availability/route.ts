@@ -119,15 +119,22 @@ export async function POST(request: Request) {
             parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
           })`;
 
-          // Enviar email a cada usuario general
+          // Agrupar todas las fechas en un solo email por usuario
+          const formattedDates = newlyAvailableDates.map((date) => formatDate(date));
+          const datesList =
+            formattedDates.length === 1
+              ? formattedDates[0]
+              : formattedDates.slice(0, -1).join(', ') +
+                ' y ' +
+                formattedDates[formattedDates.length - 1];
+
+          // Enviar UN email a cada usuario general con todas las fechas
           for (const user of generalUsers) {
-            for (const date of newlyAvailableDates) {
-              await sendEmail({
-                to: user.email,
-                subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
-                html: getNewSpotsAvailableEmail(user.name, formatDate(date), [spotInfo]),
-              });
-            }
+            await sendEmail({
+              to: user.email,
+              subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
+              html: getNewSpotsAvailableEmail(user.name, datesList, [spotInfo]),
+            });
           }
         }
       } catch (emailError) {

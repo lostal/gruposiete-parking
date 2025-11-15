@@ -93,9 +93,21 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
             <div className="space-y-3">
               {reservations.map((reservation) => {
                 const isPast = new Date(reservation.date) < new Date();
-                const statusColor = isPast
-                  ? 'bg-gray-100 text-gray-600'
-                  : 'bg-green-100 text-green-700';
+                const isCancelled = reservation.status === 'CANCELLED';
+
+                let statusText = '';
+                let statusColor = '';
+
+                if (isCancelled) {
+                  statusText = 'Cancelada';
+                  statusColor = 'bg-red-100 text-red-700';
+                } else if (isPast) {
+                  statusText = 'Pasada';
+                  statusColor = 'bg-gray-100 text-gray-600';
+                } else {
+                  statusText = 'Próxima';
+                  statusColor = 'bg-green-100 text-green-700';
+                }
 
                 return (
                   <div
@@ -127,7 +139,7 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
                       <span
                         className={`inline-block px-2 py-1 rounded-lg font-bold text-xs uppercase whitespace-nowrap ${statusColor}`}
                       >
-                        {isPast ? 'Pasada' : 'Próxima'}
+                        {statusText}
                       </span>
                     </div>
                   </div>

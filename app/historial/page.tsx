@@ -57,55 +57,71 @@ export default function HistorialPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {reservations.map((reservation) => (
-            <div
-              key={reservation._id}
-              className="bg-white rounded-xl p-4 brutal-border brutal-shadow"
-            >
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-mono-data font-bold text-white">
-                      {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
-                      {reservation.parkingSpot.number}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#343f48]">
-                      Plaza {reservation.parkingSpot.number}
-                    </p>
-                    <p className="text-xs text-gray-500 font-bold uppercase">
-                      {reservation.parkingSpot.location === 'SUBTERRANEO'
-                        ? 'Subterráneo'
-                        : 'Exterior'}
-                    </p>
-                  </div>
-                </div>
+          {reservations.map((reservation) => {
+            const isPast = new Date(reservation.date) < new Date();
+            const isCancelled = reservation.status === 'CANCELLED';
 
-                <div className="flex items-center gap-4 flex-wrap">
-                  <div>
-                    <p className="text-sm text-gray-400 uppercase tracking-wide font-bold">Fecha</p>
-                    <p className="font-bold text-[#343f48]">
-                      {format(new Date(reservation.date), 'dd/MM/yyyy', { locale: es })}
-                    </p>
+            let statusText = '';
+            let statusColor = '';
+
+            if (isCancelled) {
+              statusText = 'Cancelada';
+              statusColor = 'bg-red-100 text-red-700';
+            } else if (isPast) {
+              statusText = 'Pasada';
+              statusColor = 'bg-gray-100 text-gray-600';
+            } else {
+              statusText = 'Próxima';
+              statusColor = 'bg-green-100 text-green-700';
+            }
+
+            return (
+              <div
+                key={reservation._id}
+                className="bg-white rounded-xl p-4 brutal-border brutal-shadow"
+              >
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm font-mono-data font-bold text-white">
+                        {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
+                        {reservation.parkingSpot.number}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#343f48]">
+                        Plaza {reservation.parkingSpot.number}
+                      </p>
+                      <p className="text-xs text-gray-500 font-bold uppercase">
+                        {reservation.parkingSpot.location === 'SUBTERRANEO'
+                          ? 'Subterráneo'
+                          : 'Exterior'}
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-lg font-bold text-xs uppercase
-                                ${
-                                  reservation.status === 'ACTIVE'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-500'
-                                }`}
-                    >
-                      {reservation.status === 'ACTIVE' ? 'Activa' : 'Cancelada'}
-                    </span>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <div>
+                      <p className="text-sm text-gray-400 uppercase tracking-wide font-bold">
+                        Fecha
+                      </p>
+                      <p className="font-bold text-[#343f48]">
+                        {format(new Date(reservation.date), 'dd/MM/yyyy', { locale: es })}
+                      </p>
+                    </div>
+
+                    <div>
+                      <span
+                        className={`inline-block px-3 py-1 rounded-lg font-bold text-xs uppercase ${statusColor}`}
+                      >
+                        {statusText}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
