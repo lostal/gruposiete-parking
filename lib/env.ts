@@ -1,0 +1,81 @@
+/**
+ * Validación de variables de entorno
+ * Este archivo valida que todas las variables críticas estén configuradas
+ */
+
+interface EnvConfig {
+  MONGODB_URI: string;
+  NEXTAUTH_SECRET: string;
+  NEXTAUTH_URL?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
+  NODE_ENV: 'development' | 'production' | 'test';
+}
+
+function validateEnv(): EnvConfig {
+  const errors: string[] = [];
+
+  // Variables REQUERIDAS
+  if (!process.env.MONGODB_URI) {
+    errors.push('MONGODB_URI es requerida');
+  }
+
+  if (!process.env.NEXTAUTH_SECRET) {
+    errors.push('NEXTAUTH_SECRET es requerida. Genera una con: openssl rand -base64 32');
+  }
+
+  // Validaciones adicionales
+  if (process.env.MONGODB_URI && !process.env.MONGODB_URI.startsWith('mongodb')) {
+    errors.push('MONGODB_URI debe comenzar con "mongodb://" o "mongodb+srv://"');
+  }
+
+  if (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length < 32) {
+    errors.push('NEXTAUTH_SECRET debe tener al menos 32 caracteres');
+  }
+
+  // Advertencias (no críticas)
+  if (!process.env.RESEND_API_KEY && process.env.NODE_ENV === 'production') {
+    console.warn('⚠️  RESEND_API_KEY no está configurada. Los emails se simularán en consola.');
+  }
+
+  if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV === 'production') {
+    console.warn(
+      '⚠️  NEXTAUTH_URL no está configurada. Esto puede causar problemas con los enlaces en emails.',
+    );
+  }
+
+  // Si hay errores, lanzar excepción
+  if (errors.length > 0) {
+    throw new Error(
+      `❌ Error de configuración de variables de entorno:\n${errors
+        .map((e) => `  - ${e}`)
+        .join('\n')}\n\nRevisa tu archivo .env.local`,
+    );
+  }
+
+  return {
+    MONGODB_URI: process.env.MONGODB_URI!,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET!,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+    NODE_ENV: (process.env.NODE_ENV as EnvConfig['NODE_ENV']) || 'development',
+  };
+}
+
+// Validar inmediatamente al importar (solo en servidor)
+let env: EnvConfig;
+
+if (typeof window === 'undefined') {
+  try {
+    env = validateEnv();
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ Variables de entorno validadas correctamente');
+    }
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+export default env!;

@@ -10,6 +10,7 @@ import { startOfDay, endOfDay } from 'date-fns';
 import { ReservationStatus, UserRole } from '@/types';
 import { formatDate } from '@/lib/utils/dates';
 import mongoose from 'mongoose';
+import { checkRateLimit } from '@/lib/ratelimit';
 
 // Asegurar que los modelos estén registrados para populate
 const _ensureModels = [ParkingSpot, User];
@@ -83,6 +84,30 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Solo usuarios generales pueden reservar plazas' },
         { status: 403 },
+      );
+    }
+
+    // RATE LIMITING: Máximo 10 intentos de reserva por usuario cada 5 minutos
+    const rateLimit = checkRateLimit({
+      identifier: `reservation:${session.user.id}`,
+      limit: 10,
+      windowSeconds: 5 * 60,
+    });
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Demasiados intentos de reserva. Intenta de nuevo en unos minutos.',
+          retryAfter: Math.ceil((rateLimit.reset - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimit.limit.toString(),
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.reset.toString(),
+          },
+        },
       );
     }
 

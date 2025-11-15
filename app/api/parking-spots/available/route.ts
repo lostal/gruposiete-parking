@@ -5,7 +5,7 @@ import dbConnect from '@/lib/db/mongodb';
 import ParkingSpot from '@/models/ParkingSpot';
 import Availability from '@/models/Availability';
 import Reservation from '@/models/Reservation';
-import { startOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export async function GET(request: Request) {
   try {
@@ -27,13 +27,13 @@ export async function GET(request: Request) {
 
     // Obtener plazas marcadas como no disponibles
     const unavailable = await Availability.find({
-      date: { $gte: date, $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
+      date: { $gte: date, $lt: endOfDay(date) },
       isAvailable: false,
     }).select('parkingSpotId');
 
     // Obtener plazas ya reservadas
     const reserved = await Reservation.find({
-      date: { $gte: date, $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
+      date: { $gte: date, $lt: endOfDay(date) },
       status: 'ACTIVE',
     }).select('parkingSpotId');
 

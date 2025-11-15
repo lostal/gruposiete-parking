@@ -4,6 +4,7 @@ import { z } from 'zod';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/models/User';
 import { UserRole } from '@/types';
+import { checkRateLimit, getClientIdentifier } from '@/lib/ratelimit';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -14,6 +15,32 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // RATE LIMITING: Máximo 5 registros por IP cada 15 minutos
+    const identifier = getClientIdentifier(request);
+    const rateLimit = checkRateLimit({
+      identifier: `register:${identifier}`,
+      limit: 5,
+      windowSeconds: 15 * 60,
+    });
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Demasiados intentos de registro. Intenta de nuevo más tarde.',
+          retryAfter: Math.ceil((rateLimit.reset - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimit.limit.toString(),
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.reset.toString(),
+            'Retry-After': Math.ceil((rateLimit.reset - Date.now()) / 1000).toString(),
+          },
+        },
+      );
+    }
+
     const body = await request.json();
     const validatedData = registerSchema.parse(body);
 

@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
+import env from '@/lib/env';
 
 function getMongoDatabaseURI(): string {
-  if (!process.env.MONGODB_URI) {
-    throw new Error('Por favor define la variable de entorno MONGODB_URI');
-  }
-  return process.env.MONGODB_URI;
+  return env.MONGODB_URI;
 }
 
 interface MongooseCache {

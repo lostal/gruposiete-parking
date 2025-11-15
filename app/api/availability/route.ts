@@ -6,7 +6,7 @@ import Availability from '@/models/Availability';
 import Reservation from '@/models/Reservation';
 import ParkingSpot from '@/models/ParkingSpot';
 import User from '@/models/User';
-import { startOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 import { UserRole } from '@/types';
 import { sendEmail, getNewSpotsAvailableEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         const date = startOfDay(new Date(dateStr));
         const hasReservation = await Reservation.findOne({
           parkingSpotId,
-          date: { $gte: date, $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
+          date: { $gte: date, $lt: endOfDay(date) },
           status: 'ACTIVE',
         });
 
@@ -78,8 +78,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const results = [];
-    const newlyAvailableDates = [];
+    const results: any[] = [];
+    const newlyAvailableDates: Date[] = [];
 
     for (const dateStr of dates) {
       const date = startOfDay(new Date(dateStr));
