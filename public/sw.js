@@ -11,7 +11,6 @@ const urlsToCache = [
   '/favicon-192x192.png',
   '/favicon-512x512.png',
   '/favicon-16x16.png',
-  '/favicon-96x96.png',
   '/apple-icon.png',
   '/site.webmanifest',
 ];

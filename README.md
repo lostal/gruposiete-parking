@@ -111,19 +111,19 @@ git commit -m "chore: remove build artifact from index"
 
 ## PWA (Progressive Web App)
 
-Se añadieron los archivos y la configuración base para que la aplicación pueda funcionar como PWA y tener un modo offline básico:
+ Se añadieron los archivos y la configuración base para que la aplicación pueda funcionar como PWA y tener un modo offline básico:
 
-- `public/site.webmanifest` — Manifest del PWA
-- `public/sw.js` — Service worker con cache básico (instalación/activación/fetch)
-- `public/offline.html` — Página fallback cuando no hay conexión
-- `public/browserconfig.xml` y `public/mstile-150x150.png` — Soporte para tiles de Microsoft
-- `components/pwa/RegisterServiceWorker.tsx` — Componente cliente que registra el SW automáticamente
+ - `public/site.webmanifest` — Manifest del PWA
+ - `public/sw.js` — Service worker con cache básico (instalación/activación/fetch)
+ - `public/offline.html` — Página fallback cuando no hay conexión
+<!-- Minimal PWA: browserconfig/ms-tile files removed intentionally. -->
+ - `components/pwa/RegisterServiceWorker.tsx` — Componente cliente que registra el SW automáticamente
 
-Notas de implementación y mejoras propuestas:
+ Notas de implementación y mejoras propuestas:
 
-- Los iconos 192x192 y 512x512 se generaron como copias del 96x96 por defecto. Para una mejor calidad, genera iconos escalados desde un vector (SVG) o desde una imagen de mayor resolución. Se incluyó un script `scripts/generate-pwa-icons.js` que usa `jimp` para generar automáticamente las versiones necesarias (ejecuta `npm run pwa:icons`).
-- El `service worker` es básico y pensado como primer paso: si necesitas reglas de cacheo más avanzadas, usar un plugin como `next-pwa` o `workbox` te proporcionará estrategias más robustas y adaptadas a recursos dinámicos.
-- El middleware fue actualizado para permitir el acceso a `site.webmanifest`, `sw.js`, y otros archivos estáticos sin ser redirigidos por la política de autenticación.
+ - Las imágenes 192x192 y 512x512 se generaron (placeholder) desde el favicon original 32x32 por simplicidad. Si consigues un origen de mayor resolución o SVG, es recomendable generar iconos a partir de ese archivo para mejor calidad.
+ - El `service worker` es básico y pensado como primer paso: si necesitas reglas de cacheo más avanzadas, usar un plugin como `next-pwa` o `workbox` te proporcionará estrategias más robustas y adaptadas a recursos dinámicos.
+ - El middleware fue actualizado para permitir el acceso a `site.webmanifest`, `sw.js`, y otros archivos estáticos sin ser redirigidos por la política de autenticación.
 
 Cómo probar localmente:
 
