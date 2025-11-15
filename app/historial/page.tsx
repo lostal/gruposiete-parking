@@ -7,6 +7,9 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { UserRole } from '@/types';
 
+// Forzar renderizado dinámico para esta página
+export const dynamic = 'force-dynamic';
+
 interface Reservation {
   _id: string;
   date: string;
