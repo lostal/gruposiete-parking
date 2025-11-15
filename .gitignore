@@ -38,6 +38,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Vercel environment variables (temporal)
+VERCEL_ENV_VARS.txt
+
 # vercel
 .vercel
 
