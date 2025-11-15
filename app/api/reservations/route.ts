@@ -26,6 +26,8 @@ export async function GET(request: Request) {
     const userId = searchParams.get('userId');
     const parkingSpotId = searchParams.get('parkingSpotId');
     const upcoming = searchParams.get('upcoming') === 'true';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
 
     await dbConnect();
 
@@ -51,10 +53,16 @@ export async function GET(request: Request) {
       query.date = { $gte: startOfDay(new Date()) };
     }
 
+    // Paginación
+    const skip = (page - 1) * limit;
+    const total = await Reservation.countDocuments(query);
+
     const reservations = await Reservation.find(query)
       .populate('parkingSpotId')
       .populate('userId', 'name email')
-      .sort({ date: 1 });
+      .sort({ date: 1 })
+      .skip(skip)
+      .limit(limit);
 
     const formattedReservations = reservations.map((res) => ({
       _id: res._id,
@@ -65,7 +73,15 @@ export async function GET(request: Request) {
       user: res.userId,
     }));
 
-    return NextResponse.json(formattedReservations);
+    return NextResponse.json({
+      reservations: formattedReservations,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error('Error fetching reservations:', error);
     return NextResponse.json({ error: 'Error al obtener reservas' }, { status: 500 });
@@ -117,6 +133,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
+    // Validar que parkingSpotId sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
+      return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
+    }
+
     const date = startOfDay(new Date(dateStr));
 
     // Validar que la fecha sea laborable (L-V)
@@ -136,79 +157,137 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validar que la fecha no sea más de 60 días en el futuro
+    const maxFutureDate = startOfDay(new Date());
+    maxFutureDate.setDate(maxFutureDate.getDate() + 60);
+    if (date > maxFutureDate) {
+      return NextResponse.json(
+        { error: 'No se pueden hacer reservas con más de 60 días de antelación' },
+        { status: 400 },
+      );
+    }
+
     await dbConnect();
 
     // USAR TRANSACCIÓN para evitar race conditions
-    const session_db = await mongoose.startSession();
-    session_db.startTransaction();
+    // Implementar retry con backoff exponencial (máximo 3 intentos)
+    let retries = 3;
+    let lastError: Error | null = null;
 
-    try {
-      // Verificar que la plaza está marcada como no disponible
-      const availability = await Availability.findOne({
-        parkingSpotId,
-        date: { $gte: date, $lt: endOfDay(date) },
-        isAvailable: false,
-      }).session(session_db);
+    while (retries > 0) {
+      const session_db = await mongoose.startSession();
+      session_db.startTransaction();
 
-      if (!availability) {
+      try {
+        // VALIDACIÓN: Verificar que el usuario no tenga ya una reserva para este día
+        const existingUserReservation = await Reservation.findOne({
+          userId: session.user.id,
+          date: { $gte: date, $lt: endOfDay(date) },
+          status: ReservationStatus.ACTIVE,
+        }).session(session_db);
+
+        if (existingUserReservation) {
+          await session_db.abortTransaction();
+          return NextResponse.json(
+            { error: 'Ya tienes una reserva activa para este día' },
+            { status: 400 },
+          );
+        }
+
+        // Verificar que la plaza está marcada como no disponible
+        const availability = await Availability.findOne({
+          parkingSpotId,
+          date: { $gte: date, $lt: endOfDay(date) },
+          isAvailable: false,
+        }).session(session_db);
+
+        if (!availability) {
+          await session_db.abortTransaction();
+          return NextResponse.json(
+            { error: 'Esta plaza no está disponible para reservar en esta fecha' },
+            { status: 400 },
+          );
+        }
+
+        // Verificar que no esté ya reservada (FIFO) con bloqueo
+        const existingReservation = await Reservation.findOne({
+          parkingSpotId,
+          date: { $gte: date, $lt: endOfDay(date) },
+          status: ReservationStatus.ACTIVE,
+        }).session(session_db);
+
+        if (existingReservation) {
+          await session_db.abortTransaction();
+          return NextResponse.json(
+            { error: 'Esta plaza ya ha sido reservada por otro usuario' },
+            { status: 400 },
+          );
+        }
+
+        // Crear reserva dentro de la transacción
+        const reservationData = {
+          parkingSpotId,
+          userId: session.user.id,
+          date,
+          status: ReservationStatus.ACTIVE,
+        };
+
+        const [reservation] = await Reservation.create([reservationData], { session: session_db });
+
+        // Confirmar transacción
+        await session_db.commitTransaction();
+
+        // Obtener datos completos (fuera de la transacción)
+        const populatedReservation = await Reservation.findById(reservation._id)
+          .populate('parkingSpotId')
+          .populate('userId', 'name email');
+
+        if (!populatedReservation) {
+          return NextResponse.json({ error: 'Error al obtener reserva creada' }, { status: 500 });
+        }
+
+        return NextResponse.json({
+          success: true,
+          reservation: {
+            _id: populatedReservation._id,
+            date: populatedReservation.date,
+            parkingSpot: populatedReservation.parkingSpotId,
+            user: populatedReservation.userId,
+          },
+        });
+      } catch (transactionError) {
         await session_db.abortTransaction();
-        return NextResponse.json(
-          { error: 'Esta plaza no está disponible para reservar en esta fecha' },
-          { status: 400 },
-        );
+
+        // Si es un error de clave duplicada (race condition), reintentar
+        if (
+          transactionError instanceof Error &&
+          (transactionError.message.includes('duplicate key') ||
+            transactionError.message.includes('E11000'))
+        ) {
+          lastError = transactionError;
+          retries--;
+
+          if (retries > 0) {
+            // Espera con backoff exponencial: 50ms, 100ms, 200ms
+            const delay = 50 * Math.pow(2, 3 - retries);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+        } else {
+          // Otros errores, no reintentar
+          throw transactionError;
+        }
+      } finally {
+        session_db.endSession();
       }
+    }
 
-      // Verificar que no esté ya reservada (FIFO) con bloqueo
-      const existingReservation = await Reservation.findOne({
-        parkingSpotId,
-        date: { $gte: date, $lt: endOfDay(date) },
-        status: ReservationStatus.ACTIVE,
-      }).session(session_db);
-
-      if (existingReservation) {
-        await session_db.abortTransaction();
-        return NextResponse.json(
-          { error: 'Esta plaza ya ha sido reservada por otro usuario' },
-          { status: 400 },
-        );
-      }
-
-      // Crear reserva dentro de la transacción
-      const reservationData = {
-        parkingSpotId,
-        userId: session.user.id,
-        date,
-        status: ReservationStatus.ACTIVE,
-      };
-
-      const [reservation] = await Reservation.create([reservationData], { session: session_db });
-
-      // Confirmar transacción
-      await session_db.commitTransaction();
-
-      // Obtener datos completos (fuera de la transacción)
-      const populatedReservation = await Reservation.findById(reservation._id)
-        .populate('parkingSpotId')
-        .populate('userId', 'name email');
-
-      if (!populatedReservation) {
-        return NextResponse.json({ error: 'Error al obtener reserva creada' }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        reservation: {
-          _id: populatedReservation._id,
-          date: populatedReservation.date,
-          parkingSpot: populatedReservation.parkingSpotId,
-          user: populatedReservation.userId,
-        },
-      });
-    } catch (transactionError) {
-      await session_db.abortTransaction();
-      throw transactionError;
-    } finally {
-      session_db.endSession();
+    // Si llegamos aquí, todos los reintentos fallaron
+    if (lastError) {
+      return NextResponse.json(
+        { error: 'Esta plaza ya ha sido reservada por otro usuario' },
+        { status: 400 },
+      );
     }
   } catch (error) {
     console.error('Error creating reservation:', error);

@@ -154,7 +154,9 @@ export function Navbar({ userName, userEmail, userRole, onOpenHistorial }: Navba
             >
               <User size={20} />
               <span>Mi Perfil</span>
-              <span className="ml-auto text-xs bg-[#fdc373] px-2 py-1 rounded-full">Próximamente</span>
+              <span className="ml-auto text-xs bg-[#fdc373] px-2 py-1 rounded-full">
+                Próximamente
+              </span>
             </button>
 
             {/* Salir */}

@@ -3,12 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+interface AssignedParkingSpot {
+  _id: string;
+  number: number;
+  location: string;
+}
+
 interface User {
   _id: string;
   name: string;
   email: string;
   role: string;
-  assignedParkingSpot?: any;
+  assignedParkingSpot?: AssignedParkingSpot;
 }
 
 interface ParkingSpot {
@@ -19,10 +25,31 @@ interface ParkingSpot {
   assignedToName?: string;
 }
 
+interface ReservationUser {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+interface ReservationParkingSpot {
+  _id: string;
+  number: number;
+  location: string;
+}
+
+interface Reservation {
+  _id: string;
+  date: string;
+  status: string;
+  createdAt: string;
+  parkingSpot?: ReservationParkingSpot;
+  user?: ReservationUser;
+}
+
 export default function DashboardAdmin() {
   const [users, setUsers] = useState<User[]>([]);
   const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
-  const [reservations, setReservations] = useState<any[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -35,7 +62,7 @@ export default function DashboardAdmin() {
       const [usersRes, spotsRes, reservationsRes] = await Promise.all([
         fetch('/api/admin/users'),
         fetch('/api/admin/parking-spots'),
-        fetch('/api/reservations'),
+        fetch('/api/reservations?limit=10'), // Limitar a 10 reservas recientes
       ]);
 
       if (usersRes.ok) {
@@ -50,7 +77,8 @@ export default function DashboardAdmin() {
 
       if (reservationsRes.ok) {
         const reservationsData = await reservationsRes.json();
-        setReservations(reservationsData);
+        // La API ahora devuelve { reservations: [], pagination: {} }
+        setReservations(reservationsData.reservations || reservationsData);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -78,10 +106,10 @@ export default function DashboardAdmin() {
       });
 
       fetchData();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Error desconocido',
         variant: 'destructive',
       });
     } finally {

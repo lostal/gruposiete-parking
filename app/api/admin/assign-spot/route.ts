@@ -21,6 +21,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
+    // Validar que los IDs sean ObjectIds válidos
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(spotId)) {
+      return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
+    }
+
     await dbConnect();
 
     // USAR TRANSACCIÓN para evitar inconsistencias

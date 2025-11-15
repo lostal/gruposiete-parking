@@ -44,7 +44,22 @@ async function dbConnect(): Promise<typeof mongoose> {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
-    throw e;
+
+    // Mejorar manejo de errores de MongoDB
+    console.error('❌ Error al conectar a MongoDB:', e);
+
+    if (e instanceof Error) {
+      // Errores comunes de MongoDB
+      if (e.message.includes('authentication failed')) {
+        throw new Error('Error de autenticación con MongoDB. Verifica tus credenciales.');
+      } else if (e.message.includes('ENOTFOUND') || e.message.includes('ECONNREFUSED')) {
+        throw new Error('No se puede conectar a MongoDB. Verifica la URL de conexión.');
+      } else if (e.message.includes('timeout')) {
+        throw new Error('Timeout al conectar a MongoDB. Verifica tu conexión de red.');
+      }
+    }
+
+    throw new Error('Error al conectar a la base de datos. Por favor, intenta de nuevo más tarde.');
   }
 
   return cached.conn;

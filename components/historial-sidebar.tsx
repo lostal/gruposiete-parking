@@ -36,8 +36,9 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
       if (response.ok) {
         const data = await response.json();
         // Ordenar por fecha ascendente (de menor a mayor)
-        const sortedData = data.sort((a: Reservation, b: Reservation) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
+        const sortedData = data.sort(
+          (a: Reservation, b: Reservation) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
         setReservations(sortedData);
       }

@@ -39,9 +39,12 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       const response = await fetch(`/api/reservations?userId=${userId}&upcoming=true`);
       if (response.ok) {
         const data = await response.json();
+        // La API ahora puede devolver { reservations: [], pagination: {} } o un array directo
+        const reservationsArray = data.reservations || data;
         // Ordenar por fecha ascendente (de menor a mayor)
-        const sortedData = data.sort((a: MyReservation, b: MyReservation) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
+        const sortedData = reservationsArray.sort(
+          (a: MyReservation, b: MyReservation) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
         setMyReservations(sortedData);
       }
@@ -134,10 +137,10 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       fetchAvailableSpots();
       fetchMyReservations();
       fetchDaysWithAvailability();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Error al reservar',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Error desconocido',
         variant: 'destructive',
       });
     } finally {
@@ -331,15 +334,13 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                 }
 
                 const isSelected =
-                  selectedDate &&
-                  format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+                  selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
                 const isPast = date < startOfDay(new Date());
                 const isWeekend = !isWeekday(date);
                 const isDisabled = isPast || isWeekend;
 
                 const isReserved = myReservations.some(
-                  (res) =>
-                    format(new Date(res.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+                  (res) => format(new Date(res.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
                 );
 
                 const hasAvailability = daysWithAvailability.some(

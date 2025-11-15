@@ -10,8 +10,16 @@ interface DashboardDireccionProps {
   parkingSpotId?: string;
 }
 
+interface ParkingSpot {
+  _id: string;
+  number: number;
+  location: string;
+  assignedTo?: string;
+  assignedToName?: string;
+}
+
 export default function DashboardDireccion({ userId, parkingSpotId }: DashboardDireccionProps) {
-  const [parkingSpot, setParkingSpot] = useState<any>(null);
+  const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([]);
   const [reservedDates, setReservedDates] = useState<Date[]>([]);
@@ -102,10 +110,10 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
 
       setSelectedDates([]);
       fetchAvailability();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Error desconocido',
         variant: 'destructive',
       });
     } finally {
@@ -309,7 +317,6 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
 
           {/* Calendario */}
           <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow">
-
             {/* Encabezado del mes */}
             <div className="flex items-center justify-between mb-3">
               <button
@@ -393,7 +400,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                     disabled={isDisabled}
                     title={title}
                     className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
-                              ${bgColor} ${textColor} ${border} ${!isDisabled && 'hover:scale-105'}`}
+                              ${bgColor} ${textColor} ${border} ${
+                      !isDisabled && 'hover:scale-105'
+                    }`}
                   >
                     {format(date, 'd')}
                   </button>
@@ -417,27 +426,27 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
               </div>
             </div>
 
-          {/* Botones de acción */}
-          {selectedDates.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <button
-                onClick={handleMarkUnavailable}
-                disabled={isLoading}
-                className="w-full py-3 px-4 rounded-xl bg-[#343f48] text-white font-bold text-sm brutal-border brutal-shadow-sm
+            {/* Botones de acción */}
+            {selectedDates.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <button
+                  onClick={handleMarkUnavailable}
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 rounded-xl bg-[#343f48] text-white font-bold text-sm brutal-border brutal-shadow-sm
                          hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Guardando...' : `✓ Dejar libre (${selectedDates.length})`}
-              </button>
-              <button
-                onClick={handleMarkAvailable}
-                disabled={isLoading}
-                className="w-full py-3 px-4 rounded-xl bg-white text-[#343f48] font-bold text-sm brutal-border brutal-shadow-sm
+                >
+                  {isLoading ? 'Guardando...' : `✓ Dejar libre (${selectedDates.length})`}
+                </button>
+                <button
+                  onClick={handleMarkAvailable}
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 rounded-xl bg-white text-[#343f48] font-bold text-sm brutal-border brutal-shadow-sm
                          hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Guardando...' : `✗ Usar mi plaza (${selectedDates.length})`}
-              </button>
-            </div>
-          )}
+                >
+                  {isLoading ? 'Guardando...' : `✗ Usar mi plaza (${selectedDates.length})`}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

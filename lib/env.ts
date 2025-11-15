@@ -64,7 +64,7 @@ function validateEnv(): EnvConfig {
 }
 
 // Validar inmediatamente al importar (solo en servidor)
-let env: EnvConfig;
+let env: EnvConfig | undefined;
 
 if (typeof window === 'undefined') {
   try {
@@ -78,4 +78,15 @@ if (typeof window === 'undefined') {
   }
 }
 
-export default env!;
+// Exportar función que lanza error si se accede desde el cliente
+function getEnv(): EnvConfig {
+  if (typeof window !== 'undefined') {
+    throw new Error('❌ No se pueden acceder a variables de entorno desde el cliente');
+  }
+  if (!env) {
+    throw new Error('❌ Variables de entorno no inicializadas');
+  }
+  return env;
+}
+
+export default getEnv();

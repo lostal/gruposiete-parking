@@ -10,6 +10,7 @@ import { startOfDay, endOfDay } from 'date-fns';
 import { UserRole } from '@/types';
 import { sendEmail, getNewSpotsAvailableEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
+import mongoose from 'mongoose';
 
 export async function GET(request: Request) {
   try {
@@ -57,7 +58,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
     }
 
+    // Validar que parkingSpotId sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
+      return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
+    }
+
     await dbConnect();
+
+    // SEGURIDAD CRÍTICA: Verificar que el usuario de Dirección solo pueda marcar su propia plaza
+    if (session.user.role === UserRole.DIRECCION) {
+      const spot = await ParkingSpot.findById(parkingSpotId);
+      if (!spot) {
+        return NextResponse.json({ error: 'Plaza no encontrada' }, { status: 404 });
+      }
+
+      // Verificar que la plaza esté asignada al usuario actual
+      if (!spot.assignedTo || spot.assignedTo.toString() !== session.user.id) {
+        return NextResponse.json(
+          { error: 'Solo puedes marcar disponibilidad de tu propia plaza asignada' },
+          { status: 403 },
+        );
+      }
+    }
 
     // Si se quiere marcar como disponible, verificar que no haya reservas
     if (isAvailable) {
