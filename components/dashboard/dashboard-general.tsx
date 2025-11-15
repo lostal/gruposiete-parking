@@ -29,6 +29,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableSpots, setAvailableSpots] = useState<AvailableSpot[]>([]);
   const [myReservations, setMyReservations] = useState<MyReservation[]>([]);
+  const [daysWithAvailability, setDaysWithAvailability] = useState<Date[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -59,6 +61,28 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     }
   }, [selectedDate]);
 
+  const fetchDaysWithAvailability = useCallback(async () => {
+    try {
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      const startDate = format(firstDay, 'yyyy-MM-dd');
+      const endDate = format(lastDay, 'yyyy-MM-dd');
+
+      const response = await fetch(
+        `/api/parking-spots/available-days?startDate=${startDate}&endDate=${endDate}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setDaysWithAvailability(data.map((dateStr: string) => new Date(dateStr)));
+      }
+    } catch (error) {
+      console.error('Error fetching days with availability:', error);
+    }
+  }, [currentMonth]);
+
   useEffect(() => {
     fetchMyReservations();
   }, [fetchMyReservations]);
@@ -68,6 +92,10 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       fetchAvailableSpots();
     }
   }, [selectedDate, fetchAvailableSpots]);
+
+  useEffect(() => {
+    fetchDaysWithAvailability();
+  }, [fetchDaysWithAvailability]);
 
   const handleReserve = async (spotId: string) => {
     if (!selectedDate) return;
@@ -101,6 +129,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
 
       fetchAvailableSpots();
       fetchMyReservations();
+      fetchDaysWithAvailability();
     } catch (error: any) {
       toast({
         title: 'Error al reservar',
@@ -132,6 +161,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       });
 
       fetchMyReservations();
+      fetchDaysWithAvailability();
       if (selectedDate) {
         fetchAvailableSpots();
       }
@@ -150,9 +180,6 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     const day = date.getDay();
     return day !== 0 && day !== 6;
   };
-
-  // Generate calendar for current month starting on Monday
-  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const getMonthDays = () => {
     const year = currentMonth.getFullYear();
@@ -296,6 +323,16 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               const isWeekend = !isWeekday(date);
               const isDisabled = isPast || isWeekend;
 
+              // Verificar si el usuario tiene una reserva en este día
+              const isReserved = myReservations.some(
+                (res) => format(new Date(res.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+              );
+
+              // Verificar si hay plazas disponibles en este día
+              const hasAvailability = daysWithAvailability.some(
+                (d) => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+              );
+
               let bgColor = 'bg-white';
               let textColor = 'text-[#343f48]';
               let border = 'border-2 border-gray-200';
@@ -304,6 +341,14 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                 bgColor = 'bg-[#343f48]';
                 textColor = 'text-white';
                 border = 'border-2 border-[#343f48]';
+              } else if (isReserved) {
+                bgColor = 'bg-green-50';
+                textColor = 'text-green-700';
+                border = 'border-2 border-green-200';
+              } else if (hasAvailability && !isDisabled) {
+                bgColor = 'bg-blue-50';
+                textColor = 'text-blue-700';
+                border = 'border-2 border-blue-200';
               } else if (isDisabled) {
                 bgColor = 'bg-gray-50';
                 textColor = 'text-gray-300';
@@ -326,9 +371,16 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
             })}
           </div>
 
-          {/* Leyenda pequeña */}
-          <div className="mt-2 pt-2 border-t border-gray-200 text-[9px] text-gray-500">
-            <p>Solo días laborables disponibles</p>
+          {/* Leyenda */}
+          <div className="mt-2 pt-2 border-t border-gray-200 space-y-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-200"></div>
+              <span className="text-[9px] text-gray-600 font-medium">Tu reserva</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-blue-50 border-2 border-blue-200"></div>
+              <span className="text-[9px] text-gray-600 font-medium">Plazas disponibles</span>
+            </div>
           </div>
         </div>
       </div>
