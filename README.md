@@ -110,7 +110,3 @@ git commit -m "chore: remove build artifact from index"
 **Álvaro Lostal** — _Ingeniero Informático | Frontend Developer_
 
 [🌐 lostal.dev](https://lostal.dev) — [GitHub](https://github.com/lostal)
-
----
-
-Si quieres, puedo preparar también un `.github/workflows/ci.yml` básico o revisar/ajustar cualquier archivo antes de que hagas el commit.
