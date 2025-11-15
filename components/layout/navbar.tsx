@@ -50,12 +50,15 @@ export function Navbar({ userName, userEmail, userRole, onOpenHistorial }: Navba
               </div>
             </Link>
 
-            <button
-              onClick={onOpenHistorial}
-              className="px-3 py-2 rounded-lg font-bold text-sm text-gray-600 hover:text-[#343f48] transition-colors"
-            >
-              Historial
-            </button>
+            {/* Solo mostrar historial a usuarios GENERAL */}
+            {userRole === UserRole.GENERAL && (
+              <button
+                onClick={onOpenHistorial}
+                className="px-3 py-2 rounded-lg font-bold text-sm text-gray-600 hover:text-[#343f48] transition-colors"
+              >
+                Historial
+              </button>
+            )}
 
             <button
               onClick={handleSignOut}

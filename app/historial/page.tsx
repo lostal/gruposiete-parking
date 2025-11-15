@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { UserRole } from '@/types';
 
 interface Reservation {
   _id: string;
@@ -16,12 +19,22 @@ interface Reservation {
 }
 
 export default function HistorialPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (status === 'loading') return;
+
+    // Redirigir si no es usuario GENERAL
+    if (!session || session.user.role !== UserRole.GENERAL) {
+      router.push('/dashboard');
+      return;
+    }
+
     fetchReservations();
-  }, []);
+  }, [session, status, router]);
 
   const fetchReservations = async () => {
     try {
@@ -37,6 +50,17 @@ export default function HistorialPage() {
     }
   };
 
+  // Mostrar loading mientras se verifica la sesión
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
+          <p className="text-gray-400 font-medium">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="px-2">
@@ -46,11 +70,7 @@ export default function HistorialPage() {
         <p className="text-gray-500 mt-1 font-medium">Consulta todas tus reservas</p>
       </div>
 
-      {isLoading ? (
-        <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
-          <p className="text-gray-400 font-medium">Cargando...</p>
-        </div>
-      ) : reservations.length === 0 ? (
+      {reservations.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
           <div className="text-5xl mb-3">📋</div>
           <p className="text-gray-400 font-medium">No tienes reservas registradas</p>
