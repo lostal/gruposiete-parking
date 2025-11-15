@@ -5,6 +5,7 @@ import dbConnect from '@/lib/db/mongodb';
 import User from '@/models/User';
 import ParkingSpot from '@/models/ParkingSpot';
 import { UserRole } from '@/types';
+import mongoose from 'mongoose';
 
 export async function POST(request: Request) {
   try {
@@ -22,50 +23,77 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    // Verificar que el usuario exista y sea de Dirección
-    const user = await User.findById(userId);
-    if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
-    }
+    // USAR TRANSACCIÓN para evitar inconsistencias
+    const session_db = await mongoose.startSession();
+    session_db.startTransaction();
 
-    if (user.role !== UserRole.DIRECCION) {
-      return NextResponse.json(
-        { error: 'Solo se pueden asignar plazas a usuarios de Dirección' },
-        { status: 400 },
-      );
-    }
+    try {
+      // Verificar que el usuario exista y sea de Dirección
+      const user = await User.findById(userId).session(session_db);
+      if (!user) {
+        await session_db.abortTransaction();
+        return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+      }
 
-    // Verificar que la plaza existe
-    const spot = await ParkingSpot.findById(spotId);
-    if (!spot) {
-      return NextResponse.json({ error: 'Plaza no encontrada' }, { status: 404 });
-    }
+      if (user.role !== UserRole.DIRECCION) {
+        await session_db.abortTransaction();
+        return NextResponse.json(
+          { error: 'Solo se pueden asignar plazas a usuarios de Dirección' },
+          { status: 400 },
+        );
+      }
 
-    // Si el usuario ya tenía una plaza asignada, liberarla
-    if (user.assignedParkingSpot) {
-      await ParkingSpot.findByIdAndUpdate(user.assignedParkingSpot, {
-        assignedTo: null,
+      // Verificar que la plaza existe
+      const spot = await ParkingSpot.findById(spotId).session(session_db);
+      if (!spot) {
+        await session_db.abortTransaction();
+        return NextResponse.json({ error: 'Plaza no encontrada' }, { status: 404 });
+      }
+
+      // Si el usuario ya tenía una plaza asignada, liberarla
+      if (user.assignedParkingSpot) {
+        await ParkingSpot.findByIdAndUpdate(
+          user.assignedParkingSpot,
+          {
+            assignedTo: null,
+            assignedToName: null,
+          },
+          { session: session_db },
+        );
+      }
+
+      // Si la plaza estaba asignada a otro usuario, desasignarla
+      if (spot.assignedTo) {
+        await User.findByIdAndUpdate(
+          spot.assignedTo,
+          {
+            assignedParkingSpot: null,
+          },
+          { session: session_db },
+        );
+      }
+
+      // Asignar la plaza al usuario
+      user.assignedParkingSpot = spot._id as any;
+      await user.save({ session: session_db });
+
+      spot.assignedTo = user._id as any;
+      spot.assignedToName = user.name;
+      await spot.save({ session: session_db });
+
+      // Confirmar transacción
+      await session_db.commitTransaction();
+
+      return NextResponse.json({
+        success: true,
+        message: 'Plaza asignada correctamente',
       });
+    } catch (transactionError) {
+      await session_db.abortTransaction();
+      throw transactionError;
+    } finally {
+      session_db.endSession();
     }
-
-    // Si la plaza estaba asignada a otro usuario, desasignarla
-    if (spot.assignedTo) {
-      await User.findByIdAndUpdate(spot.assignedTo, {
-        assignedParkingSpot: null,
-      });
-    }
-
-    // Asignar la plaza al usuario
-    user.assignedParkingSpot = spot._id as any;
-    await user.save();
-
-    spot.assignedTo = user._id as any;
-    await spot.save();
-
-    return NextResponse.json({
-      success: true,
-      message: 'Plaza asignada correctamente',
-    });
   } catch (error) {
     console.error('Error assigning spot:', error);
     return NextResponse.json({ error: 'Error al asignar plaza' }, { status: 500 });

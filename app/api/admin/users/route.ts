@@ -3,7 +3,11 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/models/User';
+import ParkingSpot from '@/models/ParkingSpot';
 import { UserRole } from '@/types';
+
+// Asegurar que el modelo ParkingSpot esté registrado para populate
+const _ensureModels = [ParkingSpot];
 
 export async function GET() {
   try {

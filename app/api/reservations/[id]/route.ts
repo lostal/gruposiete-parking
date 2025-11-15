@@ -9,6 +9,9 @@ import { ReservationStatus, UserRole } from '@/types';
 import { sendEmail, getNewSpotsAvailableEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
 
+// Asegurar que los modelos estén registrados para populate
+const _ensureModels = [ParkingSpot];
+
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await auth();
@@ -37,27 +40,41 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     await reservation.save();
 
     // Enviar emails a usuarios GENERAL notificando que hay una plaza disponible
-    try {
-      const generalUsers = await User.find({ role: UserRole.GENERAL }).select('name email');
+    // OPTIMIZADO: Enviar de forma asíncrona para evitar bloqueos
+    setImmediate(async () => {
+      try {
+        const generalUsers = await User.find({ role: UserRole.GENERAL }).select('name email');
 
-      if (parkingSpot && generalUsers.length > 0) {
-        const spotInfo = `${parkingSpot.number} (${
-          parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
-        })`;
+        if (parkingSpot && generalUsers.length > 0) {
+          const spotInfo = `${parkingSpot.number} (${
+            parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
+          })`;
 
-        // Enviar email a cada usuario general
-        for (const user of generalUsers) {
-          await sendEmail({
-            to: user.email,
-            subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
-            html: getNewSpotsAvailableEmail(user.name, formatDate(reservationDate), [spotInfo]),
-          });
+          // Enviar email a cada usuario general con delay
+          for (let i = 0; i < generalUsers.length; i++) {
+            const user = generalUsers[i];
+
+            // Delay de 100ms entre emails para evitar rate limiting
+            if (i > 0) {
+              await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+
+            try {
+              await sendEmail({
+                to: user.email,
+                subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
+                html: getNewSpotsAvailableEmail(user.name, formatDate(reservationDate), [spotInfo]),
+              });
+            } catch (emailError) {
+              console.error(`Error sending email to ${user.email}:`, emailError);
+              // Continuar con el siguiente usuario
+            }
+          }
         }
+      } catch (emailError) {
+        console.error('Error sending cancellation emails:', emailError);
       }
-    } catch (emailError) {
-      console.error('Error sending cancellation emails:', emailError);
-      // No fallar la operación si falla el email
-    }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

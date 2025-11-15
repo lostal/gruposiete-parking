@@ -8,8 +8,8 @@ import { UserRole } from '@/types';
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  role: z.nativeEnum(UserRole),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  role: z.nativeEnum(UserRole).optional(),
 });
 
 export async function POST(request: Request) {
@@ -18,6 +18,24 @@ export async function POST(request: Request) {
     const validatedData = registerSchema.parse(body);
 
     await dbConnect();
+
+    // SEGURIDAD: Solo ADMIN puede crear usuarios con roles especiales
+    let finalRole = UserRole.GENERAL;
+
+    if (validatedData.role && validatedData.role !== UserRole.GENERAL) {
+      // Verificar que el solicitante sea ADMIN
+      const { auth } = await import('@/lib/auth/auth');
+      const session = await auth();
+
+      if (!session || session.user.role !== UserRole.ADMIN) {
+        return NextResponse.json(
+          { error: 'Solo los administradores pueden crear usuarios con roles especiales' },
+          { status: 403 },
+        );
+      }
+
+      finalRole = validatedData.role;
+    }
 
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email: validatedData.email });
@@ -33,7 +51,7 @@ export async function POST(request: Request) {
       name: validatedData.name,
       email: validatedData.email,
       password: hashedPassword,
-      role: validatedData.role,
+      role: finalRole,
     });
 
     // No devolver la contraseña
