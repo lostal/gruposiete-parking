@@ -10,6 +10,8 @@ import { UserRole } from '@/types';
 import { sendEmail, getNewSpotsAvailableDistributionEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
 import mongoose from 'mongoose';
+import { AVAILABILITY_CONSTANTS, isWeekday } from '@/lib/constants';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: Request) {
   try {
@@ -34,7 +36,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(availability);
   } catch (error) {
-    console.error('Error fetching availability:', error);
+    logger.error('Error fetching availability', error as Error);
     return NextResponse.json({ error: 'Error al obtener disponibilidad' }, { status: 500 });
   }
 }
@@ -60,6 +62,22 @@ export async function POST(request: Request) {
     // Validar que parkingSpotId sea un ObjectId válido
     if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
       return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
+    }
+
+    // Validar límite máximo de fechas por solicitud
+    if (dates.length > AVAILABILITY_CONSTANTS.MAX_DATES_PER_REQUEST) {
+      return NextResponse.json(
+        {
+          error: `Máximo ${AVAILABILITY_CONSTANTS.MAX_DATES_PER_REQUEST} fechas por solicitud`,
+        },
+        { status: 400 },
+      );
+    }
+
+    // Validar que las fechas no sean duplicadas
+    const uniqueDates = new Set(dates);
+    if (uniqueDates.size !== dates.length) {
+      return NextResponse.json({ error: 'Hay fechas duplicadas en la solicitud' }, { status: 400 });
     }
 
     await dbConnect();
@@ -101,9 +119,26 @@ export async function POST(request: Request) {
 
     const results: any[] = [];
     const newlyAvailableDates: Date[] = [];
+    const today = startOfDay(new Date());
 
     for (const dateStr of dates) {
       const date = startOfDay(new Date(dateStr));
+
+      // Validar que la fecha no sea pasada
+      if (date < today) {
+        return NextResponse.json(
+          { error: 'No se puede marcar disponibilidad para fechas pasadas' },
+          { status: 400 },
+        );
+      }
+
+      // Validar que sea un día laborable (L-V)
+      if (!isWeekday(date)) {
+        return NextResponse.json(
+          { error: 'Solo se puede marcar disponibilidad para días laborables (Lunes a Viernes)' },
+          { status: 400 },
+        );
+      }
 
       // Verificar si ya existía
       const existingAvailability = await Availability.findOne({ parkingSpotId, date });
@@ -145,9 +180,7 @@ export async function POST(request: Request) {
 
             // TODO: Habilitar cuando se tenga el correo de distribución configurado
             if (!distributionEmail) {
-              console.log(
-                '⚠️ DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.',
-              );
+              logger.warn('DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
               return;
             }
 
@@ -175,21 +208,21 @@ export async function POST(request: Request) {
                   html: getNewSpotsAvailableDistributionEmail(datesList, [spotInfo]),
                 });
               } catch (emailError) {
-                console.error('Error sending distribution email:', emailError);
+                logger.error('Error sending distribution email', emailError as Error);
               }
             }
           } catch (emailError) {
-            console.error('Error sending availability emails:', emailError);
+            logger.error('Error sending availability emails', emailError as Error);
           }
         })
         .catch((error) => {
-          console.error('Error in background email task:', error);
+          logger.error('Error in background email task', error as Error);
         });
     }
 
     return NextResponse.json({ success: true, availability: results });
   } catch (error) {
-    console.error('Error updating availability:', error);
+    logger.error('Error updating availability', error as Error);
     return NextResponse.json({ error: 'Error al actualizar disponibilidad' }, { status: 500 });
   }
 }

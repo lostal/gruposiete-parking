@@ -7,6 +7,7 @@ import { UserRole } from '@/types';
 import { checkRateLimitRedis, getClientIdentifier } from '@/lib/ratelimit-redis';
 import { AUTH_CONSTANTS, VALIDATION_CONSTANTS, isValidCorporateEmail } from '@/lib/constants';
 import { sanitizeName, sanitizeEmail, containsMaliciousContent } from '@/lib/sanitize';
+import { logger } from '@/lib/logger';
 
 const registerSchema = z.object({
   name: z
@@ -98,6 +99,25 @@ export async function POST(request: Request) {
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email: validatedData.email });
     if (existingUser) {
+      // SEGURIDAD: Evitar revelar si el email existe (prevenir enumeración de usuarios)
+      // Solo para usuarios no autenticados. Los admins pueden ver el error específico.
+      const { auth } = await import('@/lib/auth/auth');
+      const session = await auth();
+      const isAdmin = session && session.user.role === UserRole.ADMIN;
+
+      if (!isAdmin) {
+        // Delay artificial para prevenir timing attacks
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return NextResponse.json(
+          {
+            error:
+              'No se pudo completar el registro. Si el email es válido, verifica que no esté ya registrado.',
+          },
+          { status: 400 },
+        );
+      }
+
+      // Para admins, mostrar mensaje específico
       return NextResponse.json({ error: 'Este email ya está registrado' }, { status: 400 });
     }
 
@@ -130,7 +150,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
     }
 
-    console.error('Error en registro:', error);
+    logger.error('Error en registro', error as Error);
     return NextResponse.json({ error: 'Error al crear usuario' }, { status: 500 });
   }
 }

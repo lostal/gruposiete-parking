@@ -7,6 +7,8 @@ import ParkingSpot from '@/models/ParkingSpot';
 import { ReservationStatus, UserRole } from '@/types';
 import { sendEmail, getNewSpotsAvailableDistributionEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
+import mongoose from 'mongoose';
+import { logger } from '@/lib/logger';
 
 // Asegurar que los modelos estén registrados para populate
 const _ensureModels = [ParkingSpot];
@@ -16,6 +18,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    // Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json({ error: 'ID de reserva inválido' }, { status: 400 });
     }
 
     await dbConnect();
@@ -47,7 +54,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
           // TODO: Habilitar cuando se tenga el correo de distribución configurado
           if (!distributionEmail) {
-            console.log('⚠️ DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
+            logger.warn('DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
             return;
           }
 
@@ -66,20 +73,20 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
                 ]),
               });
             } catch (emailError) {
-              console.error('Error sending distribution email:', emailError);
+              logger.error('Error sending distribution email', emailError as Error);
             }
           }
         } catch (emailError) {
-          console.error('Error sending cancellation emails:', emailError);
+          logger.error('Error sending cancellation emails', emailError as Error);
         }
       })
       .catch((error) => {
-        console.error('Error in background email task:', error);
+        logger.error('Error in background email task', error as Error);
       });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error cancelling reservation:', error);
+    logger.error('Error cancelling reservation', error as Error);
     return NextResponse.json({ error: 'Error al cancelar reserva' }, { status: 500 });
   }
 }

@@ -61,6 +61,25 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
+          // Content Security Policy (CSP)
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self'; " +
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' data: https:; " +
+              "font-src 'self' data:; " +
+              "connect-src 'self' https://gruposiete.es https://*.gruposiete.es https://upstash.io https://*.upstash.io; " +
+              "frame-ancestors 'none'; " +
+              "base-uri 'self'; " +
+              "form-action 'self';",
+          },
+          // Prevenir apertura de archivos descargados directamente en IE
+          {
+            key: 'X-Download-Options',
+            value: 'noopen',
+          },
         ],
       },
     ];
