@@ -84,7 +84,7 @@ export const PAGINATION_CONSTANTS = {
 // Helper function para verificar día laborable
 export function isWeekday(date: Date): boolean {
   const day = date.getDay();
-  return !WEEKDAY_CONSTANTS.WEEKEND_DAYS.includes(day);
+  return !WEEKDAY_CONSTANTS.WEEKEND_DAYS.includes(day as 0 | 6);
 }
 
 // Helper function para validar email corporativo

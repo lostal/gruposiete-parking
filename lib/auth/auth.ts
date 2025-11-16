@@ -42,7 +42,7 @@ export const {
       // (protección contra manipulación de JWT)
       if (token.role && !isValidRole(token.role)) {
         console.error(`Rol en token manipulado: ${token.role}, invalidando sesión`);
-        return {}; // Invalidar token
+        throw new Error('Token inválido'); // Invalidar token
       }
 
       return token;
