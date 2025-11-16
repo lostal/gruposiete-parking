@@ -18,13 +18,6 @@ export interface EmailParams {
 
 export async function sendEmail({ to, subject, html }: EmailParams) {
   try {
-    // 🚫 DESHABILITADO TEMPORALMENTE - En desarrollo
-    // TODO: Habilitar cuando se actualice la lógica de emails
-    console.log('📧 Email simulado (envío deshabilitado temporalmente):', { to, subject });
-    return { success: true, simulated: true };
-
-    // Código original comentado temporalmente:
-    /*
     if (!resend) {
       if (process.env.NODE_ENV !== 'production') {
         console.log('📧 Email simulado (no hay RESEND_API_KEY):', { to, subject });
@@ -48,14 +41,15 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
       console.log('✅ Email enviado correctamente:', data);
     }
     return { success: true, data };
-    */
   } catch (error) {
     console.error('❌ Error al enviar email:', error);
     return { success: false, error };
   }
 }
 
-// Plantilla de email - Plazas disponibles
+// Plantilla de email - Plazas disponibles (DEPRECATED)
+// Esta plantilla enviaba correos personalizados a cada usuario individual
+// Ahora se usa getNewSpotsAvailableDistributionEmail para enviar a lista de distribución
 export function getNewSpotsAvailableEmail(userName: string, date: string, spots: string[]) {
   return `
     <!DOCTYPE html>
@@ -137,6 +131,45 @@ export function getPasswordResetEmail(userName: string, resetUrl: string) {
             <p style="font-size: 12px; margin-top: 10px;">
               Si no solicitaste este cambio, tu cuenta está segura. Puedes ignorar este email.
             </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+// Plantilla de email - Plazas disponibles para lista de distribución
+// Esta plantilla es genérica (sin nombre de usuario) para enviar a un correo de distribución
+export function getNewSpotsAvailableDistributionEmail(date: string, spots: string[]) {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #343f48; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+          .button { background-color: #fdc373; color: #343f48; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-top: 15px; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>¡Nuevas Plazas Disponibles!</h1>
+          </div>
+          <div class="content">
+            <p>Hola,</p>
+            <p>Te informamos que hay nuevas plazas disponibles para el <strong>${date}</strong>:</p>
+            <ul>
+              ${spots.map((spot) => `<li>Plaza ${spot}</li>`).join('')}
+            </ul>
+            <p>¡Reserva ahora antes de que se agoten!</p>
+            <a href="${process.env.NEXTAUTH_URL}" class="button">Ir a la aplicación</a>
+          </div>
+          <div class="footer">
+            <p>Gruposiete - Sistema de Gestión de Parking</p>
           </div>
         </div>
       </body>

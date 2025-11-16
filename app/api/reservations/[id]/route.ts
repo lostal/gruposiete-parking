@@ -4,9 +4,8 @@ import { auth } from '@/lib/auth/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Reservation from '@/models/Reservation';
 import ParkingSpot from '@/models/ParkingSpot';
-import User from '@/models/User';
 import { ReservationStatus, UserRole } from '@/types';
-import { sendEmail, getNewSpotsAvailableEmail } from '@/lib/email/resend';
+import { sendEmail, getNewSpotsAvailableDistributionEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
 
 // Asegurar que los modelos estén registrados para populate
@@ -39,36 +38,31 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     reservation.status = ReservationStatus.CANCELLED;
     await reservation.save();
 
-    // Enviar emails a usuarios GENERAL notificando que hay una plaza disponible
-    // OPTIMIZADO: Enviar de forma asíncrona para evitar bloqueos
+    // Enviar email a lista de distribución notificando que hay una plaza disponible
     setImmediate(async () => {
       try {
-        const generalUsers = await User.find({ role: UserRole.GENERAL }).select('name email');
+        const distributionEmail = process.env.DISTRIBUTION_EMAIL;
 
-        if (parkingSpot && generalUsers.length > 0) {
+        // TODO: Habilitar cuando se tenga el correo de distribución configurado
+        if (!distributionEmail) {
+          console.log('⚠️ DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
+          return;
+        }
+
+        if (parkingSpot) {
           const spotInfo = `${parkingSpot.number} (${
             parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
           })`;
 
-          // Enviar email a cada usuario general con delay
-          for (let i = 0; i < generalUsers.length; i++) {
-            const user = generalUsers[i];
-
-            // Delay de 100ms entre emails para evitar rate limiting
-            if (i > 0) {
-              await new Promise((resolve) => setTimeout(resolve, 100));
-            }
-
-            try {
-              await sendEmail({
-                to: user.email,
-                subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
-                html: getNewSpotsAvailableEmail(user.name, formatDate(reservationDate), [spotInfo]),
-              });
-            } catch (emailError) {
-              console.error(`Error sending email to ${user.email}:`, emailError);
-              // Continuar con el siguiente usuario
-            }
+          // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
+          try {
+            await sendEmail({
+              to: distributionEmail,
+              subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
+              html: getNewSpotsAvailableDistributionEmail(formatDate(reservationDate), [spotInfo]),
+            });
+          } catch (emailError) {
+            console.error('Error sending distribution email:', emailError);
           }
         }
       } catch (emailError) {

@@ -5,10 +5,9 @@ import dbConnect from '@/lib/db/mongodb';
 import Availability from '@/models/Availability';
 import Reservation from '@/models/Reservation';
 import ParkingSpot from '@/models/ParkingSpot';
-import User from '@/models/User';
 import { startOfDay, endOfDay } from 'date-fns';
 import { UserRole } from '@/types';
-import { sendEmail, getNewSpotsAvailableEmail } from '@/lib/email/resend';
+import { sendEmail, getNewSpotsAvailableDistributionEmail } from '@/lib/email/resend';
 import { formatDate } from '@/lib/utils/dates';
 import mongoose from 'mongoose';
 
@@ -135,21 +134,27 @@ export async function POST(request: Request) {
       }
     }
 
-    // Enviar emails a usuarios GENERAL si hay plazas nuevamente disponibles
-    // OPTIMIZADO: Enviar de forma asíncrona para evitar bloqueos y rate limiting
+    // Enviar email a lista de distribución si hay plazas nuevamente disponibles
     if (newlyAvailableDates.length > 0) {
       // NO BLOQUEAR la respuesta por emails - ejecutar en background
       setImmediate(async () => {
         try {
-          const parkingSpot = await ParkingSpot.findById(parkingSpotId);
-          const generalUsers = await User.find({ role: UserRole.GENERAL }).select('name email');
+          const distributionEmail = process.env.DISTRIBUTION_EMAIL;
 
-          if (parkingSpot && generalUsers.length > 0) {
+          // TODO: Habilitar cuando se tenga el correo de distribución configurado
+          if (!distributionEmail) {
+            console.log('⚠️ DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
+            return;
+          }
+
+          const parkingSpot = await ParkingSpot.findById(parkingSpotId);
+
+          if (parkingSpot) {
             const spotInfo = `${parkingSpot.number} (${
               parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
             })`;
 
-            // Agrupar todas las fechas en un solo email por usuario
+            // Agrupar todas las fechas
             const formattedDates = newlyAvailableDates.map((date) => formatDate(date));
             const datesList =
               formattedDates.length === 1
@@ -158,26 +163,15 @@ export async function POST(request: Request) {
                   ' y ' +
                   formattedDates[formattedDates.length - 1];
 
-            // Enviar UN email a cada usuario general con todas las fechas
-            // RATE LIMITING: Agregar delay entre emails para evitar sobrecarga
-            for (let i = 0; i < generalUsers.length; i++) {
-              const user = generalUsers[i];
-
-              // Delay de 100ms entre emails para evitar rate limiting
-              if (i > 0) {
-                await new Promise((resolve) => setTimeout(resolve, 100));
-              }
-
-              try {
-                await sendEmail({
-                  to: user.email,
-                  subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
-                  html: getNewSpotsAvailableEmail(user.name, datesList, [spotInfo]),
-                });
-              } catch (emailError) {
-                console.error(`Error sending email to ${user.email}:`, emailError);
-                // Continuar con el siguiente usuario
-              }
+            // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
+            try {
+              await sendEmail({
+                to: distributionEmail,
+                subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
+                html: getNewSpotsAvailableDistributionEmail(datesList, [spotInfo]),
+              });
+            } catch (emailError) {
+              console.error('Error sending distribution email:', emailError);
             }
           }
         } catch (emailError) {
