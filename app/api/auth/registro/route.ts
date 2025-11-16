@@ -67,6 +67,14 @@ export async function POST(request: Request) {
 
     const validatedData = registerSchema.parse(sanitizedBody);
 
+    // Verificar que sea un email corporativo (@gruposiete.es)
+    if (!isValidCorporateEmail(validatedData.email)) {
+      return NextResponse.json(
+        { error: 'Solo se permiten emails corporativos (@gruposiete.es)' },
+        { status: 400 },
+      );
+    }
+
     await dbConnect();
 
     // SEGURIDAD: Solo ADMIN puede crear usuarios con roles especiales
