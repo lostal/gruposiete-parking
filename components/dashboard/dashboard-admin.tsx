@@ -158,7 +158,7 @@ export default function DashboardAdmin() {
     <div className="space-y-8">
       {/* Estadísticas */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+        <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Total Usuarios
           </p>
@@ -168,15 +168,20 @@ export default function DashboardAdmin() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+        <div className="bg-gradient-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Plazas Totales
           </p>
           <p className="text-4xl font-extrabold text-[#343f48]">{parkingSpots.length}</p>
-          <p className="text-sm text-gray-500 mt-1">{unassignedSpots.length} sin asignar</p>
+          <p className="text-sm text-gray-500 mt-1">
+            <span className="inline-block px-2 py-0.5 rounded bg-[#fdc373] text-[#343f48] font-bold text-xs mr-1">
+              {unassignedSpots.length}
+            </span>
+            sin asignar
+          </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+        <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Reservas Activas
           </p>
@@ -222,11 +227,11 @@ export default function DashboardAdmin() {
                       <td className="py-4 px-4 text-gray-500 font-medium">{user.email}</td>
                       <td className="py-4 px-4">
                         {user.assignedParkingSpot ? (
-                          <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-sm">
+                          <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-sm border-2 border-[#343f48]">
                             Plaza {user.assignedParkingSpot.number}
                           </span>
                         ) : (
-                          <span className="inline-block px-3 py-1 rounded-lg bg-gray-100 text-gray-500 font-bold text-sm">
+                          <span className="inline-block px-3 py-1 rounded-lg bg-gray-100 text-gray-500 font-bold text-sm border-2 border-gray-300">
                             Sin asignar
                           </span>
                         )}

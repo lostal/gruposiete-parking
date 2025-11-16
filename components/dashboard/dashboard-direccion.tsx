@@ -52,7 +52,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
       const resResponse = await fetch(`/api/reservations?parkingSpotId=${parkingSpotId}`);
       if (resResponse.ok) {
         const resData = await resResponse.json();
-        const reserved = resData.map((r: any) => new Date(r.date));
+        // La API puede devolver { reservations: [], pagination: {} } o un array directo
+        const reservationsArray = resData.reservations || resData;
+        const reserved = reservationsArray.map((r: any) => new Date(r.date));
         setReservedDates(reserved);
       }
     } catch (error) {
@@ -266,10 +268,10 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
           </h2>
 
           {parkingSpot && (
-            <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+            <div className="bg-gradient-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
               <div className="flex items-center gap-6">
                 {/* Icono de la plaza */}
-                <div className="w-20 h-20 bg-[#343f48] rounded-2xl brutal-border flex items-center justify-center flex-shrink-0">
+                <div className="w-20 h-20 bg-[#343f48] rounded-2xl brutal-border flex items-center justify-center flex-shrink-0 shadow-[6px_6px_0_0_#fdc373]">
                   <span className="text-3xl font-mono-data font-bold text-white">
                     {parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{parkingSpot.number}
                   </span>
@@ -316,12 +318,12 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
           </div>
 
           {/* Calendario */}
-          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
+          <div className="bg-gradient-to-br from-white via-white to-[#fdc373]/5 rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
             {/* Encabezado del mes */}
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={goToPreviousMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-[#fdc373] transition-colors"
                 aria-label="Mes anterior"
               >
                 ←
@@ -331,7 +333,7 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
               </h3>
               <button
                 onClick={goToNextMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-[#fdc373] transition-colors"
                 aria-label="Mes siguiente"
               >
                 →
@@ -370,20 +372,22 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                 let title = '';
 
                 if (isSelected) {
-                  bgColor = 'bg-[#fdc373]';
+                  bgColor = 'bg-blue-100';
                   textColor = 'text-[#343f48]';
-                  border = 'border-2 border-[#fdc373]';
+                  border = 'border-2 border-blue-400';
                   title = 'Seleccionado para marcar';
-                } else if (isReserved) {
-                  bgColor = 'bg-green-50';
-                  textColor = 'text-green-700';
-                  border = 'border-2 border-green-200';
-                  title = 'Ya reservado por alguien';
-                } else if (isUnavailable) {
+                } else if (isUnavailable && isReserved) {
+                  // Plaza libre que YA fue reservada - NO se puede recuperar
                   bgColor = 'bg-red-50';
                   textColor = 'text-red-700';
-                  border = 'border-2 border-red-200';
-                  title = 'Marcado como libre';
+                  border = 'border-2 border-red-400';
+                  title = 'Libre y reservada - No recuperable';
+                } else if (isUnavailable && !isReserved) {
+                  // Plaza libre que AÚN NO está reservada - se puede recuperar
+                  bgColor = 'bg-[#fdc373]/30';
+                  textColor = 'text-[#343f48]';
+                  border = 'border-2 border-[#fdc373]';
+                  title = 'Libre y disponible - Recuperable';
                 } else if (isDisabled) {
                   bgColor = 'bg-gray-50';
                   textColor = 'text-gray-300';
@@ -417,12 +421,12 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                 <span className="text-[10px] text-gray-600 font-medium">Usas tu plaza</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-50 border-2 border-red-200 rounded"></div>
-                <span className="text-[10px] text-gray-600 font-medium">Plaza libre</span>
+                <div className="w-3 h-3 bg-[#fdc373]/30 border-2 border-[#fdc373] rounded"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Libre (recuperable)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-50 border-2 border-green-200 rounded"></div>
-                <span className="text-[10px] text-gray-600 font-medium">Reservado</span>
+                <div className="w-3 h-3 bg-red-50 border-2 border-red-400 rounded"></div>
+                <span className="text-[10px] text-gray-600 font-medium">Reservada (no recuperable)</span>
               </div>
             </div>
 

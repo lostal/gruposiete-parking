@@ -232,7 +232,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
           Selecciona un día
         </h2>
 
-        <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
+        <div className="bg-gradient-to-br from-white via-white to-[#fdc373]/5 rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
           {/* Encabezado del mes */}
           <div className="flex items-center justify-between mb-3">
             <button
@@ -292,17 +292,17 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               let border = 'border-2 border-gray-200';
 
               if (isSelected) {
-                bgColor = 'bg-[#343f48]';
-                textColor = 'text-white';
-                border = 'border-2 border-[#343f48]';
+                bgColor = 'bg-blue-100';
+                textColor = 'text-[#343f48]';
+                border = 'border-2 border-blue-400';
               } else if (isReserved) {
                 bgColor = 'bg-green-50';
                 textColor = 'text-green-700';
                 border = 'border-2 border-green-200';
               } else if (hasAvailability && !isDisabled) {
-                bgColor = 'bg-blue-50';
-                textColor = 'text-blue-700';
-                border = 'border-2 border-blue-200';
+                bgColor = 'bg-[#fdc373]/20';
+                textColor = 'text-[#343f48]';
+                border = 'border-2 border-[#fdc373]';
               } else if (isDisabled) {
                 bgColor = 'bg-gray-50';
                 textColor = 'text-gray-300';
@@ -332,7 +332,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               <span className="text-[10px] text-gray-600 font-medium">Tu reserva</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-blue-50 border-2 border-blue-200"></div>
+              <div className="w-3 h-3 rounded bg-[#fdc373]/20 border-2 border-[#fdc373]"></div>
               <span className="text-[10px] text-gray-600 font-medium">Disponibles</span>
             </div>
           </div>
@@ -412,11 +412,11 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                   {availableSpots.map((spot) => (
                     <div
                       key={spot._id}
-                      className="bg-white rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-sm transition-all"
+                      className="bg-gradient-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-accent hover:scale-[1.02] transition-all duration-300"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center">
+                          <div className="w-14 h-14 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center shadow-[4px_4px_0_0_#fdc373]">
                             <span className="text-xl font-mono-data font-bold text-white">
                               {spot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{spot.number}
                             </span>
@@ -428,6 +428,9 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                             </p>
                           </div>
                         </div>
+                        <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-xs uppercase whitespace-nowrap border-2 border-[#343f48]">
+                          Disponible
+                        </span>
                       </div>
                       <div className="mb-4">
                         <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
@@ -440,7 +443,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                         disabled={isLoading}
                         className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-[#343f48] font-bold
                                  brutal-border brutal-shadow-sm brutal-hover tap-none
-                                 disabled:opacity-50 disabled:cursor-not-allowed"
+                                 hover:shadow-[6px_6px_0_0_#343f48] active:shadow-[2px_2px_0_0_#343f48]
+                                 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200"
                       >
                         {isLoading ? 'Reservando...' : 'Reservar'}
                       </button>

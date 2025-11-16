@@ -69,7 +69,7 @@ export function Navbar({
               {userRole === UserRole.GENERAL && (
                 <button
                   onClick={onOpenHistorial}
-                  className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-[#fdc373] hover:text-[#343f48] transition-all flex items-center gap-2"
                   aria-label="Ver mis reservas"
                 >
                   <Clock size={18} />
@@ -81,7 +81,7 @@ export function Navbar({
               {userRole !== UserRole.ADMIN && (
                 <button
                   onClick={onOpenProfile}
-                  className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-[#fdc373] hover:text-[#343f48] transition-all flex items-center gap-2"
                   aria-label="Perfil"
                 >
                   <User size={18} />
@@ -103,7 +103,7 @@ export function Navbar({
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-[#343f48] hover:bg-gray-100 transition-colors"
+              className="md:hidden p-2 rounded-lg text-[#343f48] hover:bg-[#fdc373] transition-colors"
               aria-label="Abrir menú"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -149,7 +149,7 @@ export function Navbar({
             {userRole === UserRole.GENERAL && (
               <button
                 onClick={onOpenHistorial}
-                className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-3 brutal-border"
+                className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-[#fdc373] transition-all flex items-center gap-3 brutal-border"
               >
                 <Clock size={20} />
                 <span>Mis Reservas</span>
@@ -160,7 +160,7 @@ export function Navbar({
             {userRole !== UserRole.ADMIN && (
               <button
                 onClick={onOpenProfile}
-                className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-3 brutal-border"
+                className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-[#fdc373] transition-all flex items-center gap-3 brutal-border"
               >
                 <User size={20} />
                 <span>Mi Perfil</span>

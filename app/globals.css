@@ -76,7 +76,7 @@
 
   /* Efecto Hover Brutalista */
   .brutal-hover {
-    @apply transition-all duration-150 ease-out;
+    @apply transition-all duration-200 ease-out;
   }
 
   .brutal-hover:hover {
@@ -87,6 +87,21 @@
   .brutal-hover:active {
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0px #343f48;
+  }
+
+  /* Efecto Hover Brutalista con Amarillo */
+  .brutal-hover-yellow {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .brutal-hover-yellow:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #fdc373;
+  }
+
+  .brutal-hover-yellow:active {
+    transform: translate(1px, 1px);
+    box-shadow: 3px 3px 0px #fdc373;
   }
 
   /* Efecto Hover Accent */
@@ -116,6 +131,46 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Animación de pulso sutil para elementos destacados */
+  .pulse-yellow {
+    animation: pulseYellow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseYellow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(253, 195, 115, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(253, 195, 115, 0);
+    }
+  }
+
+  /* Animación de brillo sutil */
+  .shimmer-yellow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-yellow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(253, 195, 115, 0.3), transparent);
+    animation: shimmerMove 3s infinite;
+  }
+
+  @keyframes shimmerMove {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
     }
   }
 

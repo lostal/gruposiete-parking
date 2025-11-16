@@ -70,10 +70,8 @@ export function ReservasSidebar({ isOpen, onClose, onReservationCancelled }: Res
         description: 'Tu reserva ha sido cancelada correctamente',
       });
 
-      fetchReservations();
-      if (onReservationCancelled) {
-        onReservationCancelled();
-      }
+      // Recargar la página para actualizar el calendario del dashboard
+      window.location.reload();
     } catch (error) {
       toast({
         title: 'Error',
@@ -160,33 +158,33 @@ export function ReservasSidebar({ isOpen, onClose, onReservationCancelled }: Res
           <div className="flex gap-2 mb-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab('activas')}
-              className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors
+              className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
                        ${
                          activeTab === 'activas'
                            ? 'bg-[#343f48] text-white'
-                           : 'bg-white text-[#343f48] brutal-border hover:bg-gray-100'
+                           : 'bg-white text-[#343f48] brutal-border hover:bg-[#fdc373]'
                        }`}
             >
               Activas ({getTabCount('activas')})
             </button>
             <button
               onClick={() => setActiveTab('pasadas')}
-              className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors
+              className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
                        ${
                          activeTab === 'pasadas'
                            ? 'bg-[#343f48] text-white'
-                           : 'bg-white text-[#343f48] brutal-border hover:bg-gray-100'
+                           : 'bg-white text-[#343f48] brutal-border hover:bg-[#fdc373]'
                        }`}
             >
               Pasadas ({getTabCount('pasadas')})
             </button>
             <button
               onClick={() => setActiveTab('canceladas')}
-              className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors
+              className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
                        ${
                          activeTab === 'canceladas'
                            ? 'bg-[#343f48] text-white'
-                           : 'bg-white text-[#343f48] brutal-border hover:bg-gray-100'
+                           : 'bg-white text-[#343f48] brutal-border hover:bg-[#fdc373]'
                        }`}
             >
               Canceladas ({getTabCount('canceladas')})
@@ -216,11 +214,15 @@ export function ReservasSidebar({ isOpen, onClose, onReservationCancelled }: Res
                 return (
                   <div
                     key={reservation._id}
-                    className="bg-white rounded-xl p-4 brutal-border brutal-shadow transition-transform hover:scale-[1.02]"
+                    className={`bg-white rounded-xl p-4 brutal-border brutal-shadow transition-all hover:scale-[1.02] ${
+                      isActive ? 'hover:shadow-[6px_6px_0_0_#fdc373]' : ''
+                    }`}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0">
+                        <div className={`w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0 ${
+                          isActive ? 'shadow-[3px_3px_0_0_#fdc373]' : ''
+                        }`}>
                           <span className="text-lg font-mono-data font-bold text-white">
                             {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
                             {reservation.parkingSpot.number}
@@ -241,12 +243,12 @@ export function ReservasSidebar({ isOpen, onClose, onReservationCancelled }: Res
                         </div>
                       </div>
                       <span
-                        className={`inline-block px-2 py-1 rounded-lg font-bold text-xs uppercase whitespace-nowrap ${
+                        className={`inline-block px-2 py-1 rounded-lg font-bold text-xs uppercase whitespace-nowrap border-2 ${
                           isCancelled
-                            ? 'bg-red-100 text-red-700'
+                            ? 'bg-red-100 text-red-700 border-red-700'
                             : isActive
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'bg-[#fdc373] text-[#343f48] border-[#343f48]'
+                            : 'bg-gray-100 text-gray-600 border-gray-400'
                         }`}
                       >
                         {isCancelled ? 'Cancelada' : isActive ? 'Activa' : 'Pasada'}
