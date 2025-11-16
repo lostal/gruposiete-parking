@@ -18,6 +18,13 @@ export interface EmailParams {
 
 export async function sendEmail({ to, subject, html }: EmailParams) {
   try {
+    // 🚫 DESHABILITADO TEMPORALMENTE - En desarrollo
+    // TODO: Habilitar cuando se actualice la lógica de emails
+    console.log('📧 Email simulado (envío deshabilitado temporalmente):', { to, subject });
+    return { success: true, simulated: true };
+
+    // Código original comentado temporalmente:
+    /*
     if (!resend) {
       if (process.env.NODE_ENV !== 'production') {
         console.log('📧 Email simulado (no hay RESEND_API_KEY):', { to, subject });
@@ -41,6 +48,7 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
       console.log('✅ Email enviado correctamente:', data);
     }
     return { success: true, data };
+    */
   } catch (error) {
     console.error('❌ Error al enviar email:', error);
     return { success: false, error };

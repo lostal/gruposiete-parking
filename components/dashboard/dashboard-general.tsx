@@ -235,7 +235,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
           </h2>
 
           {myReservations.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center h-full flex items-center justify-center min-h-[200px]">
+            <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center flex items-center justify-center min-h-[200px]">
               <p className="text-gray-400 font-medium">No tienes reservas próximas</p>
             </div>
           ) : (
@@ -288,11 +288,11 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
 
         {/* Columna Derecha - Calendario */}
         <div>
-          <h2 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
+          <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
             Selecciona un día
           </h2>
 
-          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow">
+          <div className="bg-white rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
             {/* Encabezado del mes */}
             <div className="flex items-center justify-between mb-3">
               <button
@@ -386,7 +386,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
             </div>
 
             {/* Leyenda */}
-            <div className="mt-3 pt-3 border-t-2 border-gray-100 space-y-1.5">
+            <div className="mt-auto pt-3 border-t-2 border-gray-100 space-y-1.5">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-200"></div>
                 <span className="text-[10px] text-gray-600 font-medium">Tu reserva</span>
