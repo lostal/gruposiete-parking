@@ -228,8 +228,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     <div className="space-y-6">
       {/* Layout Grid 2 columnas balanceadas en desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Columna Izquierda - Mis Reservas */}
-        <div>
+        {/* Columna Izquierda - Mis Reservas (en desktop) - Aparece segunda en móvil */}
+        <div className="order-2 lg:order-1">
           <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
             Mis Reservas
           </h2>
@@ -286,8 +286,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
           )}
         </div>
 
-        {/* Columna Derecha - Calendario */}
-        <div>
+        {/* Columna Derecha - Calendario (en desktop) - Aparece primera en móvil */}
+        <div className="order-1 lg:order-2">
           <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
             Selecciona un día
           </h2>
@@ -397,63 +397,65 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Plazas Disponibles - Full Width */}
-      {selectedDate && (
-        <div>
-          <h3 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
-            Disponibles para {format(selectedDate, 'PPP', { locale: es })}
-          </h3>
+          {/* Plazas Disponibles - Aparece después del calendario */}
+          {selectedDate && (
+            <div className="mt-6">
+              <h3 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
+                Disponibles para {format(selectedDate, 'PPP', { locale: es })}
+              </h3>
 
-          {availableSpots.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center">
-              <p className="text-gray-400 font-medium">No hay plazas disponibles para esta fecha</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {availableSpots.map((spot) => (
-                <div
-                  key={spot._id}
-                  className="bg-white rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-sm transition-all"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center">
-                        <span className="text-xl font-mono-data font-bold text-white">
-                          {spot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{spot.number}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-bold text-[#343f48] text-lg">Plaza {spot.number}</p>
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                          {spot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
-                      Asignada a
-                    </p>
-                    <p className="text-sm text-[#343f48] font-medium">{spot.assignedToName}</p>
-                  </div>
-                  <button
-                    onClick={() => handleReserve(spot._id)}
-                    disabled={isLoading}
-                    className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-[#343f48] font-bold
-                             brutal-border brutal-shadow-sm brutal-hover tap-none
-                             disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'Reservando...' : 'Reservar'}
-                  </button>
+              {availableSpots.length === 0 ? (
+                <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center">
+                  <p className="text-gray-400 font-medium">
+                    No hay plazas disponibles para esta fecha
+                  </p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+                  {availableSpots.map((spot) => (
+                    <div
+                      key={spot._id}
+                      className="bg-white rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-sm transition-all"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-14 h-14 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center">
+                            <span className="text-xl font-mono-data font-bold text-white">
+                              {spot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{spot.number}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-[#343f48] text-lg">Plaza {spot.number}</p>
+                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
+                              {spot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
+                          Asignada a
+                        </p>
+                        <p className="text-sm text-[#343f48] font-medium">{spot.assignedToName}</p>
+                      </div>
+                      <button
+                        onClick={() => handleReserve(spot._id)}
+                        disabled={isLoading}
+                        className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-[#343f48] font-bold
+                                 brutal-border brutal-shadow-sm brutal-hover tap-none
+                                 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? 'Reservando...' : 'Reservar'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

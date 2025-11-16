@@ -141,7 +141,7 @@ export default function RegistroPage() {
               <input
                 id="email"
                 type="email"
-                placeholder="tu-email@ejemplo.com"
+                placeholder="tu-email@gruposiete.es"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
