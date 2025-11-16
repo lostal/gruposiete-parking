@@ -4,12 +4,22 @@ import { z } from 'zod';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/models/User';
 import { UserRole } from '@/types';
-import { checkRateLimit, getClientIdentifier } from '@/lib/ratelimit';
+import { checkRateLimitRedis, getClientIdentifier } from '@/lib/ratelimit-redis';
+import { AUTH_CONSTANTS, VALIDATION_CONSTANTS, isValidCorporateEmail } from '@/lib/constants';
+import { sanitizeName, sanitizeEmail, containsMaliciousContent } from '@/lib/sanitize';
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  name: z
+    .string()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(VALIDATION_CONSTANTS.MAX_NAME_LENGTH, 'El nombre es demasiado largo'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  password: z
+    .string()
+    .min(
+      AUTH_CONSTANTS.PASSWORD_MIN_LENGTH,
+      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`,
+    ),
   role: z.nativeEnum(UserRole).optional(),
 });
 
@@ -17,17 +27,14 @@ export async function POST(request: Request) {
   try {
     // RATE LIMITING: Máximo 5 registros por IP cada 15 minutos
     const identifier = getClientIdentifier(request);
-    const rateLimit = checkRateLimit({
-      identifier: `register:${identifier}`,
-      limit: 5,
-      windowSeconds: 15 * 60,
-    });
+    const rateLimit = await checkRateLimitRedis(`register:${identifier}`, 'registro');
 
     if (!rateLimit.success) {
+      const retryAfter = Math.ceil((rateLimit.reset - Date.now()) / 1000);
       return NextResponse.json(
         {
           error: 'Demasiados intentos de registro. Intenta de nuevo más tarde.',
-          retryAfter: Math.ceil((rateLimit.reset - Date.now()) / 1000),
+          retryAfter,
         },
         {
           status: 429,
@@ -35,14 +42,30 @@ export async function POST(request: Request) {
             'X-RateLimit-Limit': rateLimit.limit.toString(),
             'X-RateLimit-Remaining': rateLimit.remaining.toString(),
             'X-RateLimit-Reset': rateLimit.reset.toString(),
-            'Retry-After': Math.ceil((rateLimit.reset - Date.now()) / 1000).toString(),
+            'Retry-After': retryAfter.toString(),
           },
         },
       );
     }
 
     const body = await request.json();
-    const validatedData = registerSchema.parse(body);
+
+    // Sanitizar inputs antes de validar
+    const sanitizedBody = {
+      ...body,
+      name: sanitizeName(body.name || ''),
+      email: sanitizeEmail(body.email || ''),
+    };
+
+    // Verificar contenido malicioso
+    if (containsMaliciousContent(sanitizedBody.name)) {
+      return NextResponse.json(
+        { error: 'El nombre contiene caracteres no permitidos' },
+        { status: 400 },
+      );
+    }
+
+    const validatedData = registerSchema.parse(sanitizedBody);
 
     await dbConnect();
 
@@ -71,7 +94,10 @@ export async function POST(request: Request) {
     }
 
     // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+    const hashedPassword = await bcrypt.hash(
+      validatedData.password,
+      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
+    );
 
     // Crear usuario
     const user = await User.create({

@@ -67,7 +67,8 @@ export default function DashboardAdmin() {
 
       if (usersRes.ok) {
         const usersData = await usersRes.json();
-        setUsers(usersData);
+        // La API ahora devuelve { users: [], pagination: {} }
+        setUsers(usersData.users || usersData);
       }
 
       if (spotsRes.ok) {

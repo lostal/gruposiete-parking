@@ -81,7 +81,7 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
-                placeholder="tu-email@gruposiete.es"
+                placeholder="tu-email@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -122,8 +122,18 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Link olvidé contraseña */}
+          <div className="mt-6 text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-gray-500 hover:text-[#343f48] font-medium transition-colors"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+
           {/* Link registro */}
-          <div className="mt-8 text-center">
+          <div className="mt-4 text-center">
             <span className="text-gray-500">¿No tienes cuenta? </span>
             <Link
               href="/registro"

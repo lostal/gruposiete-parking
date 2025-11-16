@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rutas públicas que no requieren autenticación
-  const publicRoutes = ['/login', '/registro', '/'];
+  const publicRoutes = ['/login', '/registro', '/forgot-password', '/reset-password', '/'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // Rutas de API siempre permitidas (NextAuth maneja su propia autenticación)

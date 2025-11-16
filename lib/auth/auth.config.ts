@@ -4,10 +4,16 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/models/User';
+import { AUTH_CONSTANTS, isValidCorporateEmail } from '@/lib/constants';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  password: z
+    .string()
+    .min(
+      AUTH_CONSTANTS.PASSWORD_MIN_LENGTH,
+      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`,
+    ),
 });
 
 export default {

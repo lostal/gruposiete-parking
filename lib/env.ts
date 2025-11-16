@@ -10,6 +10,9 @@ interface EnvConfig {
   RESEND_API_KEY?: string;
   EMAIL_FROM?: string;
   NODE_ENV: 'development' | 'production' | 'test';
+  // Upstash Redis para rate limiting (opcional en dev, recomendado en prod)
+  UPSTASH_REDIS_REST_URL?: string;
+  UPSTASH_REDIS_REST_TOKEN?: string;
 }
 
 function validateEnv(): EnvConfig {
@@ -33,15 +36,29 @@ function validateEnv(): EnvConfig {
     errors.push('NEXTAUTH_SECRET debe tener al menos 32 caracteres');
   }
 
-  // Advertencias (no críticas)
-  if (!process.env.RESEND_API_KEY && process.env.NODE_ENV === 'production') {
-    console.warn('⚠️  RESEND_API_KEY no está configurada. Los emails se simularán en consola.');
-  }
+  // Variables CRÍTICAS en producción
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.RESEND_API_KEY) {
+      errors.push(
+        'RESEND_API_KEY es requerida en producción para envío de notificaciones por email',
+      );
+    }
 
-  if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV === 'production') {
-    console.warn(
-      '⚠️  NEXTAUTH_URL no está configurada. Esto puede causar problemas con los enlaces en emails.',
-    );
+    if (!process.env.NEXTAUTH_URL) {
+      errors.push('NEXTAUTH_URL es requerida en producción para autenticación correcta');
+    }
+
+    // Advertencias (no bloqueantes pero importantes)
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      console.warn(
+        '⚠️  UPSTASH_REDIS_REST_URL/TOKEN no configurado. Rate limiting usará memoria (NO recomendado en producción).',
+      );
+    }
+  } else {
+    // Advertencias en desarrollo
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️  RESEND_API_KEY no está configurada. Los emails se simularán en consola.');
+    }
   }
 
   // Si hay errores, lanzar excepción
@@ -60,6 +77,8 @@ function validateEnv(): EnvConfig {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
     NODE_ENV: (process.env.NODE_ENV as EnvConfig['NODE_ENV']) || 'development',
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   };
 }
 
