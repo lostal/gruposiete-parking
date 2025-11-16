@@ -65,15 +65,15 @@ export function Navbar({
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-3">
-              {/* Historial - Solo para GENERAL */}
+              {/* Mis Reservas - Solo para GENERAL */}
               {userRole === UserRole.GENERAL && (
                 <button
                   onClick={onOpenHistorial}
                   className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-2"
-                  aria-label="Ver historial"
+                  aria-label="Ver mis reservas"
                 >
                   <Clock size={18} />
-                  <span>Historial</span>
+                  <span>Mis Reservas</span>
                 </button>
               )}
 
@@ -145,14 +145,14 @@ export function Navbar({
 
           {/* Menu Items */}
           <div className="space-y-2">
-            {/* Historial - Solo para GENERAL */}
+            {/* Mis Reservas - Solo para GENERAL */}
             {userRole === UserRole.GENERAL && (
               <button
                 onClick={onOpenHistorial}
                 className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-3 brutal-border"
               >
                 <Clock size={20} />
-                <span>Historial</span>
+                <span>Mis Reservas</span>
               </button>
             )}
 

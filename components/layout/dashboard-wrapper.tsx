@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Navbar } from './navbar';
-import { HistorialSidebar } from '../historial-sidebar';
+import { ReservasSidebar } from '../reservas-sidebar';
 import { ProfileSidebar } from '../profile-sidebar';
 import { UserRole } from '@/types';
 
@@ -22,17 +22,27 @@ export function DashboardWrapper({
   const [isHistorialOpen, setIsHistorialOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  const handleOpenHistorial = () => {
+    setIsProfileOpen(false);
+    setIsHistorialOpen(true);
+  };
+
+  const handleOpenProfile = () => {
+    setIsHistorialOpen(false);
+    setIsProfileOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar
         userName={userName}
         userEmail={userEmail}
         userRole={userRole}
-        onOpenHistorial={() => setIsHistorialOpen(true)}
-        onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenHistorial={handleOpenHistorial}
+        onOpenProfile={handleOpenProfile}
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-6 sm:pt-8">{children}</main>
-      <HistorialSidebar isOpen={isHistorialOpen} onClose={() => setIsHistorialOpen(false)} />
+      <ReservasSidebar isOpen={isHistorialOpen} onClose={() => setIsHistorialOpen(false)} />
       <ProfileSidebar
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
