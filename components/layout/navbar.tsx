@@ -13,9 +13,16 @@ interface NavbarProps {
   userEmail: string;
   userRole: UserRole;
   onOpenHistorial?: () => void;
+  onOpenProfile?: () => void;
 }
 
-export function Navbar({ userName, userEmail, userRole, onOpenHistorial }: NavbarProps) {
+export function Navbar({
+  userName,
+  userEmail,
+  userRole,
+  onOpenHistorial,
+  onOpenProfile,
+}: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -70,15 +77,17 @@ export function Navbar({ userName, userEmail, userRole, onOpenHistorial }: Navba
                 </button>
               )}
 
-              {/* Perfil (placeholder) */}
-              <button
-                className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-2"
-                aria-label="Perfil"
-                title="Próximamente: edita tu perfil"
-              >
-                <User size={18} />
-                <span>Perfil</span>
-              </button>
+              {/* Perfil - Solo para GENERAL y DIRECCION */}
+              {userRole !== UserRole.ADMIN && (
+                <button
+                  onClick={onOpenProfile}
+                  className="px-4 py-2 rounded-lg font-bold text-sm text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-2"
+                  aria-label="Perfil"
+                >
+                  <User size={18} />
+                  <span>Perfil</span>
+                </button>
+              )}
 
               {/* Salir */}
               <button
@@ -147,17 +156,16 @@ export function Navbar({ userName, userEmail, userRole, onOpenHistorial }: Navba
               </button>
             )}
 
-            {/* Perfil (placeholder) */}
-            <button
-              className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-3 brutal-border"
-              title="Próximamente: edita tu perfil"
-            >
-              <User size={20} />
-              <span>Mi Perfil</span>
-              <span className="ml-auto text-xs bg-[#fdc373] px-2 py-1 rounded-full">
-                Próximamente
-              </span>
-            </button>
+            {/* Perfil - Solo para GENERAL y DIRECCION */}
+            {userRole !== UserRole.ADMIN && (
+              <button
+                onClick={onOpenProfile}
+                className="w-full px-4 py-3 rounded-xl font-bold text-left text-[#343f48] hover:bg-gray-100 transition-all flex items-center gap-3 brutal-border"
+              >
+                <User size={20} />
+                <span>Mi Perfil</span>
+              </button>
+            )}
 
             {/* Salir */}
             <button

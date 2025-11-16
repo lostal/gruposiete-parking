@@ -41,8 +41,10 @@ const colors = {
 };
 
 const log = {
-  error: (msg: string) => console.error(`${colors.red}${colors.bright}ERROR:${colors.reset} ${msg}`),
-  warning: (msg: string) => console.warn(`${colors.yellow}${colors.bright}ADVERTENCIA:${colors.reset} ${msg}`),
+  error: (msg: string) =>
+    console.error(`${colors.red}${colors.bright}ERROR:${colors.reset} ${msg}`),
+  warning: (msg: string) =>
+    console.warn(`${colors.yellow}${colors.bright}ADVERTENCIA:${colors.reset} ${msg}`),
   success: (msg: string) => console.log(`${colors.green}${colors.bright}✓${colors.reset} ${msg}`),
   info: (msg: string) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
   step: (msg: string) => console.log(`${colors.cyan}${colors.bright}→${colors.reset} ${msg}`),
@@ -72,11 +74,13 @@ function verificarEntornoSeguro(): void {
 
   // 3. Verificar que NO sea una URI de producción
   const produccionKeywords = ['prod', 'production', 'live', 'deploy'];
-  const contieneProduccion = produccionKeywords.some(keyword => mongoUri.includes(keyword));
+  const contieneProduccion = produccionKeywords.some((keyword) => mongoUri.includes(keyword));
 
   if (contieneProduccion) {
     log.error('La URI de MongoDB parece ser de PRODUCCIÓN');
-    log.error(`Palabras detectadas: ${produccionKeywords.filter(k => mongoUri.includes(k)).join(', ')}`);
+    log.error(
+      `Palabras detectadas: ${produccionKeywords.filter((k) => mongoUri.includes(k)).join(', ')}`,
+    );
     log.error('Por seguridad, el seed no se ejecutará');
     process.exit(1);
   }
@@ -118,10 +122,13 @@ async function solicitarConfirmacion(): Promise<boolean> {
     log.warning('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('');
 
-    rl.question('¿Estás seguro de que quieres continuar? (escribe "SI" para confirmar): ', (answer) => {
-      rl.close();
-      resolve(answer.trim().toUpperCase() === 'SI');
-    });
+    rl.question(
+      '¿Estás seguro de que quieres continuar? (escribe "SI" para confirmar): ',
+      (answer) => {
+        rl.close();
+        resolve(answer.trim().toUpperCase() === 'SI');
+      },
+    );
   });
 }
 
@@ -198,12 +205,14 @@ const plazasParking = [
  * Genera un email corporativo a partir de un nombre
  */
 function generarEmail(nombre: string): string {
-  return nombre
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
-    .split(' ')[0] + // Tomar primer nombre
-    '@gruposiete.es';
+  return (
+    nombre
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+      .split(' ')[0] + // Tomar primer nombre
+    '@gruposiete.es'
+  );
 }
 
 /**
@@ -319,7 +328,9 @@ async function crearPlazasParking() {
   const usuariosDireccion = await User.find({ role: UserRole.DIRECCION }).sort({ createdAt: 1 });
 
   if (usuariosDireccion.length < plazasParking.length) {
-    log.warning(`  ⚠ Solo hay ${usuariosDireccion.length} usuarios de dirección para ${plazasParking.length} plazas`);
+    log.warning(
+      `  ⚠ Solo hay ${usuariosDireccion.length} usuarios de dirección para ${plazasParking.length} plazas`,
+    );
   }
 
   const plazas = [];
@@ -402,8 +413,8 @@ async function crearReservas() {
   }
 
   // Contar por estado
-  const activas = reservas.filter(r => r.status === ReservationStatus.ACTIVE).length;
-  const canceladas = reservas.filter(r => r.status === ReservationStatus.CANCELLED).length;
+  const activas = reservas.filter((r) => r.status === ReservationStatus.ACTIVE).length;
+  const canceladas = reservas.filter((r) => r.status === ReservationStatus.CANCELLED).length;
 
   log.success(`${reservas.length} reservas creadas (${activas} activas, ${canceladas} canceladas)`);
   return reservas;
@@ -415,7 +426,9 @@ async function crearReservas() {
 async function crearDisponibilidades() {
   log.step('Creando disponibilidades...');
 
-  const usuariosDireccion = await User.find({ role: UserRole.DIRECCION }).populate('assignedParkingSpot');
+  const usuariosDireccion = await User.find({ role: UserRole.DIRECCION }).populate(
+    'assignedParkingSpot',
+  );
   const disponibilidades = [];
 
   for (const usuario of usuariosDireccion) {
@@ -466,12 +479,16 @@ async function mostrarResumen() {
   const generalCount = await User.countDocuments({ role: UserRole.GENERAL });
 
   const totalPlazas = await ParkingSpot.countDocuments();
-  const plazasSubterraneo = await ParkingSpot.countDocuments({ location: ParkingLocation.SUBTERRANEO });
+  const plazasSubterraneo = await ParkingSpot.countDocuments({
+    location: ParkingLocation.SUBTERRANEO,
+  });
   const plazasExterior = await ParkingSpot.countDocuments({ location: ParkingLocation.EXTERIOR });
 
   const totalReservas = await Reservation.countDocuments();
   const reservasActivas = await Reservation.countDocuments({ status: ReservationStatus.ACTIVE });
-  const reservasCanceladas = await Reservation.countDocuments({ status: ReservationStatus.CANCELLED });
+  const reservasCanceladas = await Reservation.countDocuments({
+    status: ReservationStatus.CANCELLED,
+  });
 
   const totalDisponibilidades = await Availability.countDocuments();
 
@@ -515,9 +532,13 @@ async function mostrarResumen() {
 
 async function main() {
   console.log('');
-  console.log(`${colors.bright}${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.bright}${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`,
+  );
   console.log(`${colors.bright}  SEED COMPLETO - GRUPO SIETE PARKING${colors.reset}`);
-  console.log(`${colors.bright}${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+  console.log(
+    `${colors.bright}${colors.blue}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`,
+  );
   console.log('');
 
   try {
@@ -577,12 +598,13 @@ async function main() {
     // 7. Finalizar
     log.success('Seed completado exitosamente');
     console.log('');
-    console.log(`${colors.bright}${colors.green}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
+    console.log(
+      `${colors.bright}${colors.green}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`,
+    );
     console.log('');
 
     await mongoose.disconnect();
     process.exit(0);
-
   } catch (error) {
     console.log('');
     log.error('Error durante el seed:');

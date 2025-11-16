@@ -118,6 +118,38 @@ export default function DashboardAdmin() {
     }
   };
 
+  const handleUnassignSpot = async (userId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/admin/unassign-spot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Error al desasignar plaza');
+      }
+
+      toast({
+        title: 'Plaza desasignada',
+        description: 'La plaza ha sido liberada correctamente',
+      });
+
+      fetchData();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Error desconocido',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const direccionUsers = users.filter((u) => u.role === 'DIRECCION');
   const generalUsers = users.filter((u) => u.role === 'GENERAL');
   const unassignedSpots = parkingSpots.filter((s) => !s.assignedTo);
@@ -200,24 +232,38 @@ export default function DashboardAdmin() {
                         )}
                       </td>
                       <td className="py-4 px-4">
-                        <select
-                          onChange={(e) => handleAssignSpot(user._id, e.target.value)}
-                          disabled={isLoading}
-                          className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
-                                   brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
-                          defaultValue=""
-                        >
-                          <option value="" disabled>
-                            Asignar plaza
-                          </option>
-                          {parkingSpots.map((spot) => (
-                            <option key={spot._id} value={spot._id}>
-                              Plaza {spot.number} -{' '}
-                              {spot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
-                              {spot.assignedTo && ' (Asignada)'}
+                        <div className="flex gap-2">
+                          <select
+                            onChange={(e) => handleAssignSpot(user._id, e.target.value)}
+                            disabled={isLoading}
+                            className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
+                                     brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
+                            defaultValue=""
+                          >
+                            <option value="" disabled>
+                              Asignar plaza
                             </option>
-                          ))}
-                        </select>
+                            {parkingSpots.map((spot) => (
+                              <option key={spot._id} value={spot._id}>
+                                Plaza {spot.number} -{' '}
+                                {spot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
+                                {spot.assignedTo && ' (Asignada)'}
+                              </option>
+                            ))}
+                          </select>
+                          {user.assignedParkingSpot && (
+                            <button
+                              onClick={() => handleUnassignSpot(user._id)}
+                              disabled={isLoading}
+                              className="px-4 py-2 rounded-lg bg-red-500 text-white font-bold text-sm
+                                       brutal-border hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed
+                                       transition-colors"
+                              title="Quitar plaza"
+                            >
+                              Quitar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

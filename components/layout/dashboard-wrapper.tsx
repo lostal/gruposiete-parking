@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Navbar } from './navbar';
 import { HistorialSidebar } from '../historial-sidebar';
+import { ProfileSidebar } from '../profile-sidebar';
 import { UserRole } from '@/types';
 
 interface DashboardWrapperProps {
@@ -19,6 +20,7 @@ export function DashboardWrapper({
   children,
 }: DashboardWrapperProps) {
   const [isHistorialOpen, setIsHistorialOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white">
@@ -27,9 +29,17 @@ export function DashboardWrapper({
         userEmail={userEmail}
         userRole={userRole}
         onOpenHistorial={() => setIsHistorialOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-6 sm:pt-8">{children}</main>
       <HistorialSidebar isOpen={isHistorialOpen} onClose={() => setIsHistorialOpen(false)} />
+      <ProfileSidebar
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        userName={userName}
+        userEmail={userEmail}
+        userRole={userRole}
+      />
     </div>
   );
 }
