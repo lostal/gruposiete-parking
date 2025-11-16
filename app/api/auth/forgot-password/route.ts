@@ -93,29 +93,35 @@ export async function POST(request: Request) {
       used: false,
     });
 
-    // Construir URL de reset
-    const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+    // Construir URL de reset con fallback para desarrollo
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
     // Enviar email (de forma asíncrona para no bloquear)
-    setImmediate(async () => {
-      try {
-        await sendEmail({
-          to: user.email,
-          subject: 'Restablecer contraseña - Gruposiete Parking',
-          html: getPasswordResetEmail(user.name, resetUrl),
-        });
+    // Usar Promise en lugar de setImmediate para compatibilidad con Node.js moderno y Edge Runtime
+    Promise.resolve()
+      .then(async () => {
+        try {
+          await sendEmail({
+            to: user.email,
+            subject: 'Restablecer contraseña - Gruposiete Parking',
+            html: getPasswordResetEmail(user.name, resetUrl),
+          });
 
-        logger.info('Email de reset enviado', {
-          userId: user._id.toString(),
-          email: user.email,
-        });
-      } catch (emailError) {
-        logger.error('Error al enviar email de reset', emailError as Error, {
-          userId: user._id.toString(),
-          email: user.email,
-        });
-      }
-    });
+          logger.info('Email de reset enviado', {
+            userId: user._id.toString(),
+            email: user.email,
+          });
+        } catch (emailError) {
+          logger.error('Error al enviar email de reset', emailError as Error, {
+            userId: user._id.toString(),
+            email: user.email,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Error in background email task:', error);
+      });
 
     return NextResponse.json({
       message: successMessage,

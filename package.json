@@ -35,7 +35,6 @@
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
     "glob": "^11.0.3",
-    "gruposiete-parking": "file:",
     "lucide-react": "^0.454.0",
     "mongoose": "^8.8.3",
     "next": "^14.2.18",

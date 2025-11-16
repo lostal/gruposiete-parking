@@ -39,36 +39,43 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     await reservation.save();
 
     // Enviar email a lista de distribución notificando que hay una plaza disponible
-    setImmediate(async () => {
-      try {
-        const distributionEmail = process.env.DISTRIBUTION_EMAIL;
+    // Usar Promise en lugar de setImmediate para compatibilidad con Node.js moderno y Edge Runtime
+    Promise.resolve()
+      .then(async () => {
+        try {
+          const distributionEmail = process.env.DISTRIBUTION_EMAIL;
 
-        // TODO: Habilitar cuando se tenga el correo de distribución configurado
-        if (!distributionEmail) {
-          console.log('⚠️ DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
-          return;
-        }
-
-        if (parkingSpot) {
-          const spotInfo = `${parkingSpot.number} (${
-            parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
-          })`;
-
-          // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
-          try {
-            await sendEmail({
-              to: distributionEmail,
-              subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
-              html: getNewSpotsAvailableDistributionEmail(formatDate(reservationDate), [spotInfo]),
-            });
-          } catch (emailError) {
-            console.error('Error sending distribution email:', emailError);
+          // TODO: Habilitar cuando se tenga el correo de distribución configurado
+          if (!distributionEmail) {
+            console.log('⚠️ DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.');
+            return;
           }
+
+          if (parkingSpot) {
+            const spotInfo = `${parkingSpot.number} (${
+              parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'
+            })`;
+
+            // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
+            try {
+              await sendEmail({
+                to: distributionEmail,
+                subject: '¡Nuevas plazas disponibles! - Gruposiete Parking',
+                html: getNewSpotsAvailableDistributionEmail(formatDate(reservationDate), [
+                  spotInfo,
+                ]),
+              });
+            } catch (emailError) {
+              console.error('Error sending distribution email:', emailError);
+            }
+          }
+        } catch (emailError) {
+          console.error('Error sending cancellation emails:', emailError);
         }
-      } catch (emailError) {
-        console.error('Error sending cancellation emails:', emailError);
-      }
-    });
+      })
+      .catch((error) => {
+        console.error('Error in background email task:', error);
+      });
 
     return NextResponse.json({ success: true });
   } catch (error) {

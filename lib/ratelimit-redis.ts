@@ -47,8 +47,12 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
     ],
   ]);
 } else if (process.env.NODE_ENV === 'production') {
-  console.error(
-    '⚠️ ADVERTENCIA: Upstash Redis no configurado en producción. Rate limiting deshabilitado.',
+  // CRÍTICO: Redis es OBLIGATORIO en producción para rate limiting
+  throw new Error(
+    '❌ ERROR CRÍTICO: UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son obligatorios en producción.\n' +
+      'Rate limiting es esencial para prevenir ataques de fuerza bruta.\n' +
+      'Configura estas variables de entorno antes de desplegar a producción.\n' +
+      'Crea una cuenta gratuita en: https://upstash.com',
   );
 }
 
