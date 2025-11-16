@@ -78,23 +78,9 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    // SEGURIDAD: Solo ADMIN puede crear usuarios con roles especiales
-    let finalRole = UserRole.GENERAL;
-
-    if (validatedData.role && validatedData.role !== UserRole.GENERAL) {
-      // Verificar que el solicitante sea ADMIN
-      const { auth } = await import('@/lib/auth/auth');
-      const session = await auth();
-
-      if (!session || session.user.role !== UserRole.ADMIN) {
-        return NextResponse.json(
-          { error: 'Solo los administradores pueden crear usuarios con roles especiales' },
-          { status: 403 },
-        );
-      }
-
-      finalRole = validatedData.role;
-    }
+    // Permitir que cualquiera se registre con el rol que desee
+    // El administrador es quien asigna las plazas posteriormente
+    const finalRole = validatedData.role || UserRole.GENERAL;
 
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email: validatedData.email });
