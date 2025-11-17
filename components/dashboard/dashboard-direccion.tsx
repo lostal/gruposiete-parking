@@ -340,7 +340,7 @@ export default function DashboardDireccion({
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={goToPreviousMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-[#fdc373] transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
                 aria-label="Mes anterior"
               >
                 ←
@@ -352,7 +352,7 @@ export default function DashboardDireccion({
               </h3>
               <button
                 onClick={goToNextMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-[#fdc373] transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
                 aria-label="Mes siguiente"
               >
                 →
