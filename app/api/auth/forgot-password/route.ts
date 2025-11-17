@@ -47,7 +47,6 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    // Buscar usuario
     const user = await User.findOne({ email: validatedData.email });
 
     // SEGURIDAD: No revelar si el email existe o no
@@ -69,11 +68,9 @@ export async function POST(request: Request) {
       });
     }
 
-    // Generar token seguro
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Invalidar tokens anteriores del usuario
     await PasswordResetToken.updateMany(
       {
         userId: user._id,
@@ -85,7 +82,6 @@ export async function POST(request: Request) {
       },
     );
 
-    // Crear nuevo token
     await PasswordResetToken.create({
       userId: user._id,
       token,
@@ -93,12 +89,9 @@ export async function POST(request: Request) {
       used: false,
     });
 
-    // Construir URL de reset con fallback para desarrollo
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
-    // Enviar email (de forma asíncrona para no bloquear)
-    // Usar Promise en lugar de setImmediate para compatibilidad con Node.js moderno y Edge Runtime
     Promise.resolve()
       .then(async () => {
         try {

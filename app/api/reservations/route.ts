@@ -154,12 +154,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
-    // Validar que parkingSpotId sea un ObjectId válido
     if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
       return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
     }
 
-    // Validar formato de fecha
     const parsedDate = new Date(dateStr);
     if (isNaN(parsedDate.getTime())) {
       return NextResponse.json({ error: 'Formato de fecha inválido' }, { status: 400 });
@@ -167,7 +165,6 @@ export async function POST(request: Request) {
 
     const date = startOfDay(parsedDate);
 
-    // Validar que la fecha sea laborable (L-V)
     const dayOfWeek = date.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       return NextResponse.json(
@@ -176,7 +173,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validar que la fecha sea futura
     if (date < startOfDay(new Date())) {
       return NextResponse.json(
         { error: 'No se pueden hacer reservas para fechas pasadas' },
@@ -184,7 +180,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validar que la fecha no sea más de 60 días en el futuro
     const maxFutureDate = startOfDay(new Date());
     maxFutureDate.setDate(maxFutureDate.getDate() + 60);
     if (date > maxFutureDate) {
@@ -206,7 +201,6 @@ export async function POST(request: Request) {
       session_db.startTransaction();
 
       try {
-        // VALIDACIÓN: Verificar que el usuario no tenga ya una reserva para este día
         const existingUserReservation = await Reservation.findOne({
           userId: session.user.id,
           date: { $gte: date, $lt: endOfDay(date) },
@@ -221,7 +215,6 @@ export async function POST(request: Request) {
           );
         }
 
-        // Verificar que la plaza está marcada como no disponible
         const availability = await Availability.findOne({
           parkingSpotId,
           date: { $gte: date, $lt: endOfDay(date) },
@@ -236,7 +229,6 @@ export async function POST(request: Request) {
           );
         }
 
-        // Verificar que no esté ya reservada (FIFO) con bloqueo
         const existingReservation = await Reservation.findOne({
           parkingSpotId,
           date: { $gte: date, $lt: endOfDay(date) },
@@ -251,7 +243,6 @@ export async function POST(request: Request) {
           );
         }
 
-        // Crear reserva dentro de la transacción
         const reservationData = {
           parkingSpotId,
           userId: session.user.id,
@@ -261,10 +252,8 @@ export async function POST(request: Request) {
 
         const [reservation] = await Reservation.create([reservationData], { session: session_db });
 
-        // Confirmar transacción
         await session_db.commitTransaction();
 
-        // Obtener datos completos (fuera de la transacción)
         const populatedReservation = await Reservation.findById(reservation._id)
           .populate('parkingSpotId')
           .populate('userId', 'name email');

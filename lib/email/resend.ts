@@ -47,9 +47,6 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
   }
 }
 
-// Plantilla de email - Plazas disponibles (DEPRECATED)
-// Esta plantilla enviaba correos personalizados a cada usuario individual
-// Ahora se usa getNewSpotsAvailableDistributionEmail para enviar a lista de distribución
 export function getNewSpotsAvailableEmail(userName: string, date: string, spots: string[]) {
   return `
     <!DOCTYPE html>
@@ -138,8 +135,6 @@ export function getPasswordResetEmail(userName: string, resetUrl: string) {
   `;
 }
 
-// Plantilla de email - Plazas disponibles para lista de distribución
-// Esta plantilla es genérica (sin nombre de usuario) para enviar a un correo de distribución
 export function getNewSpotsAvailableDistributionEmail(date: string, spots: string[]) {
   return `
     <!DOCTYPE html>

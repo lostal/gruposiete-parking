@@ -52,7 +52,6 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
       const resResponse = await fetch(`/api/reservations?parkingSpotId=${parkingSpotId}`);
       if (resResponse.ok) {
         const resData = await resResponse.json();
-        // La API puede devolver { reservations: [], pagination: {} } o un array directo
         const reservationsArray = resData.reservations || resData;
         const reserved = reservationsArray.map((r: any) => new Date(r.date));
         setReservedDates(reserved);
@@ -133,7 +132,6 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
       return;
     }
 
-    // Verificar si alguna fecha ya está reservada
     const hasReserved = selectedDates.some((date) =>
       reservedDates.some((rd) => startOfDay(rd).getTime() === startOfDay(date).getTime()),
     );
@@ -187,7 +185,6 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
     return day !== 0 && day !== 6;
   };
 
-  // Generate calendar for current month starting on Monday
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const getMonthDays = () => {
@@ -197,18 +194,15 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
 
-    // Adjust for Monday start (0 = Sunday, need to convert to Monday = 0)
     let startingDayOfWeek = firstDay.getDay() - 1;
-    if (startingDayOfWeek === -1) startingDayOfWeek = 6; // Sunday becomes 6
+    if (startingDayOfWeek === -1) startingDayOfWeek = 6;
 
     const days: (Date | null)[] = [];
 
-    // Add empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
 
-    // Add all days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }

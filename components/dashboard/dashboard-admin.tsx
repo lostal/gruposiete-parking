@@ -67,7 +67,6 @@ export default function DashboardAdmin() {
 
       if (usersRes.ok) {
         const usersData = await usersRes.json();
-        // La API ahora devuelve { users: [], pagination: {} }
         setUsers(usersData.users || usersData);
       }
 
@@ -78,7 +77,6 @@ export default function DashboardAdmin() {
 
       if (reservationsRes.ok) {
         const reservationsData = await reservationsRes.json();
-        // La API ahora devuelve { reservations: [], pagination: {} }
         setReservations(reservationsData.reservations || reservationsData);
       }
     } catch (error) {

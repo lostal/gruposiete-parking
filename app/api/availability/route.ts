@@ -48,7 +48,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Solo Dirección puede marcar disponibilidad
     if (session.user.role !== UserRole.DIRECCION && session.user.role !== UserRole.ADMIN) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
@@ -59,12 +58,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
     }
 
-    // Validar que parkingSpotId sea un ObjectId válido
     if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
       return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
     }
 
-    // Validar límite máximo de fechas por solicitud
     if (dates.length > AVAILABILITY_CONSTANTS.MAX_DATES_PER_REQUEST) {
       return NextResponse.json(
         {
@@ -74,7 +71,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validar que las fechas no sean duplicadas
     const uniqueDates = new Set(dates);
     if (uniqueDates.size !== dates.length) {
       return NextResponse.json({ error: 'Hay fechas duplicadas en la solicitud' }, { status: 400 });
@@ -82,14 +78,12 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    // SEGURIDAD CRÍTICA: Verificar que el usuario de Dirección solo pueda marcar su propia plaza
     if (session.user.role === UserRole.DIRECCION) {
       const spot = await ParkingSpot.findById(parkingSpotId);
       if (!spot) {
         return NextResponse.json({ error: 'Plaza no encontrada' }, { status: 404 });
       }
 
-      // Verificar que la plaza esté asignada al usuario actual
       if (!spot.assignedTo || spot.assignedTo.toString() !== session.user.id) {
         return NextResponse.json(
           { error: 'Solo puedes marcar disponibilidad de tu propia plaza asignada' },
@@ -98,7 +92,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Si se quiere marcar como disponible, verificar que no haya reservas
     if (isAvailable) {
       for (const dateStr of dates) {
         const date = startOfDay(new Date(dateStr));
@@ -124,7 +117,6 @@ export async function POST(request: Request) {
     for (const dateStr of dates) {
       const date = startOfDay(new Date(dateStr));
 
-      // Validar que la fecha no sea pasada
       if (date < today) {
         return NextResponse.json(
           { error: 'No se puede marcar disponibilidad para fechas pasadas' },
@@ -132,7 +124,6 @@ export async function POST(request: Request) {
         );
       }
 
-      // Validar que sea un día laborable (L-V)
       if (!isWeekday(date)) {
         return NextResponse.json(
           { error: 'Solo se puede marcar disponibilidad para días laborables (Lunes a Viernes)' },
@@ -140,16 +131,11 @@ export async function POST(request: Request) {
         );
       }
 
-      // Verificar si ya existía
       const existingAvailability = await Availability.findOne({ parkingSpotId, date });
 
-      // CORRECCIÓN DE LÓGICA:
-      // - isAvailable=false significa "disponible para reservar" (plaza libre)
-      // - isAvailable=true significa "no disponible para reservar" (plaza ocupada por el dueño)
       const wasAvailableForReservation =
         existingAvailability && existingAvailability.isAvailable === false;
 
-      // Upsert: actualizar si existe, crear si no existe
       const availability = await Availability.findOneAndUpdate(
         { parkingSpotId, date },
         {
@@ -163,16 +149,12 @@ export async function POST(request: Request) {
 
       results.push(availability);
 
-      // Si se marcó como disponible para reservar (isAvailable=false) y antes NO lo estaba
       if (!isAvailable && !wasAvailableForReservation) {
         newlyAvailableDates.push(date);
       }
     }
 
-    // Enviar email a lista de distribución si hay plazas nuevamente disponibles
     if (newlyAvailableDates.length > 0) {
-      // NO BLOQUEAR la respuesta por emails - ejecutar en background
-      // Usar Promise en lugar de setImmediate para compatibilidad con Node.js moderno y Edge Runtime
       Promise.resolve()
         .then(async () => {
           try {

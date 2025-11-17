@@ -78,11 +78,8 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    // Permitir que cualquiera se registre con el rol que desee
-    // El administrador es quien asigna las plazas posteriormente
     const finalRole = validatedData.role || UserRole.GENERAL;
 
-    // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email: validatedData.email });
     if (existingUser) {
       // SEGURIDAD: Evitar revelar si el email existe (prevenir enumeración de usuarios)
@@ -107,13 +104,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Este email ya está registrado' }, { status: 400 });
     }
 
-    // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(
       validatedData.password,
       AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
 
-    // Crear usuario
     const user = await User.create({
       name: validatedData.name,
       email: validatedData.email,
@@ -121,7 +116,6 @@ export async function POST(request: Request) {
       role: finalRole,
     });
 
-    // No devolver la contraseña
     const { password, ...userWithoutPassword } = user.toObject();
 
     return NextResponse.json(

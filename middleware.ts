@@ -7,16 +7,13 @@ import type { NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas que no requieren autenticación
   const publicRoutes = ['/login', '/registro', '/forgot-password', '/reset-password', '/'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  // Rutas de API siempre permitidas (NextAuth maneja su propia autenticación)
   if (pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
-  // Verificar cookie de sesión de NextAuth
   const sessionToken = request.cookies.get(
     process.env.NODE_ENV === 'production'
       ? '__Secure-authjs.session-token'
@@ -25,12 +22,10 @@ export async function middleware(request: NextRequest) {
 
   const hasSession = !!sessionToken;
 
-  // Si no hay sesión y la ruta no es pública, redirigir a login
   if (!hasSession && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Si hay sesión y está en login/registro, redirigir al dashboard
   if (hasSession && (pathname === '/login' || pathname === '/registro')) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }

@@ -39,9 +39,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       const response = await fetch(`/api/reservations?userId=${userId}&upcoming=true`);
       if (response.ok) {
         const data = await response.json();
-        // La API ahora puede devolver { reservations: [], pagination: {} } o un array directo
         const reservationsArray = data.reservations || data;
-        // Ordenar por fecha ascendente (de menor a mayor)
         const sortedData = reservationsArray.sort(
           (a: MyReservation, b: MyReservation) =>
             new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -195,18 +193,15 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
 
-    // Adjust for Monday start (0 = Sunday, need to convert to Monday = 0)
     let startingDayOfWeek = firstDay.getDay() - 1;
-    if (startingDayOfWeek === -1) startingDayOfWeek = 6; // Sunday becomes 6
+    if (startingDayOfWeek === -1) startingDayOfWeek = 6;
 
     const days: (Date | null)[] = [];
 
-    // Add empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
 
-    // Add all days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }

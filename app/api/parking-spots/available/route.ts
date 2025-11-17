@@ -25,13 +25,11 @@ export async function GET(request: Request) {
 
     await dbConnect();
 
-    // Obtener plazas marcadas como no disponibles
     const unavailable = await Availability.find({
       date: { $gte: date, $lt: endOfDay(date) },
       isAvailable: false,
     }).select('parkingSpotId');
 
-    // Obtener plazas ya reservadas
     const reserved = await Reservation.find({
       date: { $gte: date, $lt: endOfDay(date) },
       status: 'ACTIVE',
@@ -40,7 +38,6 @@ export async function GET(request: Request) {
     const unavailableIds = unavailable.map((a) => a.parkingSpotId.toString());
     const reservedIds = reserved.map((r) => r.parkingSpotId.toString());
 
-    // Plazas disponibles = marcadas como no disponibles y no reservadas aún
     const availableSpotIds = unavailableIds.filter((id) => !reservedIds.includes(id));
 
     const availableSpots = await ParkingSpot.find({

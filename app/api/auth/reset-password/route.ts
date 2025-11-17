@@ -50,7 +50,6 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    // Buscar token
     const resetToken = await PasswordResetToken.findOne({
       token: validatedData.token,
       used: false,
@@ -71,7 +70,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Buscar usuario
     const user = await User.findById(resetToken.userId);
 
     if (!user) {
@@ -82,17 +80,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
-    // Hash de la nueva contraseña
     const hashedPassword = await bcrypt.hash(
       validatedData.password,
       AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
 
-    // Actualizar contraseña
     user.password = hashedPassword;
     await user.save();
 
-    // Marcar token como usado
     resetToken.used = true;
     await resetToken.save();
 

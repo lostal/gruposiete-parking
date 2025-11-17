@@ -28,17 +28,14 @@ export async function GET(request: Request) {
 
     await dbConnect();
 
-    // Construir query
     const query: any = {};
     if (role && Object.values(UserRole).includes(role as UserRole)) {
       query.role = role;
     }
 
-    // Calcular paginación
     const skip = (page - 1) * limit;
     const total = await User.countDocuments(query);
 
-    // Obtener usuarios con paginación
     const users = await User.find(query)
       .populate('assignedParkingSpot')
       .select('-password')

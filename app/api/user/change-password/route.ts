@@ -45,7 +45,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
-    // Verificar contraseña actual
     const isCurrentPasswordValid = await bcrypt.compare(
       validatedData.currentPassword,
       user.password,
@@ -55,7 +54,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'La contraseña actual es incorrecta' }, { status: 401 });
     }
 
-    // Verificar que la nueva contraseña sea diferente a la actual
     const isSamePassword = await bcrypt.compare(validatedData.newPassword, user.password);
 
     if (isSamePassword) {
@@ -65,13 +63,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash de la nueva contraseña
     const hashedPassword = await bcrypt.hash(
       validatedData.newPassword,
       AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
 
-    // Actualizar contraseña
     user.password = hashedPassword;
     await user.save();
 
