@@ -1,18 +1,18 @@
 // Enums
 export enum UserRole {
-  GENERAL = 'GENERAL',
-  DIRECCION = 'DIRECCION',
-  ADMIN = 'ADMIN',
+  GENERAL = "GENERAL",
+  DIRECCION = "DIRECCION",
+  ADMIN = "ADMIN",
 }
 
 export enum ParkingLocation {
-  SUBTERRANEO = 'SUBTERRANEO',
-  EXTERIOR = 'EXTERIOR',
+  SUBTERRANEO = "SUBTERRANEO",
+  EXTERIOR = "EXTERIOR",
 }
 
 export enum ReservationStatus {
-  ACTIVE = 'ACTIVE',
-  CANCELLED = 'CANCELLED',
+  ACTIVE = "ACTIVE",
+  CANCELLED = "CANCELLED",
 }
 
 // User Types

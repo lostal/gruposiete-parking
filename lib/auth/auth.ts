@@ -1,11 +1,14 @@
-import NextAuth from 'next-auth';
-import authConfig from './auth.config';
-import { UserRole } from '@/types';
-import { AUTH_CONSTANTS } from '@/lib/constants';
+import NextAuth from "next-auth";
+import authConfig from "./auth.config";
+import { UserRole } from "@/types";
+import { AUTH_CONSTANTS } from "@/lib/constants";
 
 // Helper para validar que el rol es válido
 function isValidRole(role: unknown): role is UserRole {
-  return typeof role === 'string' && Object.values(UserRole).includes(role as UserRole);
+  return (
+    typeof role === "string" &&
+    Object.values(UserRole).includes(role as UserRole)
+  );
 }
 
 export const {
@@ -16,12 +19,12 @@ export const {
 } = NextAuth({
   ...authConfig,
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: AUTH_CONSTANTS.SESSION_MAX_AGE, // 24 horas (más seguro que 7 días)
   },
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: "/login",
+    error: "/login",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -31,7 +34,9 @@ export const {
           token.role = user.role;
         } else {
           // Si el rol no es válido, usar GENERAL por defecto
-          console.error(`Rol inválido detectado: ${user.role}, usando GENERAL por defecto`);
+          console.error(
+            `Rol inválido detectado: ${user.role}, usando GENERAL por defecto`
+          );
           token.role = UserRole.GENERAL;
         }
         token.id = user.id;
@@ -41,8 +46,10 @@ export const {
       // SEGURIDAD: Validar que el rol en el token siga siendo válido
       // (protección contra manipulación de JWT)
       if (token.role && !isValidRole(token.role)) {
-        console.error(`Rol en token manipulado: ${token.role}, invalidando sesión`);
-        throw new Error('Token inválido'); // Invalidar token
+        console.error(
+          `Rol en token manipulado: ${token.role}, invalidando sesión`
+        );
+        throw new Error("Token inválido"); // Invalidar token
       }
 
       return token;

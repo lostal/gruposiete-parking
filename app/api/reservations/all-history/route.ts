@@ -1,9 +1,9 @@
-export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import dbConnect from '@/lib/db/mongodb';
-import Reservation from '@/models/Reservation';
-import ParkingSpot from '@/models/ParkingSpot';
+export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import dbConnect from "@/lib/db/mongodb";
+import Reservation from "@/models/Reservation";
+import ParkingSpot from "@/models/ParkingSpot";
 
 // Asegurar que el modelo ParkingSpot esté registrado para populate
 const _ensureModels = [ParkingSpot];
@@ -12,14 +12,14 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     await dbConnect();
 
     // Obtener TODAS las reservas del usuario (activas, canceladas, pasadas)
     const reservations = await Reservation.find({ userId: session.user.id })
-      .populate('parkingSpotId')
+      .populate("parkingSpotId")
       .sort({ date: -1 }); // Ordenar por fecha descendente (más reciente primero)
 
     const formattedReservations = reservations.map((res) => ({
@@ -32,7 +32,10 @@ export async function GET() {
 
     return NextResponse.json(formattedReservations);
   } catch (error) {
-    console.error('Error fetching all history:', error);
-    return NextResponse.json({ error: 'Error al obtener historial' }, { status: 500 });
+    console.error("Error fetching all history:", error);
+    return NextResponse.json(
+      { error: "Error al obtener historial" },
+      { status: 500 }
+    );
   }
 }

@@ -1,17 +1,17 @@
-export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import dbConnect from '@/lib/db/mongodb';
-import Reservation from '@/models/Reservation';
-import ParkingSpot from '@/models/ParkingSpot';
-import User from '@/models/User';
-import Availability from '@/models/Availability';
-import { startOfDay, endOfDay } from 'date-fns';
-import { ReservationStatus, UserRole } from '@/types';
-import { formatDate } from '@/lib/utils/dates';
-import mongoose from 'mongoose';
-import { checkRateLimit } from '@/lib/ratelimit';
-import { logger } from '@/lib/logger';
+export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import dbConnect from "@/lib/db/mongodb";
+import Reservation from "@/models/Reservation";
+import ParkingSpot from "@/models/ParkingSpot";
+import User from "@/models/User";
+import Availability from "@/models/Availability";
+import { startOfDay, endOfDay } from "date-fns";
+import { ReservationStatus, UserRole } from "@/types";
+import { formatDate } from "@/lib/utils/dates";
+import mongoose from "mongoose";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 // Asegurar que los modelos estén registrados para populate
 const _ensureModels = [ParkingSpot, User];
@@ -20,17 +20,17 @@ export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const parkingSpotId = searchParams.get('parkingSpotId');
-    const upcoming = searchParams.get('upcoming') === 'true';
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const userId = searchParams.get("userId");
+    const parkingSpotId = searchParams.get("parkingSpotId");
+    const upcoming = searchParams.get("upcoming") === "true";
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "50");
 
     await dbConnect();
 
@@ -41,8 +41,8 @@ export async function GET(request: Request) {
       // Si el userId solicitado no es el del usuario actual, verificar que sea ADMIN
       if (userId !== session.user.id && session.user.role !== UserRole.ADMIN) {
         return NextResponse.json(
-          { error: 'No autorizado para ver reservas de otros usuarios' },
-          { status: 403 },
+          { error: "No autorizado para ver reservas de otros usuarios" },
+          { status: 403 }
         );
       }
       query.userId = userId;
@@ -79,8 +79,8 @@ export async function GET(request: Request) {
     const total = await Reservation.countDocuments(query);
 
     const reservations = await Reservation.find(query)
-      .populate('parkingSpotId')
-      .populate('userId', 'name email')
+      .populate("parkingSpotId")
+      .populate("userId", "name email")
       .sort({ date: 1 })
       .skip(skip)
       .limit(limit);
@@ -104,8 +104,11 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    logger.error('Error fetching reservations', error as Error);
-    return NextResponse.json({ error: 'Error al obtener reservas' }, { status: 500 });
+    logger.error("Error fetching reservations", error as Error);
+    return NextResponse.json(
+      { error: "Error al obtener reservas" },
+      { status: 500 }
+    );
   }
 }
 
@@ -113,14 +116,14 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     // Solo usuarios generales pueden reservar
     if (session.user.role !== UserRole.GENERAL) {
       return NextResponse.json(
-        { error: 'Solo usuarios generales pueden reservar plazas' },
-        { status: 403 },
+        { error: "Solo usuarios generales pueden reservar plazas" },
+        { status: 403 }
       );
     }
 
@@ -134,33 +137,40 @@ export async function POST(request: Request) {
     if (!rateLimit.success) {
       return NextResponse.json(
         {
-          error: 'Demasiados intentos de reserva. Intenta de nuevo en unos minutos.',
+          error:
+            "Demasiados intentos de reserva. Intenta de nuevo en unos minutos.",
           retryAfter: Math.ceil((rateLimit.reset - Date.now()) / 1000),
         },
         {
           status: 429,
           headers: {
-            'X-RateLimit-Limit': rateLimit.limit.toString(),
-            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
-            'X-RateLimit-Reset': rateLimit.reset.toString(),
+            "X-RateLimit-Limit": rateLimit.limit.toString(),
+            "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+            "X-RateLimit-Reset": rateLimit.reset.toString(),
           },
-        },
+        }
       );
     }
 
     const { parkingSpotId, date: dateStr } = await request.json();
 
     if (!parkingSpotId || !dateStr) {
-      return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
+      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
     if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
-      return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID de plaza inválido" },
+        { status: 400 }
+      );
     }
 
     const parsedDate = new Date(dateStr);
     if (isNaN(parsedDate.getTime())) {
-      return NextResponse.json({ error: 'Formato de fecha inválido' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Formato de fecha inválido" },
+        { status: 400 }
+      );
     }
 
     const date = startOfDay(parsedDate);
@@ -168,15 +178,15 @@ export async function POST(request: Request) {
     const dayOfWeek = date.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       return NextResponse.json(
-        { error: 'Solo se pueden hacer reservas para días laborables (L-V)' },
-        { status: 400 },
+        { error: "Solo se pueden hacer reservas para días laborables (L-V)" },
+        { status: 400 }
       );
     }
 
     if (date < startOfDay(new Date())) {
       return NextResponse.json(
-        { error: 'No se pueden hacer reservas para fechas pasadas' },
-        { status: 400 },
+        { error: "No se pueden hacer reservas para fechas pasadas" },
+        { status: 400 }
       );
     }
 
@@ -184,8 +194,10 @@ export async function POST(request: Request) {
     maxFutureDate.setDate(maxFutureDate.getDate() + 60);
     if (date > maxFutureDate) {
       return NextResponse.json(
-        { error: 'No se pueden hacer reservas con más de 60 días de antelación' },
-        { status: 400 },
+        {
+          error: "No se pueden hacer reservas con más de 60 días de antelación",
+        },
+        { status: 400 }
       );
     }
 
@@ -210,8 +222,8 @@ export async function POST(request: Request) {
         if (existingUserReservation) {
           await session_db.abortTransaction();
           return NextResponse.json(
-            { error: 'Ya tienes una reserva activa para este día' },
-            { status: 400 },
+            { error: "Ya tienes una reserva activa para este día" },
+            { status: 400 }
           );
         }
 
@@ -224,8 +236,11 @@ export async function POST(request: Request) {
         if (!availability) {
           await session_db.abortTransaction();
           return NextResponse.json(
-            { error: 'Esta plaza no está disponible para reservar en esta fecha' },
-            { status: 400 },
+            {
+              error:
+                "Esta plaza no está disponible para reservar en esta fecha",
+            },
+            { status: 400 }
           );
         }
 
@@ -238,8 +253,8 @@ export async function POST(request: Request) {
         if (existingReservation) {
           await session_db.abortTransaction();
           return NextResponse.json(
-            { error: 'Esta plaza ya ha sido reservada por otro usuario' },
-            { status: 400 },
+            { error: "Esta plaza ya ha sido reservada por otro usuario" },
+            { status: 400 }
           );
         }
 
@@ -250,16 +265,21 @@ export async function POST(request: Request) {
           status: ReservationStatus.ACTIVE,
         };
 
-        const [reservation] = await Reservation.create([reservationData], { session: session_db });
+        const [reservation] = await Reservation.create([reservationData], {
+          session: session_db,
+        });
 
         await session_db.commitTransaction();
 
         const populatedReservation = await Reservation.findById(reservation._id)
-          .populate('parkingSpotId')
-          .populate('userId', 'name email');
+          .populate("parkingSpotId")
+          .populate("userId", "name email");
 
         if (!populatedReservation) {
-          return NextResponse.json({ error: 'Error al obtener reserva creada' }, { status: 500 });
+          return NextResponse.json(
+            { error: "Error al obtener reserva creada" },
+            { status: 500 }
+          );
         }
 
         return NextResponse.json({
@@ -277,8 +297,8 @@ export async function POST(request: Request) {
         if (transactionError instanceof Error) {
           // Error de clave duplicada (race condition) - reintentar
           if (
-            transactionError.message.includes('duplicate key') ||
-            transactionError.message.includes('E11000')
+            transactionError.message.includes("duplicate key") ||
+            transactionError.message.includes("E11000")
           ) {
             lastError = transactionError;
             retries--;
@@ -294,26 +314,38 @@ export async function POST(request: Request) {
           }
 
           // Error de validación de Mongoose - retornar 400
-          if (transactionError.name === 'ValidationError') {
+          if (transactionError.name === "ValidationError") {
             session_db.endSession();
-            logger.error('Validation error in reservation transaction', transactionError);
+            logger.error(
+              "Validation error in reservation transaction",
+              transactionError
+            );
             return NextResponse.json(
-              { error: 'Datos de reserva inválidos: ' + transactionError.message },
-              { status: 400 },
+              {
+                error:
+                  "Datos de reserva inválidos: " + transactionError.message,
+              },
+              { status: 400 }
             );
           }
 
           // Error de cast (ID inválido) - retornar 400
-          if (transactionError.name === 'CastError') {
+          if (transactionError.name === "CastError") {
             session_db.endSession();
-            logger.error('Cast error in reservation transaction', transactionError);
-            return NextResponse.json({ error: 'ID de plaza inválido' }, { status: 400 });
+            logger.error(
+              "Cast error in reservation transaction",
+              transactionError
+            );
+            return NextResponse.json(
+              { error: "ID de plaza inválido" },
+              { status: 400 }
+            );
           }
 
           // Errores de MongoDB transaccionales (WriteConflict, etc.) - reintentar una vez
           if (
-            transactionError.message.includes('WriteConflict') ||
-            transactionError.message.includes('TransientTransactionError')
+            transactionError.message.includes("WriteConflict") ||
+            transactionError.message.includes("TransientTransactionError")
           ) {
             lastError = transactionError;
             retries--;
@@ -328,21 +360,30 @@ export async function POST(request: Request) {
 
           // Error de conexión a BD - retornar 503
           if (
-            transactionError.message.includes('MongoNetworkError') ||
-            transactionError.message.includes('connection') ||
-            transactionError.message.includes('timeout')
+            transactionError.message.includes("MongoNetworkError") ||
+            transactionError.message.includes("connection") ||
+            transactionError.message.includes("timeout")
           ) {
             session_db.endSession();
-            logger.error('Database connection error in reservation', transactionError);
+            logger.error(
+              "Database connection error in reservation",
+              transactionError
+            );
             return NextResponse.json(
-              { error: 'Error de conexión con la base de datos. Intenta de nuevo.' },
-              { status: 503 },
+              {
+                error:
+                  "Error de conexión con la base de datos. Intenta de nuevo.",
+              },
+              { status: 503 }
             );
           }
 
           // Otros errores no reintentar
           session_db.endSession();
-          logger.error('Unexpected error in reservation transaction', transactionError);
+          logger.error(
+            "Unexpected error in reservation transaction",
+            transactionError
+          );
           throw transactionError;
         }
 
@@ -360,12 +401,15 @@ export async function POST(request: Request) {
     // Si llegamos aquí, todos los reintentos fallaron
     if (lastError) {
       return NextResponse.json(
-        { error: 'Esta plaza ya ha sido reservada por otro usuario' },
-        { status: 400 },
+        { error: "Esta plaza ya ha sido reservada por otro usuario" },
+        { status: 400 }
       );
     }
   } catch (error) {
-    logger.error('Error creating reservation', error as Error);
-    return NextResponse.json({ error: 'Error al crear reserva' }, { status: 500 });
+    logger.error("Error creating reservation", error as Error);
+    return NextResponse.json(
+      { error: "Error al crear reserva" },
+      { status: 500 }
+    );
   }
 }

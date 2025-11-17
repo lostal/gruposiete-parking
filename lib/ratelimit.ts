@@ -92,11 +92,11 @@ export function checkRateLimit(config: RateLimitConfig): RateLimitResult {
  */
 export function getClientIdentifier(request: Request): string {
   // Intentar obtener IP real (detrás de proxy/CDN)
-  const forwarded = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
 
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    return forwarded.split(",")[0].trim();
   }
 
   if (realIp) {
@@ -104,5 +104,5 @@ export function getClientIdentifier(request: Request): string {
   }
 
   // Fallback a IP directa (en desarrollo)
-  return 'unknown';
+  return "unknown";
 }

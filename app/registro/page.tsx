@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
-import { UserRole } from '@/types';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
+import { UserRole } from "@/types";
 
 export default function RegistroPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>(UserRole.GENERAL);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -22,18 +22,18 @@ export default function RegistroPage() {
 
     if (password !== confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Las contraseñas no coinciden',
-        variant: 'destructive',
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive",
       });
       return;
     }
 
     if (password.length < 8) {
       toast({
-        title: 'Error',
-        description: 'La contraseña debe tener al menos 8 caracteres',
-        variant: 'destructive',
+        title: "Error",
+        description: "La contraseña debe tener al menos 8 caracteres",
+        variant: "destructive",
       });
       return;
     }
@@ -41,10 +41,10 @@ export default function RegistroPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/registro', {
-        method: 'POST',
+      const response = await fetch("/api/auth/registro", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name,
@@ -58,29 +58,29 @@ export default function RegistroPage() {
 
       if (!response.ok) {
         toast({
-          title: 'Error',
-          description: data.error || 'Error al registrar usuario',
-          variant: 'destructive',
+          title: "Error",
+          description: data.error || "Error al registrar usuario",
+          variant: "destructive",
         });
         return;
       }
 
       toast({
-        title: 'Registro exitoso',
+        title: "Registro exitoso",
         description:
           role === UserRole.DIRECCION
-            ? 'Un administrador debe asignarte una plaza. Mientras tanto, puedes iniciar sesión.'
-            : 'Ya puedes iniciar sesión con tus credenciales',
+            ? "Un administrador debe asignarte una plaza. Mientras tanto, puedes iniciar sesión."
+            : "Ya puedes iniciar sesión con tus credenciales",
       });
 
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 2000);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Ha ocurrido un error inesperado',
-        variant: 'destructive',
+        title: "Error",
+        description: "Ha ocurrido un error inesperado",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -165,12 +165,17 @@ export default function RegistroPage() {
                 className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
                          brutal-border"
               >
-                <option value={UserRole.GENERAL}>Usuario General (sin plaza asignada)</option>
-                <option value={UserRole.DIRECCION}>Dirección (con plaza asignada)</option>
+                <option value={UserRole.GENERAL}>
+                  Usuario General (sin plaza asignada)
+                </option>
+                <option value={UserRole.DIRECCION}>
+                  Dirección (con plaza asignada)
+                </option>
               </select>
               {role === UserRole.DIRECCION && (
                 <p className="text-xs text-gray-500">
-                  Un administrador debe asignarte una plaza específica después del registro.
+                  Un administrador debe asignarte una plaza específica después
+                  del registro.
                 </p>
               )}
             </div>
@@ -223,7 +228,7 @@ export default function RegistroPage() {
                        brutal-border brutal-shadow-sm brutal-hover tap-none
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
             </button>
           </form>
 

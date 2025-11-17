@@ -1,13 +1,13 @@
-import { format, isWeekend, startOfDay, parseISO, addDays } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { format, isWeekend, startOfDay, parseISO, addDays } from "date-fns";
+import { es } from "date-fns/locale";
 
 export function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : date;
-  return format(dateObj, 'PPP', { locale: es });
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  return format(dateObj, "PPP", { locale: es });
 }
 
 export function formatDateForInput(date: Date): string {
-  return format(date, 'yyyy-MM-dd');
+  return format(date, "yyyy-MM-dd");
 }
 
 export function isWeekday(date: Date): boolean {
@@ -23,7 +23,7 @@ export function getNextWeekday(date: Date = new Date()): Date {
 }
 
 export function normalizeDate(date: Date | string): Date {
-  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
   return startOfDay(dateObj);
 }
 

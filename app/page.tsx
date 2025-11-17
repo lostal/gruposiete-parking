@@ -1,14 +1,14 @@
-export const dynamic = 'force-dynamic';
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth/auth';
-import Link from 'next/link';
-import Image from 'next/image';
+export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/auth";
+import Link from "next/link";
+import Image from "next/image";
 
 export default async function Home() {
   const session = await auth();
 
   if (session) {
-    redirect('/dashboard');
+    redirect("/dashboard");
   }
 
   return (
@@ -26,7 +26,9 @@ export default async function Home() {
             />
             <div className="flex items-center gap-3">
               <div className="h-[3px] w-16 bg-[#fdc373] rounded-full"></div>
-              <h1 className="text-3xl font-extrabold text-[#343f48] tracking-tight">PARKING</h1>
+              <h1 className="text-3xl font-extrabold text-[#343f48] tracking-tight">
+                PARKING
+              </h1>
               <div className="h-[3px] w-16 bg-[#fdc373] rounded-full"></div>
             </div>
           </div>

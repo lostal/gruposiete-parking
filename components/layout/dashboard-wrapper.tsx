@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Navbar } from './navbar';
-import { ReservasSidebar } from '../reservas-sidebar';
-import { ProfileSidebar } from '../profile-sidebar';
-import { UserRole } from '@/types';
+import { useState } from "react";
+import { Navbar } from "./navbar";
+import { ReservasSidebar } from "../reservas-sidebar";
+import { ProfileSidebar } from "../profile-sidebar";
+import { UserRole } from "@/types";
 
 interface DashboardWrapperProps {
   userName: string;
@@ -41,8 +41,13 @@ export function DashboardWrapper({
         onOpenHistorial={handleOpenHistorial}
         onOpenProfile={handleOpenProfile}
       />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-6 sm:pt-8">{children}</main>
-      <ReservasSidebar isOpen={isHistorialOpen} onClose={() => setIsHistorialOpen(false)} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-6 sm:pt-8">
+        {children}
+      </main>
+      <ReservasSidebar
+        isOpen={isHistorialOpen}
+        onClose={() => setIsHistorialOpen(false)}
+      />
       <ProfileSidebar
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}

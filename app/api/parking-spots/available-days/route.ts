@@ -1,24 +1,27 @@
-export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import dbConnect from '@/lib/db/mongodb';
-import Availability from '@/models/Availability';
-import Reservation from '@/models/Reservation';
-import { startOfDay, format } from 'date-fns';
+export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import dbConnect from "@/lib/db/mongodb";
+import Availability from "@/models/Availability";
+import Reservation from "@/models/Reservation";
+import { startOfDay, format } from "date-fns";
 
 export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const startDateParam = searchParams.get('startDate');
-    const endDateParam = searchParams.get('endDate');
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
 
     if (!startDateParam || !endDateParam) {
-      return NextResponse.json({ error: 'Fechas de inicio y fin requeridas' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Fechas de inicio y fin requeridas" },
+        { status: 400 }
+      );
     }
 
     const startDate = startOfDay(new Date(startDateParam));
@@ -31,19 +34,22 @@ export async function GET(request: Request) {
     const unavailableByDate = await Availability.find({
       date: { $gte: startDate, $lte: endDate },
       isAvailable: false,
-    }).select('parkingSpotId date');
+    }).select("parkingSpotId date");
 
     // Obtener todas las reservas activas en el rango
     const reservationsByDate = await Reservation.find({
       date: { $gte: startDate, $lte: endDate },
-      status: 'ACTIVE',
-    }).select('parkingSpotId date');
+      status: "ACTIVE",
+    }).select("parkingSpotId date");
 
     // Agrupar por fecha
-    const dateMap = new Map<string, { unavailable: Set<string>; reserved: Set<string> }>();
+    const dateMap = new Map<
+      string,
+      { unavailable: Set<string>; reserved: Set<string> }
+    >();
 
     unavailableByDate.forEach((avail) => {
-      const dateKey = format(new Date(avail.date), 'yyyy-MM-dd');
+      const dateKey = format(new Date(avail.date), "yyyy-MM-dd");
       if (!dateMap.has(dateKey)) {
         dateMap.set(dateKey, { unavailable: new Set(), reserved: new Set() });
       }
@@ -51,7 +57,7 @@ export async function GET(request: Request) {
     });
 
     reservationsByDate.forEach((res) => {
-      const dateKey = format(new Date(res.date), 'yyyy-MM-dd');
+      const dateKey = format(new Date(res.date), "yyyy-MM-dd");
       if (!dateMap.has(dateKey)) {
         dateMap.set(dateKey, { unavailable: new Set(), reserved: new Set() });
       }
@@ -63,7 +69,7 @@ export async function GET(request: Request) {
 
     dateMap.forEach((data, dateKey) => {
       const availableSpots = Array.from(data.unavailable).filter(
-        (spotId) => !data.reserved.has(spotId),
+        (spotId) => !data.reserved.has(spotId)
       );
       if (availableSpots.length > 0) {
         daysWithAvailability.push(dateKey);
@@ -72,10 +78,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(daysWithAvailability);
   } catch (error) {
-    console.error('Error fetching available days:', error);
+    console.error("Error fetching available days:", error);
     return NextResponse.json(
-      { error: 'Error al obtener días con disponibilidad' },
-      { status: 500 },
+      { error: "Error al obtener días con disponibilidad" },
+      { status: 500 }
     );
   }
 }

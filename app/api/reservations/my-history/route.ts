@@ -1,10 +1,10 @@
-export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import dbConnect from '@/lib/db/mongodb';
-import Reservation from '@/models/Reservation';
-import ParkingSpot from '@/models/ParkingSpot';
-import { startOfDay } from 'date-fns';
+export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import dbConnect from "@/lib/db/mongodb";
+import Reservation from "@/models/Reservation";
+import ParkingSpot from "@/models/ParkingSpot";
+import { startOfDay } from "date-fns";
 
 // Asegurar que el modelo ParkingSpot esté registrado para populate
 const _ensureModels = [ParkingSpot];
@@ -13,7 +13,7 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     await dbConnect();
@@ -25,7 +25,7 @@ export async function GET() {
       userId: session.user.id,
       date: { $gte: today },
     })
-      .populate('parkingSpotId')
+      .populate("parkingSpotId")
       .sort({ date: 1 }); // Ordenar de más cercana a más lejana
 
     const formattedReservations = reservations.map((res) => ({
@@ -38,7 +38,10 @@ export async function GET() {
 
     return NextResponse.json(formattedReservations);
   } catch (error) {
-    console.error('Error fetching history:', error);
-    return NextResponse.json({ error: 'Error al obtener historial' }, { status: 500 });
+    console.error("Error fetching history:", error);
+    return NextResponse.json(
+      { error: "Error al obtener historial" },
+      { status: 500 }
+    );
   }
 }

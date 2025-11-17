@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
@@ -27,19 +27,19 @@ export default function LoginPage() {
 
       if (result?.error) {
         toast({
-          title: 'Error',
-          description: 'Email o contraseña incorrectos',
-          variant: 'destructive',
+          title: "Error",
+          description: "Email o contraseña incorrectos",
+          variant: "destructive",
         });
       } else {
-        router.push('/dashboard');
+        router.push("/dashboard");
         router.refresh();
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Ha ocurrido un error inesperado',
-        variant: 'destructive',
+        title: "Error",
+        description: "Ha ocurrido un error inesperado",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -117,7 +117,7 @@ export default function LoginPage() {
                        brutal-border brutal-shadow-sm brutal-hover tap-none
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLoading ? 'Iniciando...' : 'Entrar'}
+              {isLoading ? "Iniciando..." : "Entrar"}
             </button>
           </form>
 

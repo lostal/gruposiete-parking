@@ -31,17 +31,20 @@ Desarrollado con **Next.js 14**, **TypeScript** y **MongoDB**, implementa autent
 ## 🚀 Funcionalidades
 
 ### 👤 Usuario General
+
 - Reservar plazas disponibles para días laborables (L-V, máximo 60 días de anticipación)
 - Una reserva activa por usuario por día
 - Visualizar historial completo de reservas (activas y canceladas)
 - Gestionar perfil y cambiar contraseña
 
 ### 🏢 Dirección
+
 - Todas las funcionalidades de Usuario General
 - Marcar disponibilidad de plazas asignadas por fecha
 - Dashboard con control de plazas propias
 
 ### 🔧 Administrador
+
 - Todas las funcionalidades de Dirección
 - Gestión completa de usuarios (crear, editar, eliminar)
 - Asignación de plazas permanentes a usuarios

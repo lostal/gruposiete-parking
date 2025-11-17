@@ -7,16 +7,16 @@
  * Útil para nombres de usuarios, descripciones, etc.
  */
 export function sanitizeText(text: string): string {
-  if (!text) return '';
+  if (!text) return "";
 
   return (
     text
       // Eliminar tags HTML
-      .replace(/<[^>]*>/g, '')
+      .replace(/<[^>]*>/g, "")
       // Eliminar caracteres de control
-      .replace(/[\x00-\x1F\x7F]/g, '')
+      .replace(/[\x00-\x1F\x7F]/g, "")
       // Normalizar espacios
-      .replace(/\s+/g, ' ')
+      .replace(/\s+/g, " ")
       .trim()
   );
 }
@@ -26,13 +26,13 @@ export function sanitizeText(text: string): string {
  * Permite letras, números, espacios, guiones y apóstrofes
  */
 export function sanitizeName(name: string): string {
-  if (!name) return '';
+  if (!name) return "";
 
   return (
     sanitizeText(name)
       // Permitir solo caracteres seguros para nombres
       // Letras (incluyendo acentos), números, espacios, guiones, apóstrofes, puntos
-      .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-'.]/g, '')
+      .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-'.]/g, "")
       .trim()
   );
 }
@@ -41,7 +41,7 @@ export function sanitizeName(name: string): string {
  * Sanitiza email
  */
 export function sanitizeEmail(email: string): string {
-  if (!email) return '';
+  if (!email) return "";
 
   return email.toLowerCase().trim();
 }
@@ -50,10 +50,10 @@ export function sanitizeEmail(email: string): string {
  * Valida y sanitiza ObjectId de MongoDB
  */
 export function sanitizeObjectId(id: string): string {
-  if (!id) return '';
+  if (!id) return "";
 
   // Solo permitir caracteres hexadecimales (válidos para ObjectId)
-  return id.replace(/[^a-f0-9]/gi, '').slice(0, 24);
+  return id.replace(/[^a-f0-9]/gi, "").slice(0, 24);
 }
 
 /**
@@ -61,15 +61,15 @@ export function sanitizeObjectId(id: string): string {
  * (React ya hace esto automáticamente, pero útil para otros contextos)
  */
 export function escapeHtml(text: string): string {
-  if (!text) return '';
+  if (!text) return "";
 
   const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "/": "&#x2F;",
   };
 
   return text.replace(/[&<>"'/]/g, (char) => map[char]);

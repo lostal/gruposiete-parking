@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IAvailability extends Document {
   parkingSpotId: mongoose.Types.ObjectId;
@@ -20,12 +20,12 @@ const AvailabilitySchema = new Schema<IAvailability>(
   {
     parkingSpotId: {
       type: Schema.Types.ObjectId,
-      ref: 'ParkingSpot',
-      required: [true, 'El ID de la plaza es requerido'],
+      ref: "ParkingSpot",
+      required: [true, "El ID de la plaza es requerido"],
     },
     date: {
       type: Date,
-      required: [true, 'La fecha es requerida'],
+      required: [true, "La fecha es requerida"],
     },
     isAvailable: {
       type: Boolean,
@@ -35,13 +35,13 @@ const AvailabilitySchema = new Schema<IAvailability>(
     },
     markedBy: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'El usuario que marca la disponibilidad es requerido'],
+      ref: "User",
+      required: [true, "El usuario que marca la disponibilidad es requerido"],
     },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // Índices compuestos para búsquedas eficientes
@@ -50,6 +50,7 @@ AvailabilitySchema.index({ date: 1 });
 AvailabilitySchema.index({ isAvailable: 1 });
 
 const Availability: Model<IAvailability> =
-  mongoose.models.Availability || mongoose.model<IAvailability>('Availability', AvailabilitySchema);
+  mongoose.models.Availability ||
+  mongoose.model<IAvailability>("Availability", AvailabilitySchema);
 
 export default Availability;

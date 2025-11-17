@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IPasswordResetToken extends Document {
   userId: mongoose.Types.ObjectId;
@@ -12,18 +12,18 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'El ID del usuario es requerido'],
+      ref: "User",
+      required: [true, "El ID del usuario es requerido"],
     },
     token: {
       type: String,
-      required: [true, 'El token es requerido'],
+      required: [true, "El token es requerido"],
       unique: true,
       index: true,
     },
     expiresAt: {
       type: Date,
-      required: [true, 'La fecha de expiración es requerida'],
+      required: [true, "La fecha de expiración es requerida"],
     },
     used: {
       type: Boolean,
@@ -33,7 +33,7 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // Índice para auto-eliminar tokens expirados (TTL index)
@@ -44,6 +44,9 @@ PasswordResetTokenSchema.index({ token: 1, used: 1 });
 
 const PasswordResetToken: Model<IPasswordResetToken> =
   mongoose.models.PasswordResetToken ||
-  mongoose.model<IPasswordResetToken>('PasswordResetToken', PasswordResetTokenSchema);
+  mongoose.model<IPasswordResetToken>(
+    "PasswordResetToken",
+    PasswordResetTokenSchema
+  );
 
 export default PasswordResetToken;

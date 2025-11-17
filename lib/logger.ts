@@ -4,11 +4,11 @@
  */
 
 export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  FATAL = 'fatal',
+  DEBUG = "debug",
+  INFO = "info",
+  WARN = "warn",
+  ERROR = "error",
+  FATAL = "fatal",
 }
 
 interface LogContext {
@@ -31,7 +31,7 @@ class Logger {
   private isDevelopment: boolean;
 
   constructor() {
-    this.isDevelopment = process.env.NODE_ENV === 'development';
+    this.isDevelopment = process.env.NODE_ENV === "development";
   }
 
   /**
@@ -73,7 +73,12 @@ class Logger {
   /**
    * Log genérico
    */
-  private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
+  private log(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+    error?: Error
+  ): void {
     const entry: LogEntry = {
       level,
       message,
@@ -104,7 +109,10 @@ class Logger {
     }
 
     // TODO: En producción, enviar también a servicio externo (Sentry, LogTail, etc.)
-    if (!this.isDevelopment && (level === LogLevel.ERROR || level === LogLevel.FATAL)) {
+    if (
+      !this.isDevelopment &&
+      (level === LogLevel.ERROR || level === LogLevel.FATAL)
+    ) {
       // Aquí integrar Sentry o servicio de logging
       // Example: Sentry.captureException(error, { contexts: context });
     }
@@ -164,9 +172,14 @@ class Logger {
     endpoint: string,
     status: number,
     duration?: number,
-    context?: LogContext,
+    context?: LogContext
   ): void {
-    const level = status >= 500 ? LogLevel.ERROR : status >= 400 ? LogLevel.WARN : LogLevel.INFO;
+    const level =
+      status >= 500
+        ? LogLevel.ERROR
+        : status >= 400
+        ? LogLevel.WARN
+        : LogLevel.INFO;
 
     this.log(level, `API Response: ${method} ${endpoint} - ${status}`, {
       ...context,
@@ -184,7 +197,7 @@ class Logger {
     operation: string,
     collection: string,
     duration?: number,
-    context?: LogContext,
+    context?: LogContext
   ): void {
     this.debug(`DB Operation: ${operation} on ${collection}`, {
       ...context,
@@ -214,9 +227,9 @@ export const logger = new Logger();
 export function getRequestContext(request: Request): LogContext {
   return {
     ip:
-      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-      request.headers.get('x-real-ip') ||
-      'unknown',
-    userAgent: request.headers.get('user-agent') || 'unknown',
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown",
+    userAgent: request.headers.get("user-agent") || "unknown",
   };
 }

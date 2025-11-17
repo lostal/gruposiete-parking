@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { signOut } from 'next-auth/react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { UserRole } from '@/types';
-import { useState, useEffect } from 'react';
-import { User, LogOut, Menu, X, Clock } from 'lucide-react';
+import { signOut } from "next-auth/react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { UserRole } from "@/types";
+import { useState, useEffect } from "react";
+import { User, LogOut, Menu, X, Clock } from "lucide-react";
 
 interface NavbarProps {
   userName: string;
@@ -34,17 +34,17 @@ export function Navbar({
   // Prevenir scroll cuando el menú móvil está abierto
   useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [mobileMenuOpen]);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/login' });
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (
@@ -116,7 +116,11 @@ export function Navbar({
       <div
         className={`
           fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden transition-all duration-300
-          ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+          ${
+            mobileMenuOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }
         `}
         onClick={() => setMobileMenuOpen(false)}
       />
@@ -126,7 +130,7 @@ export function Navbar({
         className={`
           fixed top-[64px] right-0 bottom-0 w-[280px] bg-white border-l-[3px] border-[#343f48] z-40 md:hidden
           transition-transform duration-300 ease-out overflow-y-auto
-          ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+          ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}
         `}
       >
         <div className="p-6 space-y-6">

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { format, startOfDay, addDays } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useState, useEffect, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { format, startOfDay, addDays } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface DashboardGeneralProps {
   userId: string;
@@ -36,18 +36,20 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
 
   const fetchMyReservations = useCallback(async () => {
     try {
-      const response = await fetch(`/api/reservations?userId=${userId}&upcoming=true`);
+      const response = await fetch(
+        `/api/reservations?userId=${userId}&upcoming=true`
+      );
       if (response.ok) {
         const data = await response.json();
         const reservationsArray = data.reservations || data;
         const sortedData = reservationsArray.sort(
           (a: MyReservation, b: MyReservation) =>
-            new Date(a.date).getTime() - new Date(b.date).getTime(),
+            new Date(a.date).getTime() - new Date(b.date).getTime()
         );
         setMyReservations(sortedData);
       }
     } catch (error) {
-      console.error('Error fetching reservations:', error);
+      console.error("Error fetching reservations:", error);
     }
   }, [userId]);
 
@@ -55,14 +57,16 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     if (!selectedDate) return;
 
     try {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const response = await fetch(`/api/parking-spots/available?date=${dateStr}`);
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const response = await fetch(
+        `/api/parking-spots/available?date=${dateStr}`
+      );
       if (response.ok) {
         const data = await response.json();
         setAvailableSpots(data);
       }
     } catch (error) {
-      console.error('Error fetching available spots:', error);
+      console.error("Error fetching available spots:", error);
     }
   }, [selectedDate]);
 
@@ -73,18 +77,20 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
 
-      const startDate = format(firstDay, 'yyyy-MM-dd');
-      const endDate = format(lastDay, 'yyyy-MM-dd');
+      const startDate = format(firstDay, "yyyy-MM-dd");
+      const endDate = format(lastDay, "yyyy-MM-dd");
 
       const response = await fetch(
-        `/api/parking-spots/available-days?startDate=${startDate}&endDate=${endDate}`,
+        `/api/parking-spots/available-days?startDate=${startDate}&endDate=${endDate}`
       );
       if (response.ok) {
         const data = await response.json();
-        setDaysWithAvailability(data.map((dateStr: string) => new Date(dateStr)));
+        setDaysWithAvailability(
+          data.map((dateStr: string) => new Date(dateStr))
+        );
       }
     } catch (error) {
-      console.error('Error fetching days with availability:', error);
+      console.error("Error fetching days with availability:", error);
     }
   }, [currentMonth]);
 
@@ -108,28 +114,26 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           parkingSpotId: spotId,
-          date: format(selectedDate, 'yyyy-MM-dd'),
+          date: format(selectedDate, "yyyy-MM-dd"),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al reservar');
+        throw new Error(data.error || "Error al reservar");
       }
 
       toast({
-        title: '¡Reserva exitosa!',
-        description: `Plaza ${data.reservation.parkingSpot.number} reservada para ${format(
-          selectedDate,
-          'PPP',
-          { locale: es },
-        )}`,
+        title: "¡Reserva exitosa!",
+        description: `Plaza ${
+          data.reservation.parkingSpot.number
+        } reservada para ${format(selectedDate, "PPP", { locale: es })}`,
       });
 
       fetchAvailableSpots();
@@ -137,9 +141,10 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       fetchDaysWithAvailability();
     } catch (error) {
       toast({
-        title: 'Error al reservar',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
+        title: "Error al reservar",
+        description:
+          error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -147,22 +152,22 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
   };
 
   const handleCancelReservation = async (reservationId: string) => {
-    if (!confirm('¿Estás seguro de cancelar esta reserva?')) return;
+    if (!confirm("¿Estás seguro de cancelar esta reserva?")) return;
 
     setIsLoading(true);
 
     try {
       const response = await fetch(`/api/reservations/${reservationId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Error al cancelar reserva');
+        throw new Error("Error al cancelar reserva");
       }
 
       toast({
-        title: 'Reserva cancelada',
-        description: 'Tu reserva ha sido cancelada correctamente',
+        title: "Reserva cancelada",
+        description: "Tu reserva ha sido cancelada correctamente",
       });
 
       fetchMyReservations();
@@ -172,9 +177,9 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'No se pudo cancelar la reserva',
-        variant: 'destructive',
+        title: "Error",
+        description: "No se pudo cancelar la reserva",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -212,11 +217,15 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
   const monthDays = getMonthDays();
 
   const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+    );
   };
 
   const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+    );
   };
 
   return (
@@ -238,7 +247,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               ←
             </button>
             <h3 className="text-sm font-extrabold text-[#343f48]">
-              {format(currentMonth, 'MMMM yyyy', { locale: es }).toUpperCase()}
+              {format(currentMonth, "MMMM yyyy", { locale: es }).toUpperCase()}
             </h3>
             <button
               onClick={goToNextMonth}
@@ -251,7 +260,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
 
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
+            {["L", "M", "X", "J", "V", "S", "D"].map((day) => (
               <div
                 key={day}
                 className="text-center text-[10px] font-bold text-gray-400 uppercase py-1"
@@ -269,39 +278,43 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               }
 
               const isSelected =
-                selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+                selectedDate &&
+                format(date, "yyyy-MM-dd") ===
+                  format(selectedDate, "yyyy-MM-dd");
               const isPast = date < startOfDay(new Date());
               const isWeekend = !isWeekday(date);
               const isDisabled = isPast || isWeekend;
 
               const isReserved = myReservations.some(
-                (res) => format(new Date(res.date), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+                (res) =>
+                  format(new Date(res.date), "yyyy-MM-dd") ===
+                  format(date, "yyyy-MM-dd")
               );
 
               const hasAvailability = daysWithAvailability.some(
-                (d) => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'),
+                (d) => format(d, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
               );
 
-              let bgColor = 'bg-white';
-              let textColor = 'text-[#343f48]';
-              let border = 'border-2 border-gray-200';
+              let bgColor = "bg-white";
+              let textColor = "text-[#343f48]";
+              let border = "border-2 border-gray-200";
 
               if (isSelected) {
-                bgColor = 'bg-blue-100';
-                textColor = 'text-[#343f48]';
-                border = 'border-2 border-blue-400';
+                bgColor = "bg-blue-100";
+                textColor = "text-[#343f48]";
+                border = "border-2 border-blue-400";
               } else if (isReserved) {
-                bgColor = 'bg-green-50';
-                textColor = 'text-green-700';
-                border = 'border-2 border-green-200';
+                bgColor = "bg-green-50";
+                textColor = "text-green-700";
+                border = "border-2 border-green-200";
               } else if (hasAvailability && !isDisabled) {
-                bgColor = 'bg-[#fdc373]/20';
-                textColor = 'text-[#343f48]';
-                border = 'border-2 border-[#fdc373]';
+                bgColor = "bg-[#fdc373]/20";
+                textColor = "text-[#343f48]";
+                border = "border-2 border-[#fdc373]";
               } else if (isDisabled) {
-                bgColor = 'bg-gray-50';
-                textColor = 'text-gray-300';
-                border = 'border border-gray-100';
+                bgColor = "bg-gray-50";
+                textColor = "text-gray-300";
+                border = "border border-gray-100";
               }
 
               return (
@@ -311,10 +324,10 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                   disabled={isDisabled}
                   className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
                               ${bgColor} ${textColor} ${border} ${
-                    !isDisabled && 'hover:border-[#343f48] hover:scale-105'
+                    !isDisabled && "hover:border-[#343f48] hover:scale-105"
                   }`}
                 >
-                  {format(date, 'd')}
+                  {format(date, "d")}
                 </button>
               );
             })}
@@ -324,11 +337,15 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
           <div className="mt-auto pt-3 border-t-2 border-gray-100 space-y-1.5">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-200"></div>
-              <span className="text-[10px] text-gray-600 font-medium">Tu reserva</span>
+              <span className="text-[10px] text-gray-600 font-medium">
+                Tu reserva
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-[#fdc373]/20 border-2 border-[#fdc373]"></div>
-              <span className="text-[10px] text-gray-600 font-medium">Disponibles</span>
+              <span className="text-[10px] text-gray-600 font-medium">
+                Disponibles
+              </span>
             </div>
           </div>
         </div>
@@ -337,13 +354,14 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
         {selectedDate && (
           <div className="mt-6">
             <h3 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
-              {format(selectedDate, 'PPP', { locale: es })}
+              {format(selectedDate, "PPP", { locale: es })}
             </h3>
 
             {/* Reserva del usuario para esta fecha (si existe) */}
             {myReservations.find(
               (res) =>
-                format(new Date(res.date), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'),
+                format(new Date(res.date), "yyyy-MM-dd") ===
+                format(selectedDate, "yyyy-MM-dd")
             ) && (
               <div className="mb-6">
                 <h4 className="text-sm font-bold text-[#343f48] uppercase tracking-wider mb-3">
@@ -352,8 +370,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                 {myReservations
                   .filter(
                     (res) =>
-                      format(new Date(res.date), 'yyyy-MM-dd') ===
-                      format(selectedDate, 'yyyy-MM-dd'),
+                      format(new Date(res.date), "yyyy-MM-dd") ===
+                      format(selectedDate, "yyyy-MM-dd")
                   )
                   .map((reservation) => (
                     <div
@@ -364,8 +382,11 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                         <div className="flex items-center gap-3">
                           <div className="w-14 h-14 bg-green-600 rounded-xl brutal-border flex items-center justify-center">
                             <span className="text-xl font-mono-data font-bold text-white">
-                              {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
-                              {reservation.parkingSpot.number}
+                              {reservation.parkingSpot.location ===
+                              "SUBTERRANEO"
+                                ? "S"
+                                : "E"}
+                              -{reservation.parkingSpot.number}
                             </span>
                           </div>
                           <div>
@@ -373,9 +394,10 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                               Plaza {reservation.parkingSpot.number}
                             </p>
                             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                              {reservation.parkingSpot.location === 'SUBTERRANEO'
-                                ? 'Subterráneo'
-                                : 'Exterior'}
+                              {reservation.parkingSpot.location ===
+                              "SUBTERRANEO"
+                                ? "Subterráneo"
+                                : "Exterior"}
                             </p>
                           </div>
                         </div>
@@ -390,7 +412,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                                  border-2 border-red-600 hover:bg-red-50 transition-colors
                                  disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isLoading ? 'Cancelando...' : 'Cancelar Reserva'}
+                        {isLoading ? "Cancelando..." : "Cancelar Reserva"}
                       </button>
                     </div>
                   ))}
@@ -413,13 +435,18 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                         <div className="flex items-center gap-3">
                           <div className="w-14 h-14 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center shadow-[4px_4px_0_0_#fdc373]">
                             <span className="text-xl font-mono-data font-bold text-white">
-                              {spot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{spot.number}
+                              {spot.location === "SUBTERRANEO" ? "S" : "E"}-
+                              {spot.number}
                             </span>
                           </div>
                           <div>
-                            <p className="font-bold text-[#343f48] text-lg">Plaza {spot.number}</p>
+                            <p className="font-bold text-[#343f48] text-lg">
+                              Plaza {spot.number}
+                            </p>
                             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                              {spot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
+                              {spot.location === "SUBTERRANEO"
+                                ? "Subterráneo"
+                                : "Exterior"}
                             </p>
                           </div>
                         </div>
@@ -431,7 +458,9 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                         <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
                           Asignada a
                         </p>
-                        <p className="text-sm text-[#343f48] font-medium">{spot.assignedToName}</p>
+                        <p className="text-sm text-[#343f48] font-medium">
+                          {spot.assignedToName}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleReserve(spot._id)}
@@ -441,7 +470,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                                  hover:shadow-[6px_6px_0_0_#343f48] active:shadow-[2px_2px_0_0_#343f48]
                                  disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200"
                       >
-                        {isLoading ? 'Reservando...' : 'Reservar'}
+                        {isLoading ? "Reservando..." : "Reservar"}
                       </button>
                     </div>
                   ))}
@@ -453,7 +482,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
             {availableSpots.length === 0 &&
               !myReservations.find(
                 (res) =>
-                  format(new Date(res.date), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'),
+                  format(new Date(res.date), "yyyy-MM-dd") ===
+                  format(selectedDate, "yyyy-MM-dd")
               ) && (
                 <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center">
                   <p className="text-gray-400 font-medium">

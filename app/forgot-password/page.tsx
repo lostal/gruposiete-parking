@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
@@ -16,10 +16,10 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
@@ -28,23 +28,23 @@ export default function ForgotPasswordPage() {
 
       if (!response.ok) {
         toast({
-          title: 'Error',
-          description: data.error || 'Error al procesar la solicitud',
-          variant: 'destructive',
+          title: "Error",
+          description: data.error || "Error al procesar la solicitud",
+          variant: "destructive",
         });
         return;
       }
 
       setEmailSent(true);
       toast({
-        title: 'Email enviado',
+        title: "Email enviado",
         description: data.message,
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Ha ocurrido un error inesperado',
-        variant: 'destructive',
+        title: "Error",
+        description: "Ha ocurrido un error inesperado",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                            brutal-border brutal-shadow-sm brutal-hover tap-none
                            disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {isLoading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                  {isLoading ? "Enviando..." : "Enviar enlace de recuperación"}
                 </button>
               </form>
 
@@ -129,8 +129,8 @@ export default function ForgotPasswordPage() {
                   Revisa tu email
                 </h2>
                 <p className="text-gray-500 font-medium">
-                  Si existe una cuenta con <strong>{email}</strong>, recibirás un enlace para
-                  restablecer tu contraseña.
+                  Si existe una cuenta con <strong>{email}</strong>, recibirás
+                  un enlace para restablecer tu contraseña.
                 </p>
                 <div className="bg-[#fdc373]/20 border-l-4 border-[#fdc373] p-4 text-left">
                   <p className="text-sm text-[#343f48] font-medium">
@@ -139,7 +139,10 @@ export default function ForgotPasswordPage() {
                   <ul className="text-sm text-[#343f48] mt-2 space-y-1 list-disc list-inside">
                     <li>El enlace expira en 1 hora</li>
                     <li>Revisa también tu carpeta de spam</li>
-                    <li>Si no recibes el email, verifica que el correo sea correcto</li>
+                    <li>
+                      Si no recibes el email, verifica que el correo sea
+                      correcto
+                    </li>
                   </ul>
                 </div>
 
@@ -147,7 +150,7 @@ export default function ForgotPasswordPage() {
                   <button
                     onClick={() => {
                       setEmailSent(false);
-                      setEmail('');
+                      setEmail("");
                     }}
                     className="w-full py-4 px-6 rounded-xl bg-white text-[#343f48] font-bold
                              brutal-border brutal-shadow-sm brutal-hover tap-none"

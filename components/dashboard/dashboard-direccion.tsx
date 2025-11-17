@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { format, addDays, startOfDay, isSameDay } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useState, useEffect, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { format, addDays, startOfDay, isSameDay } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface DashboardDireccionProps {
   userId: string;
@@ -18,7 +18,10 @@ interface ParkingSpot {
   assignedToName?: string;
 }
 
-export default function DashboardDireccion({ userId, parkingSpotId }: DashboardDireccionProps) {
+export default function DashboardDireccion({
+  userId,
+  parkingSpotId,
+}: DashboardDireccionProps) {
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([]);
@@ -34,13 +37,15 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
         setParkingSpot(data);
       }
     } catch (error) {
-      console.error('Error fetching parking spot:', error);
+      console.error("Error fetching parking spot:", error);
     }
   }, [parkingSpotId]);
 
   const fetchAvailability = useCallback(async () => {
     try {
-      const response = await fetch(`/api/availability?parkingSpotId=${parkingSpotId}`);
+      const response = await fetch(
+        `/api/availability?parkingSpotId=${parkingSpotId}`
+      );
       if (response.ok) {
         const data = await response.json();
         const unavailable = data
@@ -49,7 +54,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
         setUnavailableDates(unavailable);
       }
 
-      const resResponse = await fetch(`/api/reservations?parkingSpotId=${parkingSpotId}`);
+      const resResponse = await fetch(
+        `/api/reservations?parkingSpotId=${parkingSpotId}`
+      );
       if (resResponse.ok) {
         const resData = await resResponse.json();
         const reservationsArray = resData.reservations || resData;
@@ -57,7 +64,7 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
         setReservedDates(reserved);
       }
     } catch (error) {
-      console.error('Error fetching availability:', error);
+      console.error("Error fetching availability:", error);
     }
   }, [parkingSpotId]);
 
@@ -79,9 +86,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
   const handleMarkUnavailable = async () => {
     if (selectedDates.length === 0) {
       toast({
-        title: 'Selecciona fechas',
-        description: 'Debes seleccionar al menos una fecha',
-        variant: 'destructive',
+        title: "Selecciona fechas",
+        description: "Debes seleccionar al menos una fecha",
+        variant: "destructive",
       });
       return;
     }
@@ -89,23 +96,23 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           parkingSpotId,
-          dates: selectedDates.map((d) => format(d, 'yyyy-MM-dd')),
+          dates: selectedDates.map((d) => format(d, "yyyy-MM-dd")),
           isAvailable: false,
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Error al marcar disponibilidad');
+        throw new Error(data.error || "Error al marcar disponibilidad");
       }
 
       toast({
-        title: 'Disponibilidad actualizada',
+        title: "Disponibilidad actualizada",
         description: `Has marcado ${selectedDates.length} día(s) como no disponible`,
       });
 
@@ -113,9 +120,10 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
       fetchAvailability();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -125,22 +133,24 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
   const handleMarkAvailable = async () => {
     if (selectedDates.length === 0) {
       toast({
-        title: 'Selecciona fechas',
-        description: 'Debes seleccionar al menos una fecha',
-        variant: 'destructive',
+        title: "Selecciona fechas",
+        description: "Debes seleccionar al menos una fecha",
+        variant: "destructive",
       });
       return;
     }
 
     const hasReserved = selectedDates.some((date) =>
-      reservedDates.some((rd) => startOfDay(rd).getTime() === startOfDay(date).getTime()),
+      reservedDates.some(
+        (rd) => startOfDay(rd).getTime() === startOfDay(date).getTime()
+      )
     );
 
     if (hasReserved) {
       toast({
-        title: 'No se puede cambiar',
-        description: 'Algunas fechas ya tienen reservas activas',
-        variant: 'destructive',
+        title: "No se puede cambiar",
+        description: "Algunas fechas ya tienen reservas activas",
+        variant: "destructive",
       });
       return;
     }
@@ -148,22 +158,22 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           parkingSpotId,
-          dates: selectedDates.map((d) => format(d, 'yyyy-MM-dd')),
+          dates: selectedDates.map((d) => format(d, "yyyy-MM-dd")),
           isAvailable: true,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Error al marcar disponibilidad');
+        throw new Error("Error al marcar disponibilidad");
       }
 
       toast({
-        title: 'Disponibilidad actualizada',
+        title: "Disponibilidad actualizada",
         description: `Has marcado ${selectedDates.length} día(s) como disponible`,
       });
 
@@ -171,9 +181,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
       fetchAvailability();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'No se pudo actualizar la disponibilidad',
-        variant: 'destructive',
+        title: "Error",
+        description: "No se pudo actualizar la disponibilidad",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -213,11 +223,15 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
   const monthDays = getMonthDays();
 
   const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+    );
   };
 
   const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+    );
   };
 
   const toggleDate = (date: Date) => {
@@ -242,7 +256,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
       <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
         <div className="space-y-4">
           <div className="text-6xl">⚠️</div>
-          <h3 className="text-2xl font-extrabold text-[#343f48]">No tienes plaza asignada</h3>
+          <h3 className="text-2xl font-extrabold text-[#343f48]">
+            No tienes plaza asignada
+          </h3>
           <p className="text-gray-500 font-medium">
             Contacta con un administrador para que te asigne una plaza
           </p>
@@ -267,7 +283,8 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                 {/* Icono de la plaza */}
                 <div className="w-20 h-20 bg-[#343f48] rounded-2xl brutal-border flex items-center justify-center flex-shrink-0 shadow-[6px_6px_0_0_#fdc373]">
                   <span className="text-3xl font-mono-data font-bold text-white">
-                    {parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-{parkingSpot.number}
+                    {parkingSpot.location === "SUBTERRANEO" ? "S" : "E"}-
+                    {parkingSpot.number}
                   </span>
                 </div>
 
@@ -277,13 +294,17 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                     Plaza {parkingSpot.number}
                   </p>
                   <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-3">
-                    {parkingSpot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
+                    {parkingSpot.location === "SUBTERRANEO"
+                      ? "Subterráneo"
+                      : "Exterior"}
                   </p>
                   <div className="pt-3 border-t-2 border-gray-100">
                     <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
                       Asignada a
                     </p>
-                    <p className="text-sm font-bold text-[#343f48]">{parkingSpot.assignedToName}</p>
+                    <p className="text-sm font-bold text-[#343f48]">
+                      {parkingSpot.assignedToName}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -293,7 +314,8 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
           {/* Mensaje de instrucción - Solo visible en desktop */}
           <div className="hidden lg:block mt-4 p-3 bg-[#fdc373]/20 border-l-4 border-[#fdc373] rounded">
             <p className="text-xs font-bold text-[#343f48] leading-relaxed">
-              Marca los días que dejarás tu plaza libre para que otros la puedan reservar
+              Marca los días que dejarás tu plaza libre para que otros la puedan
+              reservar
             </p>
           </div>
         </div>
@@ -307,7 +329,8 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
           {/* Mensaje de instrucción - Solo visible en móvil */}
           <div className="lg:hidden mb-4 p-3 bg-[#fdc373]/20 border-l-4 border-[#fdc373] rounded">
             <p className="text-xs font-bold text-[#343f48] leading-relaxed">
-              Marca los días que dejarás tu plaza libre para que otros la puedan reservar
+              Marca los días que dejarás tu plaza libre para que otros la puedan
+              reservar
             </p>
           </div>
 
@@ -323,7 +346,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                 ←
               </button>
               <h3 className="text-sm font-extrabold text-[#343f48]">
-                {format(currentMonth, 'MMMM yyyy', { locale: es }).toUpperCase()}
+                {format(currentMonth, "MMMM yyyy", {
+                  locale: es,
+                }).toUpperCase()}
               </h3>
               <button
                 onClick={goToNextMonth}
@@ -336,7 +361,7 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
 
             {/* Días de la semana */}
             <div className="grid grid-cols-7 gap-1 mb-2">
-              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
+              {["L", "M", "X", "J", "V", "S", "D"].map((day) => (
                 <div
                   key={day}
                   className="text-center text-[10px] font-bold text-gray-400 uppercase py-1"
@@ -350,45 +375,49 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
             <div className="grid grid-cols-7 gap-1">
               {monthDays.map((date, index) => {
                 if (!date) {
-                  return <div key={`empty-${index}`} className="aspect-square" />;
+                  return (
+                    <div key={`empty-${index}`} className="aspect-square" />
+                  );
                 }
 
-                const isSelected = selectedDates.some((d) => isSameDay(d, date));
+                const isSelected = selectedDates.some((d) =>
+                  isSameDay(d, date)
+                );
                 const isUnavailable = isDateUnavailable(date);
                 const isReserved = isDateReserved(date);
                 const isPast = date < startOfDay(new Date());
                 const isWeekend = !isWeekday(date);
                 const isDisabled = isPast || isWeekend;
 
-                let bgColor = 'bg-white';
-                let textColor = 'text-[#343f48]';
-                let border = 'border-2 border-gray-200';
-                let title = '';
+                let bgColor = "bg-white";
+                let textColor = "text-[#343f48]";
+                let border = "border-2 border-gray-200";
+                let title = "";
 
                 if (isSelected) {
-                  bgColor = 'bg-blue-100';
-                  textColor = 'text-[#343f48]';
-                  border = 'border-2 border-blue-400';
-                  title = 'Seleccionado para marcar';
+                  bgColor = "bg-blue-100";
+                  textColor = "text-[#343f48]";
+                  border = "border-2 border-blue-400";
+                  title = "Seleccionado para marcar";
                 } else if (isUnavailable && isReserved) {
                   // Plaza libre que YA fue reservada - NO se puede recuperar
-                  bgColor = 'bg-red-50';
-                  textColor = 'text-red-700';
-                  border = 'border-2 border-red-400';
-                  title = 'Libre y reservada - No recuperable';
+                  bgColor = "bg-red-50";
+                  textColor = "text-red-700";
+                  border = "border-2 border-red-400";
+                  title = "Libre y reservada - No recuperable";
                 } else if (isUnavailable && !isReserved) {
                   // Plaza libre que AÚN NO está reservada - se puede recuperar
-                  bgColor = 'bg-[#fdc373]/30';
-                  textColor = 'text-[#343f48]';
-                  border = 'border-2 border-[#fdc373]';
-                  title = 'Libre y disponible - Recuperable';
+                  bgColor = "bg-[#fdc373]/30";
+                  textColor = "text-[#343f48]";
+                  border = "border-2 border-[#fdc373]";
+                  title = "Libre y disponible - Recuperable";
                 } else if (isDisabled) {
-                  bgColor = 'bg-gray-50';
-                  textColor = 'text-gray-300';
-                  border = 'border border-gray-100';
-                  title = 'No disponible';
+                  bgColor = "bg-gray-50";
+                  textColor = "text-gray-300";
+                  border = "border border-gray-100";
+                  title = "No disponible";
                 } else {
-                  title = 'Tu plaza está ocupada por ti';
+                  title = "Tu plaza está ocupada por ti";
                 }
 
                 return (
@@ -399,10 +428,10 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                     title={title}
                     className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
                               ${bgColor} ${textColor} ${border} ${
-                      !isDisabled && 'hover:scale-105'
+                      !isDisabled && "hover:scale-105"
                     }`}
                   >
-                    {format(date, 'd')}
+                    {format(date, "d")}
                   </button>
                 );
               })}
@@ -412,15 +441,21 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
             <div className="mt-auto pt-3 border-t-2 border-gray-100 space-y-1.5">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-white border-2 border-gray-200 rounded"></div>
-                <span className="text-[10px] text-gray-600 font-medium">Usas tu plaza</span>
+                <span className="text-[10px] text-gray-600 font-medium">
+                  Usas tu plaza
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-[#fdc373]/30 border-2 border-[#fdc373] rounded"></div>
-                <span className="text-[10px] text-gray-600 font-medium">Libre (recuperable)</span>
+                <span className="text-[10px] text-gray-600 font-medium">
+                  Libre (recuperable)
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-50 border-2 border-red-400 rounded"></div>
-                <span className="text-[10px] text-gray-600 font-medium">Reservada (no recuperable)</span>
+                <span className="text-[10px] text-gray-600 font-medium">
+                  Reservada (no recuperable)
+                </span>
               </div>
             </div>
 
@@ -433,7 +468,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                   className="w-full py-3 px-4 rounded-xl bg-[#343f48] text-white font-bold text-sm brutal-border brutal-shadow-sm
                          hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Guardando...' : `✓ Dejar libre (${selectedDates.length})`}
+                  {isLoading
+                    ? "Guardando..."
+                    : `✓ Dejar libre (${selectedDates.length})`}
                 </button>
                 <button
                   onClick={handleMarkAvailable}
@@ -441,7 +478,9 @@ export default function DashboardDireccion({ userId, parkingSpotId }: DashboardD
                   className="w-full py-3 px-4 rounded-xl bg-white text-[#343f48] font-bold text-sm brutal-border brutal-shadow-sm
                          hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Guardando...' : `✗ Usar mi plaza (${selectedDates.length})`}
+                  {isLoading
+                    ? "Guardando..."
+                    : `✗ Usar mi plaza (${selectedDates.length})`}
                 </button>
               </div>
             )}

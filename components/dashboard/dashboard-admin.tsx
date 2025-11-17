@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AssignedParkingSpot {
   _id: string;
@@ -60,9 +60,9 @@ export default function DashboardAdmin() {
   const fetchData = async () => {
     try {
       const [usersRes, spotsRes, reservationsRes] = await Promise.all([
-        fetch('/api/admin/users'),
-        fetch('/api/admin/parking-spots'),
-        fetch('/api/reservations?limit=10'), // Limitar a 10 reservas recientes
+        fetch("/api/admin/users"),
+        fetch("/api/admin/parking-spots"),
+        fetch("/api/reservations?limit=10"), // Limitar a 10 reservas recientes
       ]);
 
       if (usersRes.ok) {
@@ -80,7 +80,7 @@ export default function DashboardAdmin() {
         setReservations(reservationsData.reservations || reservationsData);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
   };
 
@@ -88,28 +88,29 @@ export default function DashboardAdmin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/admin/assign-spot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/assign-spot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, spotId }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Error al asignar plaza');
+        throw new Error(data.error || "Error al asignar plaza");
       }
 
       toast({
-        title: 'Plaza asignada',
-        description: 'La plaza ha sido asignada correctamente',
+        title: "Plaza asignada",
+        description: "La plaza ha sido asignada correctamente",
       });
 
       fetchData();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -120,36 +121,37 @@ export default function DashboardAdmin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/admin/unassign-spot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/unassign-spot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Error al desasignar plaza');
+        throw new Error(data.error || "Error al desasignar plaza");
       }
 
       toast({
-        title: 'Plaza desasignada',
-        description: 'La plaza ha sido liberada correctamente',
+        title: "Plaza desasignada",
+        description: "La plaza ha sido liberada correctamente",
       });
 
       fetchData();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const direccionUsers = users.filter((u) => u.role === 'DIRECCION');
-  const generalUsers = users.filter((u) => u.role === 'GENERAL');
+  const direccionUsers = users.filter((u) => u.role === "DIRECCION");
+  const generalUsers = users.filter((u) => u.role === "GENERAL");
   const unassignedSpots = parkingSpots.filter((s) => !s.assignedTo);
 
   return (
@@ -160,7 +162,9 @@ export default function DashboardAdmin() {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Total Usuarios
           </p>
-          <p className="text-4xl font-extrabold text-[#343f48]">{users.length}</p>
+          <p className="text-4xl font-extrabold text-[#343f48]">
+            {users.length}
+          </p>
           <p className="text-sm text-gray-500 mt-1">
             {direccionUsers.length} Dirección, {generalUsers.length} General
           </p>
@@ -170,7 +174,9 @@ export default function DashboardAdmin() {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Plazas Totales
           </p>
-          <p className="text-4xl font-extrabold text-[#343f48]">{parkingSpots.length}</p>
+          <p className="text-4xl font-extrabold text-[#343f48]">
+            {parkingSpots.length}
+          </p>
           <p className="text-sm text-gray-500 mt-1">
             <span className="inline-block px-2 py-0.5 rounded bg-[#fdc373] text-[#343f48] font-bold text-xs mr-1">
               {unassignedSpots.length}
@@ -183,7 +189,9 @@ export default function DashboardAdmin() {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Reservas Activas
           </p>
-          <p className="text-4xl font-extrabold text-[#343f48]">{reservations.length}</p>
+          <p className="text-4xl font-extrabold text-[#343f48]">
+            {reservations.length}
+          </p>
           <p className="text-sm text-gray-500 mt-1">Próximas reservas</p>
         </div>
       </div>
@@ -197,7 +205,9 @@ export default function DashboardAdmin() {
         <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
           {direccionUsers.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-400 font-medium">No hay usuarios de dirección registrados</p>
+              <p className="text-gray-400 font-medium">
+                No hay usuarios de dirección registrados
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -221,8 +231,12 @@ export default function DashboardAdmin() {
                 <tbody>
                   {direccionUsers.map((user) => (
                     <tr key={user._id} className="border-b border-gray-200">
-                      <td className="py-4 px-4 font-bold text-[#343f48]">{user.name}</td>
-                      <td className="py-4 px-4 text-gray-500 font-medium">{user.email}</td>
+                      <td className="py-4 px-4 font-bold text-[#343f48]">
+                        {user.name}
+                      </td>
+                      <td className="py-4 px-4 text-gray-500 font-medium">
+                        {user.email}
+                      </td>
                       <td className="py-4 px-4">
                         {user.assignedParkingSpot ? (
                           <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-sm border-2 border-[#343f48]">
@@ -237,7 +251,9 @@ export default function DashboardAdmin() {
                       <td className="py-4 px-4">
                         <div className="flex gap-2">
                           <select
-                            onChange={(e) => handleAssignSpot(user._id, e.target.value)}
+                            onChange={(e) =>
+                              handleAssignSpot(user._id, e.target.value)
+                            }
                             disabled={isLoading}
                             className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
                                      brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
@@ -248,9 +264,11 @@ export default function DashboardAdmin() {
                             </option>
                             {parkingSpots.map((spot) => (
                               <option key={spot._id} value={spot._id}>
-                                Plaza {spot.number} -{' '}
-                                {spot.location === 'SUBTERRANEO' ? 'Subterráneo' : 'Exterior'}
-                                {spot.assignedTo && ' (Asignada)'}
+                                Plaza {spot.number} -{" "}
+                                {spot.location === "SUBTERRANEO"
+                                  ? "Subterráneo"
+                                  : "Exterior"}
+                                {spot.assignedTo && " (Asignada)"}
                               </option>
                             ))}
                           </select>
@@ -286,7 +304,9 @@ export default function DashboardAdmin() {
         <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
           {reservations.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-400 font-medium">No hay reservas registradas</p>
+              <p className="text-gray-400 font-medium">
+                No hay reservas registradas
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -309,7 +329,10 @@ export default function DashboardAdmin() {
                 </thead>
                 <tbody>
                   {reservations.slice(0, 10).map((reservation) => (
-                    <tr key={reservation._id} className="border-b border-gray-200">
+                    <tr
+                      key={reservation._id}
+                      className="border-b border-gray-200"
+                    >
                       <td className="py-4 px-4 font-bold text-[#343f48]">
                         {reservation.user?.name}
                       </td>
@@ -317,7 +340,7 @@ export default function DashboardAdmin() {
                         Plaza {reservation.parkingSpot?.number}
                       </td>
                       <td className="py-4 px-4 text-gray-500 font-medium">
-                        {new Date(reservation.date).toLocaleDateString('es-ES')}
+                        {new Date(reservation.date).toLocaleDateString("es-ES")}
                       </td>
                       <td className="py-4 px-4">
                         <span className="inline-block px-3 py-1 rounded-lg bg-green-100 text-green-700 font-bold text-sm uppercase">

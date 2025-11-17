@@ -67,7 +67,7 @@ export const WEEKDAY_CONSTANTS = {
 // ==================== VALIDACIÓN ====================
 export const VALIDATION_CONSTANTS = {
   // Dominio de email corporativo permitido
-  CORPORATE_EMAIL_DOMAIN: '@gruposiete.es',
+  CORPORATE_EMAIL_DOMAIN: "@gruposiete.es",
   // Longitud máxima de nombre de usuario
   MAX_NAME_LENGTH: 100,
   // Longitud máxima de descripción
@@ -89,5 +89,7 @@ export function isWeekday(date: Date): boolean {
 
 // Helper function para validar email corporativo
 export function isValidCorporateEmail(email: string): boolean {
-  return email.toLowerCase().endsWith(VALIDATION_CONSTANTS.CORPORATE_EMAIL_DOMAIN);
+  return email
+    .toLowerCase()
+    .endsWith(VALIDATION_CONSTANTS.CORPORATE_EMAIL_DOMAIN);
 }

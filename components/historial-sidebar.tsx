@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface Reservation {
   _id: string;
@@ -32,18 +32,18 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
   const fetchReservations = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/reservations/my-history');
+      const response = await fetch("/api/reservations/my-history");
       if (response.ok) {
         const data = await response.json();
         // Ordenar por fecha ascendente (de menor a mayor)
         const sortedData = data.sort(
           (a: Reservation, b: Reservation) =>
-            new Date(a.date).getTime() - new Date(b.date).getTime(),
+            new Date(a.date).getTime() - new Date(b.date).getTime()
         );
         setReservations(sortedData);
       }
     } catch (error) {
-      console.error('Error fetching reservations:', error);
+      console.error("Error fetching reservations:", error);
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +54,7 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
-          isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
+          isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
       />
@@ -63,7 +63,7 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-[#343f48]
                    transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
-                     isOpen ? 'translate-x-0' : 'translate-x-full'
+                     isOpen ? "translate-x-0" : "translate-x-full"
                    }`}
       >
         <div className="p-6">
@@ -94,22 +94,24 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
           ) : reservations.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
               <div className="text-5xl mb-3">📋</div>
-              <p className="text-gray-400 font-medium">No tienes reservas futuras</p>
+              <p className="text-gray-400 font-medium">
+                No tienes reservas futuras
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {reservations.map((reservation) => {
-                const isCancelled = reservation.status === 'CANCELLED';
+                const isCancelled = reservation.status === "CANCELLED";
 
-                let statusText = '';
-                let statusColor = '';
+                let statusText = "";
+                let statusColor = "";
 
                 if (isCancelled) {
-                  statusText = 'Cancelada';
-                  statusColor = 'bg-red-100 text-red-700';
+                  statusText = "Cancelada";
+                  statusColor = "bg-red-100 text-red-700";
                 } else {
-                  statusText = 'Activa';
-                  statusColor = 'bg-green-100 text-green-700';
+                  statusText = "Activa";
+                  statusColor = "bg-green-100 text-green-700";
                 }
 
                 return (
@@ -121,8 +123,10 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
                       <div className="flex items-center gap-3 flex-1">
                         <div className="w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0">
                           <span className="text-lg font-mono-data font-bold text-white">
-                            {reservation.parkingSpot.location === 'SUBTERRANEO' ? 'S' : 'E'}-
-                            {reservation.parkingSpot.number}
+                            {reservation.parkingSpot.location === "SUBTERRANEO"
+                              ? "S"
+                              : "E"}
+                            -{reservation.parkingSpot.number}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -130,12 +134,14 @@ export function HistorialSidebar({ isOpen, onClose }: HistorialSidebarProps) {
                             Plaza {reservation.parkingSpot.number}
                           </p>
                           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                            {reservation.parkingSpot.location === 'SUBTERRANEO'
-                              ? 'Subterráneo'
-                              : 'Exterior'}
+                            {reservation.parkingSpot.location === "SUBTERRANEO"
+                              ? "Subterráneo"
+                              : "Exterior"}
                           </p>
                           <p className="text-sm text-gray-400 mt-1">
-                            {format(new Date(reservation.date), 'PPP', { locale: es })}
+                            {format(new Date(reservation.date), "PPP", {
+                              locale: es,
+                            })}
                           </p>
                         </div>
                       </div>

@@ -1,48 +1,54 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import crypto from 'crypto';
-import dbConnect from '@/lib/db/mongodb';
-import User from '@/models/User';
-import PasswordResetToken from '@/models/PasswordResetToken';
-import { sendEmail, getPasswordResetEmail } from '@/lib/email/resend';
-import { isValidCorporateEmail } from '@/lib/constants';
-import { sanitizeEmail } from '@/lib/sanitize';
-import { checkRateLimitRedis, getClientIdentifier } from '@/lib/ratelimit-redis';
-import { logger, getRequestContext } from '@/lib/logger';
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import crypto from "crypto";
+import dbConnect from "@/lib/db/mongodb";
+import User from "@/models/User";
+import PasswordResetToken from "@/models/PasswordResetToken";
+import { sendEmail, getPasswordResetEmail } from "@/lib/email/resend";
+import { isValidCorporateEmail } from "@/lib/constants";
+import { sanitizeEmail } from "@/lib/sanitize";
+import {
+  checkRateLimitRedis,
+  getClientIdentifier,
+} from "@/lib/ratelimit-redis";
+import { logger, getRequestContext } from "@/lib/logger";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Email inválido'),
+  email: z.string().email("Email inválido"),
 });
 
 export async function POST(request: Request) {
   try {
     // RATE LIMITING: Máximo 3 intentos cada 15 minutos por IP
     const identifier = getClientIdentifier(request);
-    const rateLimit = await checkRateLimitRedis(`forgot-password:${identifier}`, 'registro');
+    const rateLimit = await checkRateLimitRedis(
+      `forgot-password:${identifier}`,
+      "registro"
+    );
 
     if (!rateLimit.success) {
       const retryAfter = Math.ceil((rateLimit.reset - Date.now()) / 1000);
-      logger.warn('Rate limit excedido en forgot-password', {
+      logger.warn("Rate limit excedido en forgot-password", {
         identifier,
         ...getRequestContext(request),
       });
 
       return NextResponse.json(
         {
-          error: 'Demasiados intentos. Intenta de nuevo más tarde.',
+          error: "Demasiados intentos. Intenta de nuevo más tarde.",
           retryAfter,
         },
         {
           status: 429,
           headers: {
-            'Retry-After': retryAfter.toString(),
+            "Retry-After": retryAfter.toString(),
           },
-        },
+        }
       );
     }
 
     const body = await request.json();
-    const sanitizedEmail = sanitizeEmail(body.email || '');
+    const sanitizedEmail = sanitizeEmail(body.email || "");
     const validatedData = forgotPasswordSchema.parse({ email: sanitizedEmail });
 
     await dbConnect();
@@ -52,10 +58,10 @@ export async function POST(request: Request) {
     // SEGURIDAD: No revelar si el email existe o no
     // Siempre responder con el mismo mensaje
     const successMessage =
-      'Si existe una cuenta con ese email, recibirás un enlace para restablecer tu contraseña.';
+      "Si existe una cuenta con ese email, recibirás un enlace para restablecer tu contraseña.";
 
     if (!user) {
-      logger.info('Intento de reset para email no registrado', {
+      logger.info("Intento de reset para email no registrado", {
         email: validatedData.email,
         ...getRequestContext(request),
       });
@@ -68,7 +74,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await PasswordResetToken.updateMany(
@@ -79,7 +85,7 @@ export async function POST(request: Request) {
       },
       {
         used: true,
-      },
+      }
     );
 
     await PasswordResetToken.create({
@@ -89,7 +95,7 @@ export async function POST(request: Request) {
       used: false,
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
     Promise.resolve()
@@ -97,23 +103,23 @@ export async function POST(request: Request) {
         try {
           await sendEmail({
             to: user.email,
-            subject: 'Restablecer contraseña - Gruposiete Parking',
+            subject: "Restablecer contraseña - Gruposiete Parking",
             html: getPasswordResetEmail(user.name, resetUrl),
           });
 
-          logger.info('Email de reset enviado', {
+          logger.info("Email de reset enviado", {
             userId: user._id.toString(),
             email: user.email,
           });
         } catch (emailError) {
-          logger.error('Error al enviar email de reset', emailError as Error, {
+          logger.error("Error al enviar email de reset", emailError as Error, {
             userId: user._id.toString(),
             email: user.email,
           });
         }
       })
       .catch((error) => {
-        console.error('Error in background email task:', error);
+        console.error("Error in background email task:", error);
       });
 
     return NextResponse.json({
@@ -121,10 +127,20 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      );
     }
 
-    logger.error('Error en forgot-password', error as Error, getRequestContext(request));
-    return NextResponse.json({ error: 'Error al procesar la solicitud' }, { status: 500 });
+    logger.error(
+      "Error en forgot-password",
+      error as Error,
+      getRequestContext(request)
+    );
+    return NextResponse.json(
+      { error: "Error al procesar la solicitud" },
+      { status: 500 }
+    );
   }
 }

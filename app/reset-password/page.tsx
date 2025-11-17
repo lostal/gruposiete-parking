@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
 
 function ResetPasswordContent() {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
+    const tokenParam = searchParams.get("token");
     if (tokenParam) {
       setToken(tokenParam);
     } else {
       toast({
-        title: 'Error',
-        description: 'Token de restablecimiento no válido',
-        variant: 'destructive',
+        title: "Error",
+        description: "Token de restablecimiento no válido",
+        variant: "destructive",
       });
-      setTimeout(() => router.push('/forgot-password'), 2000);
+      setTimeout(() => router.push("/forgot-password"), 2000);
     }
   }, [searchParams, router, toast]);
 
@@ -34,18 +34,18 @@ function ResetPasswordContent() {
 
     if (password !== confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Las contraseñas no coinciden',
-        variant: 'destructive',
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive",
       });
       return;
     }
 
     if (password.length < 8) {
       toast({
-        title: 'Error',
-        description: 'La contraseña debe tener al menos 8 caracteres',
-        variant: 'destructive',
+        title: "Error",
+        description: "La contraseña debe tener al menos 8 caracteres",
+        variant: "destructive",
       });
       return;
     }
@@ -53,10 +53,10 @@ function ResetPasswordContent() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           token,
@@ -68,32 +68,32 @@ function ResetPasswordContent() {
 
       if (!response.ok) {
         toast({
-          title: 'Error',
-          description: data.error || 'Error al restablecer la contraseña',
-          variant: 'destructive',
+          title: "Error",
+          description: data.error || "Error al restablecer la contraseña",
+          variant: "destructive",
         });
 
         // Si el token expiró, redirigir a solicitar uno nuevo
         if (response.status === 400) {
-          setTimeout(() => router.push('/forgot-password'), 3000);
+          setTimeout(() => router.push("/forgot-password"), 3000);
         }
         return;
       }
 
       toast({
-        title: 'Contraseña restablecida',
+        title: "Contraseña restablecida",
         description: data.message,
       });
 
       // Redirigir al login
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 2000);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Ha ocurrido un error inesperado',
-        variant: 'destructive',
+        title: "Error",
+        description: "Ha ocurrido un error inesperado",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -179,20 +179,28 @@ function ResetPasswordContent() {
             {/* Indicador de seguridad */}
             {password.length > 0 && (
               <div className="bg-[#fdc373]/20 border-l-4 border-[#fdc373] p-3">
-                <p className="text-xs text-[#343f48] font-medium">Seguridad de la contraseña:</p>
+                <p className="text-xs text-[#343f48] font-medium">
+                  Seguridad de la contraseña:
+                </p>
                 <ul className="text-xs text-[#343f48] mt-1 space-y-1">
-                  <li className={password.length >= 8 ? 'text-green-600' : 'text-gray-500'}>
-                    {password.length >= 8 ? '✓' : '○'} Al menos 8 caracteres
+                  <li
+                    className={
+                      password.length >= 8 ? "text-green-600" : "text-gray-500"
+                    }
+                  >
+                    {password.length >= 8 ? "✓" : "○"} Al menos 8 caracteres
                   </li>
                   <li
                     className={
                       password === confirmPassword && confirmPassword.length > 0
-                        ? 'text-green-600'
-                        : 'text-gray-500'
+                        ? "text-green-600"
+                        : "text-gray-500"
                     }
                   >
-                    {password === confirmPassword && confirmPassword.length > 0 ? '✓' : '○'} Las
-                    contraseñas coinciden
+                    {password === confirmPassword && confirmPassword.length > 0
+                      ? "✓"
+                      : "○"}{" "}
+                    Las contraseñas coinciden
                   </li>
                 </ul>
               </div>
@@ -206,7 +214,7 @@ function ResetPasswordContent() {
                        brutal-border brutal-shadow-sm brutal-hover tap-none
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLoading ? 'Restableciendo...' : 'Restablecer Contraseña'}
+              {isLoading ? "Restableciendo..." : "Restablecer Contraseña"}
             </button>
           </form>
 

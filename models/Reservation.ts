@@ -1,5 +1,5 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
-import { ReservationStatus } from '@/types';
+import mongoose, { Document, Model, Schema } from "mongoose";
+import { ReservationStatus } from "@/types";
 
 export interface IReservation extends Document {
   parkingSpotId: mongoose.Types.ObjectId;
@@ -14,17 +14,17 @@ const ReservationSchema = new Schema<IReservation>(
   {
     parkingSpotId: {
       type: Schema.Types.ObjectId,
-      ref: 'ParkingSpot',
-      required: [true, 'El ID de la plaza es requerido'],
+      ref: "ParkingSpot",
+      required: [true, "El ID de la plaza es requerido"],
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'El ID del usuario es requerido'],
+      ref: "User",
+      required: [true, "El ID del usuario es requerido"],
     },
     date: {
       type: Date,
-      required: [true, 'La fecha es requerida'],
+      required: [true, "La fecha es requerida"],
     },
     status: {
       type: String,
@@ -35,7 +35,7 @@ const ReservationSchema = new Schema<IReservation>(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // Índices para búsquedas eficientes
@@ -50,10 +50,11 @@ ReservationSchema.index(
   {
     unique: true,
     partialFilterExpression: { status: ReservationStatus.ACTIVE },
-  },
+  }
 );
 
 const Reservation: Model<IReservation> =
-  mongoose.models.Reservation || mongoose.model<IReservation>('Reservation', ReservationSchema);
+  mongoose.models.Reservation ||
+  mongoose.model<IReservation>("Reservation", ReservationSchema);
 
 export default Reservation;

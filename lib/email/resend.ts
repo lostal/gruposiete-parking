@@ -1,12 +1,14 @@
-import { Resend } from 'resend';
+import { Resend } from "resend";
 
 let resend: Resend | null = null;
 
 if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
 } else {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn('⚠️ RESEND_API_KEY no está configurado. Los emails se simularán en consola.');
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      "⚠️ RESEND_API_KEY no está configurado. Los emails se simularán en consola."
+    );
   }
 }
 
@@ -19,35 +21,42 @@ export interface EmailParams {
 export async function sendEmail({ to, subject, html }: EmailParams) {
   try {
     if (!resend) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('📧 Email simulado (no hay RESEND_API_KEY):', { to, subject });
+      if (process.env.NODE_ENV !== "production") {
+        console.log("📧 Email simulado (no hay RESEND_API_KEY):", {
+          to,
+          subject,
+        });
       }
       return { success: true, simulated: true };
     }
 
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'noreply@gruposiete.es',
+      from: process.env.EMAIL_FROM || "noreply@gruposiete.es",
       to,
       subject,
       html,
     });
 
     if (error) {
-      console.error('❌ Error al enviar email:', error);
+      console.error("❌ Error al enviar email:", error);
       return { success: false, error };
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('✅ Email enviado correctamente:', data);
+    if (process.env.NODE_ENV !== "production") {
+      console.log("✅ Email enviado correctamente:", data);
     }
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error al enviar email:', error);
+    console.error("❌ Error al enviar email:", error);
     return { success: false, error };
   }
 }
 
-export function getNewSpotsAvailableEmail(userName: string, date: string, spots: string[]) {
+export function getNewSpotsAvailableEmail(
+  userName: string,
+  date: string,
+  spots: string[]
+) {
   return `
     <!DOCTYPE html>
     <html>
@@ -70,10 +79,12 @@ export function getNewSpotsAvailableEmail(userName: string, date: string, spots:
             <p>Hola <strong>${userName}</strong>,</p>
             <p>Te informamos que hay nuevas plazas disponibles para el <strong>${date}</strong>:</p>
             <ul>
-              ${spots.map((spot) => `<li>Plaza ${spot}</li>`).join('')}
+              ${spots.map((spot) => `<li>Plaza ${spot}</li>`).join("")}
             </ul>
             <p>¡Reserva ahora antes de que se agoten!</p>
-            <a href="${process.env.NEXTAUTH_URL}" class="button">Ir a la aplicación</a>
+            <a href="${
+              process.env.NEXTAUTH_URL
+            }" class="button">Ir a la aplicación</a>
           </div>
           <div class="footer">
             <p>Gruposiete - Sistema de Gestión de Parking</p>
@@ -135,7 +146,10 @@ export function getPasswordResetEmail(userName: string, resetUrl: string) {
   `;
 }
 
-export function getNewSpotsAvailableDistributionEmail(date: string, spots: string[]) {
+export function getNewSpotsAvailableDistributionEmail(
+  date: string,
+  spots: string[]
+) {
   return `
     <!DOCTYPE html>
     <html>
@@ -158,10 +172,12 @@ export function getNewSpotsAvailableDistributionEmail(date: string, spots: strin
             <p>Hola,</p>
             <p>Te informamos que hay nuevas plazas disponibles para el <strong>${date}</strong>:</p>
             <ul>
-              ${spots.map((spot) => `<li>Plaza ${spot}</li>`).join('')}
+              ${spots.map((spot) => `<li>Plaza ${spot}</li>`).join("")}
             </ul>
             <p>¡Reserva ahora antes de que se agoten!</p>
-            <a href="${process.env.NEXTAUTH_URL}" class="button">Ir a la aplicación</a>
+            <a href="${
+              process.env.NEXTAUTH_URL
+            }" class="button">Ir a la aplicación</a>
           </div>
           <div class="footer">
             <p>Gruposiete - Sistema de Gestión de Parking</p>

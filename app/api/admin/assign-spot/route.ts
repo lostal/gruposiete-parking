@@ -1,29 +1,32 @@
-export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import dbConnect from '@/lib/db/mongodb';
-import User from '@/models/User';
-import ParkingSpot from '@/models/ParkingSpot';
-import { UserRole } from '@/types';
-import mongoose from 'mongoose';
+export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import dbConnect from "@/lib/db/mongodb";
+import User from "@/models/User";
+import ParkingSpot from "@/models/ParkingSpot";
+import { UserRole } from "@/types";
+import mongoose from "mongoose";
 
 export async function POST(request: Request) {
   try {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const { userId, spotId } = await request.json();
 
     if (!userId || !spotId) {
-      return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
+      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
     // Validar que los IDs sean ObjectIds válidos
-    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(spotId)) {
-      return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(spotId)
+    ) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
 
     await dbConnect();
@@ -37,14 +40,17 @@ export async function POST(request: Request) {
       const user = await User.findById(userId).session(session_db);
       if (!user) {
         await session_db.abortTransaction();
-        return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+        return NextResponse.json(
+          { error: "Usuario no encontrado" },
+          { status: 404 }
+        );
       }
 
       if (user.role !== UserRole.DIRECCION) {
         await session_db.abortTransaction();
         return NextResponse.json(
-          { error: 'Solo se pueden asignar plazas a usuarios de Dirección' },
-          { status: 400 },
+          { error: "Solo se pueden asignar plazas a usuarios de Dirección" },
+          { status: 400 }
         );
       }
 
@@ -52,7 +58,10 @@ export async function POST(request: Request) {
       const spot = await ParkingSpot.findById(spotId).session(session_db);
       if (!spot) {
         await session_db.abortTransaction();
-        return NextResponse.json({ error: 'Plaza no encontrada' }, { status: 404 });
+        return NextResponse.json(
+          { error: "Plaza no encontrada" },
+          { status: 404 }
+        );
       }
 
       // Si el usuario ya tenía una plaza asignada, liberarla
@@ -63,7 +72,7 @@ export async function POST(request: Request) {
             assignedTo: null,
             assignedToName: null,
           },
-          { session: session_db },
+          { session: session_db }
         );
       }
 
@@ -74,7 +83,7 @@ export async function POST(request: Request) {
           {
             assignedParkingSpot: null,
           },
-          { session: session_db },
+          { session: session_db }
         );
       }
 
@@ -91,7 +100,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
-        message: 'Plaza asignada correctamente',
+        message: "Plaza asignada correctamente",
       });
     } catch (transactionError) {
       await session_db.abortTransaction();
@@ -100,7 +109,10 @@ export async function POST(request: Request) {
       session_db.endSession();
     }
   } catch (error) {
-    console.error('Error assigning spot:', error);
-    return NextResponse.json({ error: 'Error al asignar plaza' }, { status: 500 });
+    console.error("Error assigning spot:", error);
+    return NextResponse.json(
+      { error: "Error al asignar plaza" },
+      { status: 500 }
+    );
   }
 }
