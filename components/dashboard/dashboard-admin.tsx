@@ -51,6 +51,7 @@ export default function DashboardAdmin() {
   const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"direccion" | "general">("direccion");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -196,103 +197,170 @@ export default function DashboardAdmin() {
         </div>
       </div>
 
-      {/* Usuarios de Dirección */}
+      {/* Gestión de Usuarios */}
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-6">
-          Gestión de Usuarios Dirección
+          Gestión de Usuarios
         </h2>
 
-        <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
-          {direccionUsers.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-400 font-medium">
-                No hay usuarios de dirección registrados
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-[#343f48]">
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
-                      Usuario
-                    </th>
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
-                      Email
-                    </th>
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
-                      Plaza Asignada
-                    </th>
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {direccionUsers.map((user) => (
-                    <tr key={user._id} className="border-b border-gray-200">
-                      <td className="py-4 px-4 font-bold text-[#343f48]">
-                        {user.name}
-                      </td>
-                      <td className="py-4 px-4 text-gray-500 font-medium">
-                        {user.email}
-                      </td>
-                      <td className="py-4 px-4">
-                        {user.assignedParkingSpot ? (
-                          <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-sm border-2 border-[#343f48]">
-                            Plaza {user.assignedParkingSpot.number}
-                          </span>
-                        ) : (
-                          <span className="inline-block px-3 py-1 rounded-lg bg-gray-100 text-gray-500 font-bold text-sm border-2 border-gray-300">
-                            Sin asignar
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex gap-2">
-                          <select
-                            onChange={(e) =>
-                              handleAssignSpot(user._id, e.target.value)
-                            }
-                            disabled={isLoading}
-                            className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
-                                     brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
-                            defaultValue=""
-                          >
-                            <option value="" disabled>
-                              Asignar plaza
-                            </option>
-                            {parkingSpots.map((spot) => (
-                              <option key={spot._id} value={spot._id}>
-                                Plaza {spot.number} -{" "}
-                                {spot.location === "SUBTERRANEO"
-                                  ? "Subterráneo"
-                                  : "Exterior"}
-                                {spot.assignedTo && " (Asignada)"}
-                              </option>
-                            ))}
-                          </select>
-                          {user.assignedParkingSpot && (
-                            <button
-                              onClick={() => handleUnassignSpot(user._id)}
-                              disabled={isLoading}
-                              className="px-4 py-2 rounded-lg bg-red-500 text-white font-bold text-sm
-                                       brutal-border hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed
-                                       transition-colors"
-                              title="Quitar plaza"
-                            >
-                              Quitar
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        {/* Pestañas */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          <button
+            onClick={() => setActiveTab("direccion")}
+            className={`px-6 py-3 rounded-lg font-bold text-sm brutal-border transition-all duration-200 ${
+              activeTab === "direccion"
+                ? "bg-[#fdc373] text-[#343f48] shadow-[4px_4px_0_0_#343f48]"
+                : "bg-white text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            Usuarios Dirección
+          </button>
+          <button
+            onClick={() => setActiveTab("general")}
+            className={`px-6 py-3 rounded-lg font-bold text-sm brutal-border transition-all duration-200 ${
+              activeTab === "general"
+                ? "bg-[#fdc373] text-[#343f48] shadow-[4px_4px_0_0_#343f48]"
+                : "bg-white text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            Usuarios General
+          </button>
         </div>
+
+        {/* Contenido de Usuarios Dirección */}
+        {activeTab === "direccion" && (
+          <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+            {direccionUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400 font-medium">
+                  No hay usuarios de dirección registrados
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-[#343f48]">
+                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                        Usuario
+                      </th>
+                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                        Email
+                      </th>
+                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                        Plaza Asignada
+                      </th>
+                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {direccionUsers.map((user) => (
+                      <tr key={user._id} className="border-b border-gray-200">
+                        <td className="py-4 px-4 font-bold text-[#343f48]">
+                          {user.name}
+                        </td>
+                        <td className="py-4 px-4 text-gray-500 font-medium">
+                          {user.email}
+                        </td>
+                        <td className="py-4 px-4">
+                          {user.assignedParkingSpot ? (
+                            <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-sm border-2 border-[#343f48]">
+                              Plaza {user.assignedParkingSpot.number}
+                            </span>
+                          ) : (
+                            <span className="inline-block px-3 py-1 rounded-lg bg-gray-100 text-gray-500 font-bold text-sm border-2 border-gray-300">
+                              Sin asignar
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex gap-2 flex-wrap">
+                            <select
+                              onChange={(e) =>
+                                handleAssignSpot(user._id, e.target.value)
+                              }
+                              disabled={isLoading}
+                              className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
+                                       brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
+                              defaultValue=""
+                            >
+                              <option value="" disabled>
+                                Asignar plaza
+                              </option>
+                              {parkingSpots.map((spot) => (
+                                <option key={spot._id} value={spot._id}>
+                                  Plaza {spot.number} -{" "}
+                                  {spot.location === "SUBTERRANEO"
+                                    ? "Subterráneo"
+                                    : "Exterior"}
+                                  {spot.assignedTo && " (Asignada)"}
+                                </option>
+                              ))}
+                            </select>
+                            {user.assignedParkingSpot && (
+                              <button
+                                onClick={() => handleUnassignSpot(user._id)}
+                                disabled={isLoading}
+                                className="px-4 py-2 rounded-lg bg-red-500 text-white font-bold text-sm
+                                         brutal-border hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed
+                                         transition-colors"
+                                title="Quitar plaza"
+                              >
+                                Quitar
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Contenido de Usuarios General */}
+        {activeTab === "general" && (
+          <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
+            {generalUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400 font-medium">
+                  No hay usuarios generales registrados
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-[#343f48]">
+                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                        Usuario
+                      </th>
+                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                        Email
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {generalUsers.map((user) => (
+                      <tr key={user._id} className="border-b border-gray-200">
+                        <td className="py-4 px-4 font-bold text-[#343f48]">
+                          {user.name}
+                        </td>
+                        <td className="py-4 px-4 text-gray-500 font-medium">
+                          {user.email}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Reservas Recientes */}

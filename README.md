@@ -25,6 +25,7 @@ Desarrollado con **Next.js 14**, **TypeScript** y **MongoDB**, implementa autent
 - **UI Moderna y Responsiva**: Diseño con Tailwind CSS, componentes Radix UI y animaciones Framer Motion
 - **Sistema de Roles**: Tres niveles de acceso (GENERAL, DIRECCION, ADMIN) con dashboards diferenciados
 - **Notificaciones Email**: Envío automático de confirmaciones mediante Resend
+- **Aplicación PWA**: Mejoras en rendimiento y experiencia de usuario
 
 ---
 
