@@ -304,13 +304,13 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                 textColor = "text-[#343f48]";
                 border = "border-2 border-blue-400";
               } else if (isReserved) {
-                bgColor = "bg-green-50";
-                textColor = "text-green-700";
-                border = "border-2 border-green-200";
-              } else if (hasAvailability && !isDisabled) {
-                bgColor = "bg-[#fdc373]/20";
+                bgColor = "bg-[#fdc373]/30";
                 textColor = "text-[#343f48]";
                 border = "border-2 border-[#fdc373]";
+              } else if (hasAvailability && !isDisabled) {
+                bgColor = "bg-green-50";
+                textColor = "text-green-700";
+                border = "border-2 border-green-400";
               } else if (isDisabled) {
                 bgColor = "bg-gray-50";
                 textColor = "text-gray-300";
@@ -324,7 +324,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                   disabled={isDisabled}
                   className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
                               ${bgColor} ${textColor} ${border} ${
-                    !isDisabled && "hover:border-[#343f48] hover:scale-105"
+                    !isDisabled && "hover:scale-105"
                   }`}
                 >
                   {format(date, "d")}
@@ -336,13 +336,13 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
           {/* Leyenda */}
           <div className="mt-auto pt-3 border-t-2 border-gray-100 space-y-1.5">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-200"></div>
+              <div className="w-3 h-3 rounded bg-[#fdc373]/30 border-2 border-[#fdc373]"></div>
               <span className="text-[10px] text-gray-600 font-medium">
                 Tu reserva
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-[#fdc373]/20 border-2 border-[#fdc373]"></div>
+              <div className="w-3 h-3 rounded bg-green-50 border-2 border-green-400"></div>
               <span className="text-[10px] text-gray-600 font-medium">
                 Disponibles
               </span>

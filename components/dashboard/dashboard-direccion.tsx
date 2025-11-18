@@ -401,15 +401,15 @@ export default function DashboardDireccion({
                   title = "Seleccionado para marcar";
                 } else if (isUnavailable && isReserved) {
                   // Plaza libre que YA fue reservada - NO se puede recuperar
-                  bgColor = "bg-red-50";
-                  textColor = "text-red-700";
-                  border = "border-2 border-red-400";
-                  title = "Libre y reservada - No recuperable";
-                } else if (isUnavailable && !isReserved) {
-                  // Plaza libre que AÚN NO está reservada - se puede recuperar
                   bgColor = "bg-[#fdc373]/30";
                   textColor = "text-[#343f48]";
                   border = "border-2 border-[#fdc373]";
+                  title = "Libre y reservada - No recuperable";
+                } else if (isUnavailable && !isReserved) {
+                  // Plaza libre que AÚN NO está reservada - se puede recuperar
+                  bgColor = "bg-green-50";
+                  textColor = "text-green-700";
+                  border = "border-2 border-green-400";
                   title = "Libre y disponible - Recuperable";
                 } else if (isDisabled) {
                   bgColor = "bg-gray-50";
@@ -446,13 +446,13 @@ export default function DashboardDireccion({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-[#fdc373]/30 border-2 border-[#fdc373] rounded"></div>
+                <div className="w-3 h-3 bg-green-50 border-2 border-green-400 rounded"></div>
                 <span className="text-[10px] text-gray-600 font-medium">
                   Libre (recuperable)
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-50 border-2 border-red-400 rounded"></div>
+                <div className="w-3 h-3 bg-[#fdc373]/30 border-2 border-[#fdc373] rounded"></div>
                 <span className="text-[10px] text-gray-600 font-medium">
                   Reservada (no recuperable)
                 </span>
