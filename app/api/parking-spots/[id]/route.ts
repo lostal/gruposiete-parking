@@ -6,7 +6,7 @@ import ParkingSpot from "@/models/ParkingSpot";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,9 +14,11 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     await dbConnect();
 
-    const parkingSpot = await ParkingSpot.findById(params.id);
+    const parkingSpot = await ParkingSpot.findById(id);
 
     if (!parkingSpot) {
       return NextResponse.json(

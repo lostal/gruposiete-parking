@@ -18,7 +18,7 @@ const _ensureModels = [ParkingSpot];
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -26,8 +26,10 @@ export async function DELETE(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Validar que el ID sea un ObjectId válido
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "ID de reserva inválido" },
         { status: 400 }
@@ -36,7 +38,7 @@ export async function DELETE(
 
     await dbConnect();
 
-    const reservation = await Reservation.findById(params.id).populate(
+    const reservation = await Reservation.findById(id).populate(
       "parkingSpotId"
     );
 
