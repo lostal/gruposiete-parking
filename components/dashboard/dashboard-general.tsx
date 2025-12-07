@@ -57,7 +57,9 @@ export default function DashboardGeneral({
   const fetchAvailableSpots = useCallback(async () => {
     if (!selectedDate) return;
     try {
-      const data = await getAvailableSpotsAction(selectedDate);
+      const data = await getAvailableSpotsAction(
+        format(selectedDate, "yyyy-MM-dd"),
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setAvailableSpots(data as any);
     } catch (error) {
@@ -72,7 +74,10 @@ export default function DashboardGeneral({
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
 
-      const data = await getAvailableDaysAction(firstDay, lastDay);
+      const data = await getAvailableDaysAction(
+        format(firstDay, "yyyy-MM-dd"),
+        format(lastDay, "yyyy-MM-dd"),
+      );
       setDaysWithAvailability(data.map((d) => new Date(d)));
     } catch (error) {
       console.error("Error fetching days with availability:", error);
@@ -258,7 +263,7 @@ export default function DashboardGeneral({
               const isSelected =
                 selectedDate &&
                 format(date, "yyyy-MM-dd") ===
-                  format(selectedDate, "yyyy-MM-dd");
+                format(selectedDate, "yyyy-MM-dd");
               const isPast = date < startOfDay(new Date());
               const isWeekend = !isWeekday(date);
               const isDisabled = isPast || isWeekend;
@@ -301,9 +306,8 @@ export default function DashboardGeneral({
                   onClick={() => !isDisabled && setSelectedDate(date)}
                   disabled={isDisabled}
                   className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
-                              ${bgColor} ${textColor} ${border} ${
-                                !isDisabled && "hover:scale-105"
-                              }`}
+                              ${bgColor} ${textColor} ${border} ${!isDisabled && "hover:scale-105"
+                    }`}
                 >
                   {format(date, "d")}
                 </button>
@@ -341,61 +345,61 @@ export default function DashboardGeneral({
                 format(new Date(res.date), "yyyy-MM-dd") ===
                 format(selectedDate, "yyyy-MM-dd"),
             ) && (
-              <div className="mb-6">
-                <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
-                  Tu Reserva
-                </h4>
-                {myReservations
-                  .filter(
-                    (res) =>
-                      format(new Date(res.date), "yyyy-MM-dd") ===
-                      format(selectedDate, "yyyy-MM-dd"),
-                  )
-                  .map((reservation) => (
-                    <div
-                      key={reservation._id}
-                      className="bg-white rounded-2xl p-6 brutal-border brutal-shadow border-2 border-green-500"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 bg-green-600 rounded-xl brutal-border flex items-center justify-center">
-                            <span className="text-xl font-mono-data font-bold text-white">
-                              {reservation.parkingSpot.location ===
-                              "SUBTERRANEO"
-                                ? "S"
-                                : "E"}
-                              -{reservation.parkingSpot.number}
-                            </span>
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
+                    Tu Reserva
+                  </h4>
+                  {myReservations
+                    .filter(
+                      (res) =>
+                        format(new Date(res.date), "yyyy-MM-dd") ===
+                        format(selectedDate, "yyyy-MM-dd"),
+                    )
+                    .map((reservation) => (
+                      <div
+                        key={reservation._id}
+                        className="bg-white rounded-2xl p-6 brutal-border brutal-shadow border-2 border-green-500"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 bg-green-600 rounded-xl brutal-border flex items-center justify-center">
+                              <span className="text-xl font-mono-data font-bold text-white">
+                                {reservation.parkingSpot.location ===
+                                  "SUBTERRANEO"
+                                  ? "S"
+                                  : "E"}
+                                -{reservation.parkingSpot.number}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-bold text-primary-900 text-lg">
+                                Plaza {reservation.parkingSpot.number}
+                              </p>
+                              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
+                                {reservation.parkingSpot.location ===
+                                  "SUBTERRANEO"
+                                  ? "Subterráneo"
+                                  : "Exterior"}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-primary-900 text-lg">
-                              Plaza {reservation.parkingSpot.number}
-                            </p>
-                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                              {reservation.parkingSpot.location ===
-                              "SUBTERRANEO"
-                                ? "Subterráneo"
-                                : "Exterior"}
-                            </p>
-                          </div>
+                          <span className="inline-block px-3 py-1 rounded-lg bg-green-100 text-green-700 font-bold text-xs uppercase whitespace-nowrap">
+                            Tu Reserva
+                          </span>
                         </div>
-                        <span className="inline-block px-3 py-1 rounded-lg bg-green-100 text-green-700 font-bold text-xs uppercase whitespace-nowrap">
-                          Tu Reserva
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleCancelReservation(reservation._id)}
-                        disabled={isPending}
-                        className="w-full py-3 px-4 rounded-xl bg-white text-red-600 font-bold
+                        <button
+                          onClick={() => handleCancelReservation(reservation._id)}
+                          disabled={isPending}
+                          className="w-full py-3 px-4 rounded-xl bg-white text-red-600 font-bold
                                  border-2 border-red-600 hover:bg-red-50 transition-colors
                                  disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isPending ? "Cancelando..." : "Cancelar Reserva"}
-                      </button>
-                    </div>
-                  ))}
-              </div>
-            )}
+                        >
+                          {isPending ? "Cancelando..." : "Cancelar Reserva"}
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
 
             {/* Plazas disponibles */}
             {availableSpots.length > 0 && (
