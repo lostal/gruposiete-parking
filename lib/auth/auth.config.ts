@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import dbConnect from "@/lib/db/mongodb";
 import User from "@/models/User";
-import { AUTH_CONSTANTS, isValidCorporateEmail } from "@/lib/constants";
+import { AUTH_CONSTANTS } from "@/lib/constants";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),

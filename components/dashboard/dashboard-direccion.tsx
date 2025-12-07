@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { format, addDays, startOfDay, isSameDay } from "date-fns";
+import { format, startOfDay, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface DashboardDireccionProps {
@@ -19,7 +19,6 @@ interface ParkingSpot {
 }
 
 export default function DashboardDireccion({
-  userId,
   parkingSpotId,
 }: DashboardDireccionProps) {
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
@@ -75,13 +74,7 @@ export default function DashboardDireccion({
     }
   }, [parkingSpotId, fetchParkingSpot, fetchAvailability]);
 
-  const handleDateSelect = (dates: Date[] | undefined) => {
-    if (!dates) {
-      setSelectedDates([]);
-      return;
-    }
-    setSelectedDates(dates);
-  };
+
 
   const handleMarkUnavailable = async () => {
     if (selectedDates.length === 0) {
@@ -427,9 +420,8 @@ export default function DashboardDireccion({
                     disabled={isDisabled}
                     title={title}
                     className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
-                              ${bgColor} ${textColor} ${border} ${
-                                !isDisabled && "hover:scale-105"
-                              }`}
+                              ${bgColor} ${textColor} ${border} ${!isDisabled && "hover:scale-105"
+                      }`}
                   >
                     {format(date, "d")}
                   </button>

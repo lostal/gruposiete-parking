@@ -385,9 +385,10 @@ export async function POST(request: Request) {
         throw transactionError;
       } finally {
         // Asegurar que la sesión se cierra solo si no se ha cerrado ya
-        if (session_db.transaction.isActive) {
-          session_db.endSession();
+        if (session_db.inTransaction()) {
+          await session_db.abortTransaction();
         }
+        session_db.endSession();
       }
     }
 

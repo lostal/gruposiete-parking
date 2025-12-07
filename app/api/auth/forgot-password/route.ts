@@ -5,7 +5,6 @@ import dbConnect from "@/lib/db/mongodb";
 import User from "@/models/User";
 import PasswordResetToken from "@/models/PasswordResetToken";
 import { sendEmail, getPasswordResetEmail } from "@/lib/email/resend";
-import { isValidCorporateEmail } from "@/lib/constants";
 import { sanitizeEmail } from "@/lib/sanitize";
 import {
   checkRateLimitRedis,
@@ -128,7 +127,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.issues[0].message },
         { status: 400 },
       );
     }

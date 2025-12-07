@@ -133,7 +133,7 @@ export async function POST(request: Request) {
       role: finalRole,
     });
 
-    const { password, ...userWithoutPassword } = user.toObject();
+    const { password: _password, ...userWithoutPassword } = user.toObject();
 
     return NextResponse.json(
       {
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.issues[0].message },
         { status: 400 },
       );
     }

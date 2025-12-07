@@ -9,7 +9,6 @@ import ParkingSpot from "@/models/ParkingSpot";
 import { UserRole } from "@/types";
 import { logger, getRequestContext } from "@/lib/logger";
 import bcrypt from "bcryptjs";
-import { AUTH_CONSTANTS } from "@/lib/constants";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, "El nombre es requerido").trim(),
@@ -65,7 +64,7 @@ export async function PATCH(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.issues[0].message },
         { status: 400 },
       );
     }
