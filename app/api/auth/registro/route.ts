@@ -30,7 +30,7 @@ const registerSchema = z.object({
     .string()
     .min(
       AUTH_CONSTANTS.PASSWORD_MIN_LENGTH,
-      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`
+      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`,
     ),
   role: z.nativeEnum(UserRole).optional(),
 });
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const identifier = getClientIdentifier(request);
     const rateLimit = await checkRateLimitRedis(
       `register:${identifier}`,
-      "registro"
+      "registro",
     );
 
     if (!rateLimit.success) {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
             "X-RateLimit-Reset": rateLimit.reset.toString(),
             "Retry-After": retryAfter.toString(),
           },
-        }
+        },
       );
     }
 
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     if (containsMaliciousContent(sanitizedBody.name)) {
       return NextResponse.json(
         { error: "El nombre contiene caracteres no permitidos" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     if (!isValidCorporateEmail(validatedData.email)) {
       return NextResponse.json(
         { error: "Solo se permiten emails corporativos (@gruposiete.es)" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -110,20 +110,20 @@ export async function POST(request: Request) {
             error:
               "No se pudo completar el registro. Si el email es válido, verifica que no esté ya registrado.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
       // Para admins, mostrar mensaje específico
       return NextResponse.json(
         { error: "Este email ya está registrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const hashedPassword = await bcrypt.hash(
       validatedData.password,
-      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS
+      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
 
     const user = await User.create({
@@ -140,20 +140,20 @@ export async function POST(request: Request) {
         message: "Usuario creado correctamente",
         user: userWithoutPassword,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     logger.error("Error en registro", error as Error);
     return NextResponse.json(
       { error: "Error al crear usuario" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

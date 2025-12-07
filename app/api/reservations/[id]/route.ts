@@ -18,7 +18,7 @@ const _ensureModels = [ParkingSpot];
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -32,20 +32,19 @@ export async function DELETE(
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "ID de reserva inválido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await dbConnect();
 
-    const reservation = await Reservation.findById(id).populate(
-      "parkingSpotId"
-    );
+    const reservation =
+      await Reservation.findById(id).populate("parkingSpotId");
 
     if (!reservation) {
       return NextResponse.json(
         { error: "Reserva no encontrada" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -74,7 +73,7 @@ export async function DELETE(
           // TODO: Habilitar cuando se tenga el correo de distribución configurado
           if (!distributionEmail) {
             logger.warn(
-              "DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado."
+              "DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.",
             );
             return;
           }
@@ -93,20 +92,20 @@ export async function DELETE(
                 subject: "¡Nuevas plazas disponibles! - Gruposiete Parking",
                 html: getNewSpotsAvailableDistributionEmail(
                   formatDate(reservationDate),
-                  [spotInfo]
+                  [spotInfo],
                 ),
               });
             } catch (emailError) {
               logger.error(
                 "Error sending distribution email",
-                emailError as Error
+                emailError as Error,
               );
             }
           }
         } catch (emailError) {
           logger.error(
             "Error sending cancellation emails",
-            emailError as Error
+            emailError as Error,
           );
         }
       })
@@ -119,7 +118,7 @@ export async function DELETE(
     logger.error("Error cancelling reservation", error as Error);
     return NextResponse.json(
       { error: "Error al cancelar reserva" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

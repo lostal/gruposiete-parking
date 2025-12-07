@@ -77,7 +77,7 @@ class Logger {
     level: LogLevel,
     message: string,
     context?: LogContext,
-    error?: Error
+    error?: Error,
   ): void {
     const entry: LogEntry = {
       level,
@@ -172,14 +172,14 @@ class Logger {
     endpoint: string,
     status: number,
     duration?: number,
-    context?: LogContext
+    context?: LogContext,
   ): void {
     const level =
       status >= 500
         ? LogLevel.ERROR
         : status >= 400
-        ? LogLevel.WARN
-        : LogLevel.INFO;
+          ? LogLevel.WARN
+          : LogLevel.INFO;
 
     this.log(level, `API Response: ${method} ${endpoint} - ${status}`, {
       ...context,
@@ -197,7 +197,7 @@ class Logger {
     operation: string,
     collection: string,
     duration?: number,
-    context?: LogContext
+    context?: LogContext,
   ): void {
     this.debug(`DB Operation: ${operation} on ${collection}`, {
       ...context,

@@ -37,14 +37,14 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
   const fetchMyReservations = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/reservations?userId=${userId}&upcoming=true`
+        `/api/reservations?userId=${userId}&upcoming=true`,
       );
       if (response.ok) {
         const data = await response.json();
         const reservationsArray = data.reservations || data;
         const sortedData = reservationsArray.sort(
           (a: MyReservation, b: MyReservation) =>
-            new Date(a.date).getTime() - new Date(b.date).getTime()
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
         setMyReservations(sortedData);
       }
@@ -59,7 +59,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
       const response = await fetch(
-        `/api/parking-spots/available?date=${dateStr}`
+        `/api/parking-spots/available?date=${dateStr}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -81,12 +81,12 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
       const endDate = format(lastDay, "yyyy-MM-dd");
 
       const response = await fetch(
-        `/api/parking-spots/available-days?startDate=${startDate}&endDate=${endDate}`
+        `/api/parking-spots/available-days?startDate=${startDate}&endDate=${endDate}`,
       );
       if (response.ok) {
         const data = await response.json();
         setDaysWithAvailability(
-          data.map((dateStr: string) => new Date(dateStr))
+          data.map((dateStr: string) => new Date(dateStr)),
         );
       }
     } catch (error) {
@@ -218,13 +218,13 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
 
   const goToPreviousMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
     );
   };
 
   const goToNextMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
     );
   };
 
@@ -288,11 +288,11 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               const isReserved = myReservations.some(
                 (res) =>
                   format(new Date(res.date), "yyyy-MM-dd") ===
-                  format(date, "yyyy-MM-dd")
+                  format(date, "yyyy-MM-dd"),
               );
 
               const hasAvailability = daysWithAvailability.some(
-                (d) => format(d, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
+                (d) => format(d, "yyyy-MM-dd") === format(date, "yyyy-MM-dd"),
               );
 
               let bgColor = "bg-white";
@@ -324,8 +324,8 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                   disabled={isDisabled}
                   className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
                               ${bgColor} ${textColor} ${border} ${
-                    !isDisabled && "hover:scale-105"
-                  }`}
+                                !isDisabled && "hover:scale-105"
+                              }`}
                 >
                   {format(date, "d")}
                 </button>
@@ -361,7 +361,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
             {myReservations.find(
               (res) =>
                 format(new Date(res.date), "yyyy-MM-dd") ===
-                format(selectedDate, "yyyy-MM-dd")
+                format(selectedDate, "yyyy-MM-dd"),
             ) && (
               <div className="mb-6">
                 <h4 className="text-sm font-bold text-[#343f48] uppercase tracking-wider mb-3">
@@ -371,7 +371,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                   .filter(
                     (res) =>
                       format(new Date(res.date), "yyyy-MM-dd") ===
-                      format(selectedDate, "yyyy-MM-dd")
+                      format(selectedDate, "yyyy-MM-dd"),
                   )
                   .map((reservation) => (
                     <div
@@ -483,7 +483,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               !myReservations.find(
                 (res) =>
                   format(new Date(res.date), "yyyy-MM-dd") ===
-                  format(selectedDate, "yyyy-MM-dd")
+                  format(selectedDate, "yyyy-MM-dd"),
               ) && (
                 <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center">
                   <p className="text-gray-400 font-medium">

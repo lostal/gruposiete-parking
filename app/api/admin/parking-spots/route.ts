@@ -22,7 +22,7 @@ export async function GET() {
     console.error("Error fetching parking spots:", error);
     return NextResponse.json(
       { error: "Error al obtener plazas" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

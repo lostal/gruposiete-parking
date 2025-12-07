@@ -41,7 +41,7 @@ const AvailabilitySchema = new Schema<IAvailability>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Índices compuestos para búsquedas eficientes

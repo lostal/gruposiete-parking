@@ -25,7 +25,7 @@ function validateEnv(): EnvConfig {
 
   if (!process.env.NEXTAUTH_SECRET) {
     errors.push(
-      "NEXTAUTH_SECRET es requerida. Genera una con: openssl rand -base64 32"
+      "NEXTAUTH_SECRET es requerida. Genera una con: openssl rand -base64 32",
     );
   }
 
@@ -35,7 +35,7 @@ function validateEnv(): EnvConfig {
     !process.env.MONGODB_URI.startsWith("mongodb")
   ) {
     errors.push(
-      'MONGODB_URI debe comenzar con "mongodb://" o "mongodb+srv://"'
+      'MONGODB_URI debe comenzar con "mongodb://" o "mongodb+srv://"',
     );
   }
 
@@ -47,13 +47,13 @@ function validateEnv(): EnvConfig {
   if (process.env.NODE_ENV === "production") {
     if (!process.env.RESEND_API_KEY) {
       errors.push(
-        "RESEND_API_KEY es requerida en producción para envío de notificaciones por email"
+        "RESEND_API_KEY es requerida en producción para envío de notificaciones por email",
       );
     }
 
     if (!process.env.NEXTAUTH_URL) {
       errors.push(
-        "NEXTAUTH_URL es requerida en producción para autenticación correcta"
+        "NEXTAUTH_URL es requerida en producción para autenticación correcta",
       );
     }
 
@@ -63,14 +63,14 @@ function validateEnv(): EnvConfig {
       !process.env.UPSTASH_REDIS_REST_TOKEN
     ) {
       console.warn(
-        "⚠️  UPSTASH_REDIS_REST_URL/TOKEN no configurado. Rate limiting usará memoria (NO recomendado en producción)."
+        "⚠️  UPSTASH_REDIS_REST_URL/TOKEN no configurado. Rate limiting usará memoria (NO recomendado en producción).",
       );
     }
   } else {
     // Advertencias en desarrollo
     if (!process.env.RESEND_API_KEY) {
       console.warn(
-        "⚠️  RESEND_API_KEY no está configurada. Los emails se simularán en consola."
+        "⚠️  RESEND_API_KEY no está configurada. Los emails se simularán en consola.",
       );
     }
   }
@@ -80,7 +80,7 @@ function validateEnv(): EnvConfig {
     throw new Error(
       `❌ Error de configuración de variables de entorno:\n${errors
         .map((e) => `  - ${e}`)
-        .join("\n")}\n\nRevisa tu archivo .env.local`
+        .join("\n")}\n\nRevisa tu archivo .env.local`,
     );
   }
 
@@ -115,7 +115,7 @@ if (typeof window === "undefined") {
 function getEnv(): EnvConfig {
   if (typeof window !== "undefined") {
     throw new Error(
-      "❌ No se pueden acceder a variables de entorno desde el cliente"
+      "❌ No se pueden acceder a variables de entorno desde el cliente",
     );
   }
   if (!env) {

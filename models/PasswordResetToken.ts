@@ -33,7 +33,7 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Índice para auto-eliminar tokens expirados (TTL index)
@@ -46,7 +46,7 @@ const PasswordResetToken: Model<IPasswordResetToken> =
   mongoose.models.PasswordResetToken ||
   mongoose.model<IPasswordResetToken>(
     "PasswordResetToken",
-    PasswordResetTokenSchema
+    PasswordResetTokenSchema,
   );
 
 export default PasswordResetToken;

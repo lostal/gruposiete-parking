@@ -35,7 +35,7 @@ export async function GET() {
     console.error("Error fetching all history:", error);
     return NextResponse.json(
       { error: "Error al obtener historial" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

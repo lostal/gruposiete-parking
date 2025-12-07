@@ -28,7 +28,7 @@ export async function PATCH(request: Request) {
     if (session.user.role === UserRole.ADMIN) {
       return NextResponse.json(
         { error: "Los administradores no pueden modificar su perfil" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -42,7 +42,7 @@ export async function PATCH(request: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -66,18 +66,18 @@ export async function PATCH(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     logger.error(
       "Error al actualizar perfil",
       error as Error,
-      getRequestContext(request)
+      getRequestContext(request),
     );
     return NextResponse.json(
       { error: "Error al actualizar el perfil" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -95,7 +95,7 @@ export async function DELETE(request: Request) {
     if (session.user.role === UserRole.ADMIN) {
       return NextResponse.json(
         { error: "Los administradores no pueden eliminar su cuenta" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -106,7 +106,7 @@ export async function DELETE(request: Request) {
     if (!password) {
       return NextResponse.json(
         { error: "Se requiere la contraseña para confirmar la eliminación" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -117,7 +117,7 @@ export async function DELETE(request: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -127,7 +127,7 @@ export async function DELETE(request: Request) {
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Contraseña incorrecta" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -170,11 +170,11 @@ export async function DELETE(request: Request) {
     logger.error(
       "Error al eliminar usuario",
       error as Error,
-      getRequestContext(request)
+      getRequestContext(request),
     );
     return NextResponse.json(
       { error: "Error al eliminar la cuenta" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

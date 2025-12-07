@@ -8,10 +8,13 @@ import User from "@/models/User";
 import Availability from "@/models/Availability";
 import { startOfDay, endOfDay } from "date-fns";
 import { ReservationStatus, UserRole } from "@/types";
-import { formatDate } from "@/lib/utils/dates";
 import mongoose from "mongoose";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
+import {
+  CreateReservationSchema,
+  formatZodErrors,
+} from "@/lib/schemas/reservation.schema";
 
 // Asegurar que los modelos estén registrados para populate
 const _ensureModels = [ParkingSpot, User];
@@ -42,7 +45,7 @@ export async function GET(request: Request) {
       if (userId !== session.user.id && session.user.role !== UserRole.ADMIN) {
         return NextResponse.json(
           { error: "No autorizado para ver reservas de otros usuarios" },
-          { status: 403 }
+          { status: 403 },
         );
       }
       query.userId = userId;
@@ -107,7 +110,7 @@ export async function GET(request: Request) {
     logger.error("Error fetching reservations", error as Error);
     return NextResponse.json(
       { error: "Error al obtener reservas" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -123,7 +126,7 @@ export async function POST(request: Request) {
     if (session.user.role !== UserRole.GENERAL) {
       return NextResponse.json(
         { error: "Solo usuarios generales pueden reservar plazas" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -148,45 +151,35 @@ export async function POST(request: Request) {
             "X-RateLimit-Remaining": rateLimit.remaining.toString(),
             "X-RateLimit-Reset": rateLimit.reset.toString(),
           },
-        }
+        },
       );
     }
 
-    const { parkingSpotId, date: dateStr } = await request.json();
+    // ZOD VALIDATION: Validate request body before any database operations
+    const body = await request.json();
+    const validation = CreateReservationSchema.safeParse(body);
 
-    if (!parkingSpotId || !dateStr) {
-      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json(formatZodErrors(validation.error), {
+        status: 400,
+      });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
-      return NextResponse.json(
-        { error: "ID de plaza inválido" },
-        { status: 400 }
-      );
-    }
-
-    const parsedDate = new Date(dateStr);
-    if (isNaN(parsedDate.getTime())) {
-      return NextResponse.json(
-        { error: "Formato de fecha inválido" },
-        { status: 400 }
-      );
-    }
-
-    const date = startOfDay(parsedDate);
+    const { parkingSpotId, date: dateStr } = validation.data;
+    const date = startOfDay(new Date(dateStr));
 
     const dayOfWeek = date.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       return NextResponse.json(
         { error: "Solo se pueden hacer reservas para días laborables (L-V)" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (date < startOfDay(new Date())) {
       return NextResponse.json(
         { error: "No se pueden hacer reservas para fechas pasadas" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -197,7 +190,7 @@ export async function POST(request: Request) {
         {
           error: "No se pueden hacer reservas con más de 60 días de antelación",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -223,7 +216,7 @@ export async function POST(request: Request) {
           await session_db.abortTransaction();
           return NextResponse.json(
             { error: "Ya tienes una reserva activa para este día" },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -240,7 +233,7 @@ export async function POST(request: Request) {
               error:
                 "Esta plaza no está disponible para reservar en esta fecha",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -254,7 +247,7 @@ export async function POST(request: Request) {
           await session_db.abortTransaction();
           return NextResponse.json(
             { error: "Esta plaza ya ha sido reservada por otro usuario" },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -278,7 +271,7 @@ export async function POST(request: Request) {
         if (!populatedReservation) {
           return NextResponse.json(
             { error: "Error al obtener reserva creada" },
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -318,14 +311,14 @@ export async function POST(request: Request) {
             session_db.endSession();
             logger.error(
               "Validation error in reservation transaction",
-              transactionError
+              transactionError,
             );
             return NextResponse.json(
               {
                 error:
                   "Datos de reserva inválidos: " + transactionError.message,
               },
-              { status: 400 }
+              { status: 400 },
             );
           }
 
@@ -334,11 +327,11 @@ export async function POST(request: Request) {
             session_db.endSession();
             logger.error(
               "Cast error in reservation transaction",
-              transactionError
+              transactionError,
             );
             return NextResponse.json(
               { error: "ID de plaza inválido" },
-              { status: 400 }
+              { status: 400 },
             );
           }
 
@@ -367,14 +360,14 @@ export async function POST(request: Request) {
             session_db.endSession();
             logger.error(
               "Database connection error in reservation",
-              transactionError
+              transactionError,
             );
             return NextResponse.json(
               {
                 error:
                   "Error de conexión con la base de datos. Intenta de nuevo.",
               },
-              { status: 503 }
+              { status: 503 },
             );
           }
 
@@ -382,7 +375,7 @@ export async function POST(request: Request) {
           session_db.endSession();
           logger.error(
             "Unexpected error in reservation transaction",
-            transactionError
+            transactionError,
           );
           throw transactionError;
         }
@@ -402,14 +395,14 @@ export async function POST(request: Request) {
     if (lastError) {
       return NextResponse.json(
         { error: "Esta plaza ya ha sido reservada por otro usuario" },
-        { status: 400 }
+        { status: 400 },
       );
     }
   } catch (error) {
     logger.error("Error creating reservation", error as Error);
     return NextResponse.json(
       { error: "Error al crear reserva" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         await session_db.abortTransaction();
         return NextResponse.json(
           { error: "Usuario no encontrado" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         await session_db.abortTransaction();
         return NextResponse.json(
           { error: "Solo se pueden asignar plazas a usuarios de Dirección" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         await session_db.abortTransaction();
         return NextResponse.json(
           { error: "Plaza no encontrada" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
             assignedTo: null,
             assignedToName: null,
           },
-          { session: session_db }
+          { session: session_db },
         );
       }
 
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
           {
             assignedParkingSpot: null,
           },
-          { session: session_db }
+          { session: session_db },
         );
       }
 
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     console.error("Error assigning spot:", error);
     return NextResponse.json(
       { error: "Error al asignar plaza" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

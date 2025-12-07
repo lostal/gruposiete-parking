@@ -12,18 +12,21 @@ interface RateLimitEntry {
 const limitMap = new Map<string, RateLimitEntry>();
 
 // Limpiar entradas expiradas cada 5 minutos
-setInterval(() => {
-  const now = Date.now();
-  const keysToDelete: string[] = [];
+setInterval(
+  () => {
+    const now = Date.now();
+    const keysToDelete: string[] = [];
 
-  limitMap.forEach((entry, key) => {
-    if (entry.resetAt < now) {
-      keysToDelete.push(key);
-    }
-  });
+    limitMap.forEach((entry, key) => {
+      if (entry.resetAt < now) {
+        keysToDelete.push(key);
+      }
+    });
 
-  keysToDelete.forEach((key) => limitMap.delete(key));
-}, 5 * 60 * 1000);
+    keysToDelete.forEach((key) => limitMap.delete(key));
+  },
+  5 * 60 * 1000,
+);
 
 export interface RateLimitConfig {
   // Identificador único (IP, userId, etc)

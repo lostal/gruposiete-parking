@@ -260,15 +260,15 @@ export function ReservasSidebar({
                           isCancelled
                             ? "bg-red-100 text-red-700 border-red-700"
                             : isActive
-                            ? "bg-[#fdc373] text-[#343f48] border-[#343f48]"
-                            : "bg-gray-100 text-gray-600 border-gray-400"
+                              ? "bg-[#fdc373] text-[#343f48] border-[#343f48]"
+                              : "bg-gray-100 text-gray-600 border-gray-400"
                         }`}
                       >
                         {isCancelled
                           ? "Cancelada"
                           : isActive
-                          ? "Activa"
-                          : "Pasada"}
+                            ? "Activa"
+                            : "Pasada"}
                       </span>
                     </div>
 

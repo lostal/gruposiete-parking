@@ -20,13 +20,13 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(
-      searchParams.get("page") || String(PAGINATION_CONSTANTS.DEFAULT_PAGE)
+      searchParams.get("page") || String(PAGINATION_CONSTANTS.DEFAULT_PAGE),
     );
     const limit = Math.min(
       parseInt(
-        searchParams.get("limit") || String(PAGINATION_CONSTANTS.DEFAULT_LIMIT)
+        searchParams.get("limit") || String(PAGINATION_CONSTANTS.DEFAULT_LIMIT),
       ),
-      PAGINATION_CONSTANTS.MAX_LIMIT
+      PAGINATION_CONSTANTS.MAX_LIMIT,
     );
     const role = searchParams.get("role"); // Filtro opcional por rol
 
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
       { error: "Error al obtener usuarios" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

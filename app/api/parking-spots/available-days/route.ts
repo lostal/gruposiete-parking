@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     if (!startDateParam || !endDateParam) {
       return NextResponse.json(
         { error: "Fechas de inicio y fin requeridas" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
     dateMap.forEach((data, dateKey) => {
       const availableSpots = Array.from(data.unavailable).filter(
-        (spotId) => !data.reserved.has(spotId)
+        (spotId) => !data.reserved.has(spotId),
       );
       if (availableSpots.length > 0) {
         daysWithAvailability.push(dateKey);
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
     console.error("Error fetching available days:", error);
     return NextResponse.json(
       { error: "Error al obtener días con disponibilidad" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

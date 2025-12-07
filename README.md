@@ -17,6 +17,137 @@ Desarrollado con **Next.js 14**, **TypeScript** y **MongoDB**, implementa autent
 
 ---
 
+## 🏗️ Technical Architecture
+
+### Request Flow Diagram
+
+El siguiente diagrama muestra el flujo completo de una petición de reserva a través de las diferentes capas del sistema:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Client<br/>(React)
+    participant MW as Next.js<br/>Middleware
+    participant API as API Route<br/>/api/reservations
+    participant RL as Rate Limiter<br/>(Memory/Redis)
+    participant ZOD as Zod<br/>Validation
+    participant MDB as MongoDB<br/>(Transactions)
+
+    User->>UI: Click "Reservar Plaza"
+    UI->>MW: POST /api/reservations<br/>{parkingSpotId, date}
+
+    Note over MW: Auth Check
+    MW->>MW: Verify session cookie<br/>(authjs.session-token)
+
+    alt No session cookie
+        MW-->>UI: 302 Redirect /login
+    else Has session cookie
+        MW->>API: Forward request
+    end
+
+    Note over API: Session Validation
+    API->>API: auth() - Verify JWT
+
+    alt Invalid session
+        API-->>UI: 401 Unauthorized
+    else Valid session
+        API->>API: Check user role
+    end
+
+    alt Role != GENERAL
+        API-->>UI: 403 Forbidden
+    end
+
+    Note over RL: Rate Limiting
+    API->>RL: checkRateLimit()<br/>10 req / 5 min
+
+    alt Limit exceeded
+        RL-->>API: {success: false}
+        API-->>UI: 429 Too Many Requests<br/>+ Retry-After header
+    else Within limit
+        RL-->>API: {success: true, remaining}
+    end
+
+    Note over ZOD: Input Validation
+    API->>ZOD: CreateReservationSchema<br/>.safeParse(body)
+
+    alt Validation failed
+        ZOD-->>API: {success: false, errors}
+        API-->>UI: 400 Bad Request<br/>{error, details[]}
+    else Validation passed
+        ZOD-->>API: {success: true, data}
+    end
+
+    Note over API: Business Rules
+    API->>API: Validate date:<br/>- Not weekend<br/>- Not past<br/>- Max 60 days ahead
+
+    alt Invalid date rules
+        API-->>UI: 400 Bad Request
+    end
+
+    Note over MDB: Database Transaction
+    API->>MDB: startSession()<br/>startTransaction()
+
+    MDB->>MDB: Check: User already<br/>has reservation for date?
+
+    alt Already reserved
+        MDB-->>API: Abort transaction
+        API-->>UI: 400 "Ya tienes reserva"
+    end
+
+    MDB->>MDB: Check: Availability<br/>exists for parkingSpot?
+
+    alt Not available
+        MDB-->>API: Abort transaction
+        API-->>UI: 400 "Plaza no disponible"
+    end
+
+    MDB->>MDB: Check: Spot already<br/>reserved by other user?
+
+    alt Already taken
+        MDB-->>API: Abort transaction
+        API-->>UI: 400 "Plaza ya reservada"
+    end
+
+    MDB->>MDB: Reservation.create()
+    MDB->>MDB: commitTransaction()
+    MDB-->>API: Reservation document
+
+    API->>MDB: populate(parkingSpot, user)
+    MDB-->>API: Populated reservation
+
+    API-->>UI: 200 OK<br/>{success: true, reservation}
+    UI-->>User: "¡Reserva confirmada!"
+```
+
+### Capas del Sistema
+
+| Capa               | Tecnología             | Responsabilidad                                        |
+| ------------------ | ---------------------- | ------------------------------------------------------ |
+| **Middleware**     | Next.js Edge           | Verificación de cookies de sesión, redirección a login |
+| **Auth**           | NextAuth v5            | Validación JWT, gestión de sesiones seguras            |
+| **Rate Limiting**  | Memory / Upstash Redis | Prevención de abusos (10 reservas/5min por usuario)    |
+| **Validation**     | Zod                    | Validación estricta de tipos y formatos antes de DB    |
+| **Business Logic** | TypeScript             | Reglas de negocio (días laborables, fechas válidas)    |
+| **Persistence**    | MongoDB + Mongoose     | Transacciones ACID para prevenir race conditions       |
+
+### Stack Tecnológico
+
+| Categoría     | Tecnología                         |
+| ------------- | ---------------------------------- |
+| Framework     | Next.js 14 (App Router)            |
+| Lenguaje      | TypeScript (strict mode)           |
+| Base de Datos | MongoDB Atlas + Mongoose ODM       |
+| Autenticación | NextAuth v5 (beta)                 |
+| Validación    | Zod                                |
+| Rate Limiting | Upstash Redis / In-memory fallback |
+| Estilos       | Tailwind CSS v4                    |
+| Componentes   | Radix UI Primitives                |
+| Animaciones   | Framer Motion                      |
+| Email         | Resend                             |
+| Testing       | Vitest                             |
+
 ## ⚡ Características Principales
 
 - **Autenticación Segura**: Sistema de login con validación de emails corporativos, protección contra timing attacks y recuperación de contraseña

@@ -12,7 +12,7 @@ const loginSchema = z.object({
     .string()
     .min(
       AUTH_CONSTANTS.PASSWORD_MIN_LENGTH,
-      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`
+      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`,
     ),
 });
 

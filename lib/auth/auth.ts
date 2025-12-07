@@ -35,7 +35,7 @@ export const {
         } else {
           // Si el rol no es válido, usar GENERAL por defecto
           console.error(
-            `Rol inválido detectado: ${user.role}, usando GENERAL por defecto`
+            `Rol inválido detectado: ${user.role}, usando GENERAL por defecto`,
           );
           token.role = UserRole.GENERAL;
         }
@@ -47,7 +47,7 @@ export const {
       // (protección contra manipulación de JWT)
       if (token.role && !isValidRole(token.role)) {
         console.error(
-          `Rol en token manipulado: ${token.role}, invalidando sesión`
+          `Rol en token manipulado: ${token.role}, invalidando sesión`,
         );
         throw new Error("Token inválido"); // Invalidar token
       }

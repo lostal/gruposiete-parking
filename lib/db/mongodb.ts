@@ -52,24 +52,24 @@ async function dbConnect(): Promise<typeof mongoose> {
       // Errores comunes de MongoDB
       if (e.message.includes("authentication failed")) {
         throw new Error(
-          "Error de autenticación con MongoDB. Verifica tus credenciales."
+          "Error de autenticación con MongoDB. Verifica tus credenciales.",
         );
       } else if (
         e.message.includes("ENOTFOUND") ||
         e.message.includes("ECONNREFUSED")
       ) {
         throw new Error(
-          "No se puede conectar a MongoDB. Verifica la URL de conexión."
+          "No se puede conectar a MongoDB. Verifica la URL de conexión.",
         );
       } else if (e.message.includes("timeout")) {
         throw new Error(
-          "Timeout al conectar a MongoDB. Verifica tu conexión de red."
+          "Timeout al conectar a MongoDB. Verifica tu conexión de red.",
         );
       }
     }
 
     throw new Error(
-      "Error al conectar a la base de datos. Por favor, intenta de nuevo más tarde."
+      "Error al conectar a la base de datos. Por favor, intenta de nuevo más tarde.",
     );
   }
 

@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     if (!parkingSpotId) {
       return NextResponse.json(
         { error: "parkingSpotId requerido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     logger.error("Error fetching availability", error as Error);
     return NextResponse.json(
       { error: "Error al obtener disponibilidad" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     if (!mongoose.Types.ObjectId.isValid(parkingSpotId)) {
       return NextResponse.json(
         { error: "ID de plaza inválido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         {
           error: `Máximo ${AVAILABILITY_CONSTANTS.MAX_DATES_PER_REQUEST} fechas por solicitud`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     if (uniqueDates.size !== dates.length) {
       return NextResponse.json(
         { error: "Hay fechas duplicadas en la solicitud" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       if (!spot) {
         return NextResponse.json(
           { error: "Plaza no encontrada" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
             error:
               "Solo puedes marcar disponibilidad de tu propia plaza asignada",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
               error:
                 "No se puede cambiar. Ya hay reservas activas para algunas fechas.",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
       }
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       if (date < today) {
         return NextResponse.json(
           { error: "No se puede marcar disponibilidad para fechas pasadas" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
             error:
               "Solo se puede marcar disponibilidad para días laborables (Lunes a Viernes)",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
           isAvailable,
           markedBy: session.user.id,
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
 
       results.push(availability);
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
             // TODO: Habilitar cuando se tenga el correo de distribución configurado
             if (!distributionEmail) {
               logger.warn(
-                "DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado."
+                "DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.",
               );
               return;
             }
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
 
               // Agrupar todas las fechas
               const formattedDates = newlyAvailableDates.map((date) =>
-                formatDate(date)
+                formatDate(date),
               );
               const datesList =
                 formattedDates.length === 1
@@ -233,14 +233,14 @@ export async function POST(request: Request) {
               } catch (emailError) {
                 logger.error(
                   "Error sending distribution email",
-                  emailError as Error
+                  emailError as Error,
                 );
               }
             }
           } catch (emailError) {
             logger.error(
               "Error sending availability emails",
-              emailError as Error
+              emailError as Error,
             );
           }
         })
@@ -254,7 +254,7 @@ export async function POST(request: Request) {
     logger.error("Error updating availability", error as Error);
     return NextResponse.json(
       { error: "Error al actualizar disponibilidad" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

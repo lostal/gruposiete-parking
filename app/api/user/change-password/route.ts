@@ -14,7 +14,7 @@ const changePasswordSchema = z.object({
     .string()
     .min(
       AUTH_CONSTANTS.PASSWORD_MIN_LENGTH,
-      `La nueva contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`
+      `La nueva contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`,
     ),
 });
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     if (session.user.role === UserRole.ADMIN) {
       return NextResponse.json(
         { error: "Los administradores no pueden cambiar su contraseña" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -44,37 +44,37 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const isCurrentPasswordValid = await bcrypt.compare(
       validatedData.currentPassword,
-      user.password
+      user.password,
     );
 
     if (!isCurrentPasswordValid) {
       return NextResponse.json(
         { error: "La contraseña actual es incorrecta" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const isSamePassword = await bcrypt.compare(
       validatedData.newPassword,
-      user.password
+      user.password,
     );
 
     if (isSamePassword) {
       return NextResponse.json(
         { error: "La nueva contraseña debe ser diferente a la actual" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const hashedPassword = await bcrypt.hash(
       validatedData.newPassword,
-      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS
+      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
 
     user.password = hashedPassword;
@@ -92,18 +92,18 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     logger.error(
       "Error al cambiar contraseña",
       error as Error,
-      getRequestContext(request)
+      getRequestContext(request),
     );
     return NextResponse.json(
       { error: "Error al cambiar la contraseña" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

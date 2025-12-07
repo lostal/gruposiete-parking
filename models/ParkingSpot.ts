@@ -33,7 +33,7 @@ const ParkingSpotSchema = new Schema<IParkingSpot>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Índices

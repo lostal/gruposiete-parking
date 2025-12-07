@@ -35,7 +35,7 @@ const ReservationSchema = new Schema<IReservation>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Índices para búsquedas eficientes
@@ -50,7 +50,7 @@ ReservationSchema.index(
   {
     unique: true,
     partialFilterExpression: { status: ReservationStatus.ACTIVE },
-  }
+  },
 );
 
 const Reservation: Model<IReservation> =

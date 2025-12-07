@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "ID de usuario requerido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         await session_db.abortTransaction();
         return NextResponse.json(
           { error: "Usuario no encontrado" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         await session_db.abortTransaction();
         return NextResponse.json(
           { error: "El usuario no tiene plaza asignada" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
           assignedTo: null,
           assignedToName: null,
         },
-        { session: session_db }
+        { session: session_db },
       );
 
       // Quitar la plaza del usuario
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     console.error("Error unassigning spot:", error);
     return NextResponse.json(
       { error: "Error al desasignar plaza" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

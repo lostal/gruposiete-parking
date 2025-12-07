@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const identifier = getClientIdentifier(request);
     const rateLimit = await checkRateLimitRedis(
       `forgot-password:${identifier}`,
-      "registro"
+      "registro",
     );
 
     if (!rateLimit.success) {
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
           headers: {
             "Retry-After": retryAfter.toString(),
           },
-        }
+        },
       );
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       },
       {
         used: true,
-      }
+      },
     );
 
     await PasswordResetToken.create({
@@ -129,18 +129,18 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     logger.error(
       "Error en forgot-password",
       error as Error,
-      getRequestContext(request)
+      getRequestContext(request),
     );
     return NextResponse.json(
       { error: "Error al procesar la solicitud" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -17,7 +17,7 @@ const resetPasswordSchema = z.object({
     .string()
     .min(
       AUTH_CONSTANTS.PASSWORD_MIN_LENGTH,
-      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`
+      `La contraseña debe tener al menos ${AUTH_CONSTANTS.PASSWORD_MIN_LENGTH} caracteres`,
     ),
 });
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const identifier = getClientIdentifier(request);
     const rateLimit = await checkRateLimitRedis(
       `reset-password:${identifier}`,
-      "registro"
+      "registro",
     );
 
     if (!rateLimit.success) {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
           headers: {
             "Retry-After": retryAfter.toString(),
           },
-        }
+        },
       );
     }
 
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
           error:
             "El enlace de restablecimiento es inválido o ha expirado. Solicita uno nuevo.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,13 +86,13 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const hashedPassword = await bcrypt.hash(
       validatedData.password,
-      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS
+      AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
 
     user.password = hashedPassword;
@@ -114,18 +114,18 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     logger.error(
       "Error en reset-password",
       error as Error,
-      getRequestContext(request)
+      getRequestContext(request),
     );
     return NextResponse.json(
       { error: "Error al restablecer la contraseña" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -44,7 +44,7 @@ const UserSchema = new Schema<IUser>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Índices para mejorar el rendimiento

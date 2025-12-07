@@ -44,7 +44,7 @@ export default function DashboardDireccion({
   const fetchAvailability = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/availability?parkingSpotId=${parkingSpotId}`
+        `/api/availability?parkingSpotId=${parkingSpotId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -55,7 +55,7 @@ export default function DashboardDireccion({
       }
 
       const resResponse = await fetch(
-        `/api/reservations?parkingSpotId=${parkingSpotId}`
+        `/api/reservations?parkingSpotId=${parkingSpotId}`,
       );
       if (resResponse.ok) {
         const resData = await resResponse.json();
@@ -142,8 +142,8 @@ export default function DashboardDireccion({
 
     const hasReserved = selectedDates.some((date) =>
       reservedDates.some(
-        (rd) => startOfDay(rd).getTime() === startOfDay(date).getTime()
-      )
+        (rd) => startOfDay(rd).getTime() === startOfDay(date).getTime(),
+      ),
     );
 
     if (hasReserved) {
@@ -224,13 +224,13 @@ export default function DashboardDireccion({
 
   const goToPreviousMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
     );
   };
 
   const goToNextMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
     );
   };
 
@@ -381,7 +381,7 @@ export default function DashboardDireccion({
                 }
 
                 const isSelected = selectedDates.some((d) =>
-                  isSameDay(d, date)
+                  isSameDay(d, date),
                 );
                 const isUnavailable = isDateUnavailable(date);
                 const isReserved = isDateReserved(date);
@@ -428,8 +428,8 @@ export default function DashboardDireccion({
                     title={title}
                     className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
                               ${bgColor} ${textColor} ${border} ${
-                      !isDisabled && "hover:scale-105"
-                    }`}
+                                !isDisabled && "hover:scale-105"
+                              }`}
                   >
                     {format(date, "d")}
                   </button>

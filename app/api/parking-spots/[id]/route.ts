@@ -6,7 +6,7 @@ import ParkingSpot from "@/models/ParkingSpot";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -23,7 +23,7 @@ export async function GET(
     if (!parkingSpot) {
       return NextResponse.json(
         { error: "Plaza no encontrada" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function GET(
     console.error("Error fetching parking spot:", error);
     return NextResponse.json(
       { error: "Error al obtener plaza" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

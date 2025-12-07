@@ -55,7 +55,7 @@ if (
     "❌ ERROR CRÍTICO: UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son obligatorios en producción.\n" +
       "Rate limiting es esencial para prevenir ataques de fuerza bruta.\n" +
       "Configura estas variables de entorno antes de desplegar a producción.\n" +
-      "Crea una cuenta gratuita en: https://upstash.com"
+      "Crea una cuenta gratuita en: https://upstash.com",
   );
 }
 
@@ -73,7 +73,7 @@ export interface RateLimitResult {
  */
 export async function checkRateLimitRedis(
   identifier: string,
-  type: "registro" | "reservacion" | "api-general" = "api-general"
+  type: "registro" | "reservacion" | "api-general" = "api-general",
 ): Promise<RateLimitResult> {
   // Si no hay Redis configurado (desarrollo), usar sistema en memoria
   if (!redis || !ratelimiters) {
@@ -151,7 +151,7 @@ export function getClientIdentifier(request: Request): string {
 export async function withRateLimit(
   request: Request,
   identifier: string,
-  type: "registro" | "reservacion" | "api-general"
+  type: "registro" | "reservacion" | "api-general",
 ): Promise<Response | null> {
   const result = await checkRateLimitRedis(identifier, type);
 
@@ -171,7 +171,7 @@ export async function withRateLimit(
           "X-RateLimit-Reset": result.reset.toString(),
           "Retry-After": retryAfter.toString(),
         },
-      }
+      },
     );
   }
 

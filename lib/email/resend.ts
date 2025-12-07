@@ -7,7 +7,7 @@ if (process.env.RESEND_API_KEY) {
 } else {
   if (process.env.NODE_ENV !== "production") {
     console.warn(
-      "⚠️ RESEND_API_KEY no está configurado. Los emails se simularán en consola."
+      "⚠️ RESEND_API_KEY no está configurado. Los emails se simularán en consola.",
     );
   }
 }
@@ -55,7 +55,7 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
 export function getNewSpotsAvailableEmail(
   userName: string,
   date: string,
-  spots: string[]
+  spots: string[],
 ) {
   return `
     <!DOCTYPE html>
@@ -148,7 +148,7 @@ export function getPasswordResetEmail(userName: string, resetUrl: string) {
 
 export function getNewSpotsAvailableDistributionEmail(
   date: string,
-  spots: string[]
+  spots: string[],
 ) {
   return `
     <!DOCTYPE html>

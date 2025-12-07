@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const reservedIds = reserved.map((r) => r.parkingSpotId.toString());
 
     const availableSpotIds = unavailableIds.filter(
-      (id) => !reservedIds.includes(id)
+      (id) => !reservedIds.includes(id),
     );
 
     const availableSpots = await ParkingSpot.find({
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     console.error("Error fetching available spots:", error);
     return NextResponse.json(
       { error: "Error al obtener plazas disponibles" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

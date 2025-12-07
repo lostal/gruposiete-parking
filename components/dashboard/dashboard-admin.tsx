@@ -51,7 +51,9 @@ export default function DashboardAdmin() {
   const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"direccion" | "general">("direccion");
+  const [activeTab, setActiveTab] = useState<"direccion" | "general">(
+    "direccion",
+  );
   const { toast } = useToast();
 
   useEffect(() => {
