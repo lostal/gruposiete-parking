@@ -497,8 +497,9 @@ export async function getUserHistory(
   const query: any = { userId };
 
   if (!all) {
-    // Only upcoming
+    // Only upcoming and ACTIVE
     query.date = { $gte: startOfDay(new Date()) };
+    query.status = ReservationStatus.ACTIVE;
   }
 
   const sort = all ? { date: -1 as const } : { date: 1 as const };
@@ -576,9 +577,8 @@ export async function cancelReservation(
         }
 
         if (parkingSpot) {
-          const spotInfo = `${parkingSpot.number} (${
-            parkingSpot.location === "SUBTERRANEO" ? "Subterráneo" : "Exterior"
-          })`;
+          const spotInfo = `${parkingSpot.number} (${parkingSpot.location === "SUBTERRANEO" ? "Subterráneo" : "Exterior"
+            })`;
 
           await sendEmail({
             to: distributionEmail,
