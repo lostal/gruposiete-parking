@@ -25,100 +25,26 @@ El siguiente diagrama muestra el flujo completo de una petición de reserva a tr
 
 ```mermaid
 sequenceDiagram
-    autonumber
     actor User
-    participant UI as Client<br/>(React)
-    participant MW as Next.js<br/>Middleware
-    participant API as API Route<br/>/api/reservations
-    participant RL as Rate Limiter<br/>(Memory/Redis)
-    participant ZOD as Zod<br/>Validation
-    participant MDB as MongoDB<br/>(Transactions)
+    participant UI as Client
+    participant MW as Middleware
+    participant API as API Route
+    participant RL as Rate Limiter
+    participant ZOD as Zod
+    participant MDB as MongoDB
 
-    User->>UI: Click "Reservar Plaza"
-    UI->>MW: POST /api/reservations<br/>{parkingSpotId, date}
-
-    Note over MW: Auth Check
-    MW->>MW: Verify session cookie<br/>(authjs.session-token)
-
-    alt No session cookie
-        MW-->>UI: 302 Redirect /login
-    else Has session cookie
-        MW->>API: Forward request
-    end
-
-    Note over API: Session Validation
-    API->>API: auth() - Verify JWT
-
-    alt Invalid session
-        API-->>UI: 401 Unauthorized
-    else Valid session
-        API->>API: Check user role
-    end
-
-    alt Role != GENERAL
-        API-->>UI: 403 Forbidden
-    end
-
-    Note over RL: Rate Limiting
-    API->>RL: checkRateLimit()<br/>10 req / 5 min
-
-    alt Limit exceeded
-        RL-->>API: {success: false}
-        API-->>UI: 429 Too Many Requests<br/>+ Retry-After header
-    else Within limit
-        RL-->>API: {success: true, remaining}
-    end
-
-    Note over ZOD: Input Validation
-    API->>ZOD: CreateReservationSchema<br/>.safeParse(body)
-
-    alt Validation failed
-        ZOD-->>API: {success: false, errors}
-        API-->>UI: 400 Bad Request<br/>{error, details[]}
-    else Validation passed
-        ZOD-->>API: {success: true, data}
-    end
-
-    Note over API: Business Rules
-    API->>API: Validate date:<br/>- Not weekend<br/>- Not past<br/>- Max 60 days ahead
-
-    alt Invalid date rules
-        API-->>UI: 400 Bad Request
-    end
-
-    Note over MDB: Database Transaction
-    API->>MDB: startSession()<br/>startTransaction()
-
-    MDB->>MDB: Check: User already<br/>has reservation for date?
-
-    alt Already reserved
-        MDB-->>API: Abort transaction
-        API-->>UI: 400 "Ya tienes reserva"
-    end
-
-    MDB->>MDB: Check: Availability<br/>exists for parkingSpot?
-
-    alt Not available
-        MDB-->>API: Abort transaction
-        API-->>UI: 400 "Plaza no disponible"
-    end
-
-    MDB->>MDB: Check: Spot already<br/>reserved by other user?
-
-    alt Already taken
-        MDB-->>API: Abort transaction
-        API-->>UI: 400 "Plaza ya reservada"
-    end
-
-    MDB->>MDB: Reservation.create()
-    MDB->>MDB: commitTransaction()
-    MDB-->>API: Reservation document
-
-    API->>MDB: populate(parkingSpot, user)
-    MDB-->>API: Populated reservation
-
-    API-->>UI: 200 OK<br/>{success: true, reservation}
-    UI-->>User: "¡Reserva confirmada!"
+    User->>UI: Reservar Plaza
+    UI->>MW: POST /api/reservations
+    MW->>MW: Verify auth cookie
+    MW->>API: Forward request
+    API->>API: auth() + role check
+    API->>RL: checkRateLimit()
+    API->>ZOD: safeParse(body)
+    API->>MDB: Transaction
+    MDB->>MDB: Validate + Create
+    MDB-->>API: Reservation
+    API-->>UI: 200 OK
+    UI-->>User: ¡Confirmado!
 ```
 
 ### Capas del Sistema
@@ -139,7 +65,7 @@ sequenceDiagram
 | Framework     | Next.js 14 (App Router)            |
 | Lenguaje      | TypeScript (strict mode)           |
 | Base de Datos | MongoDB Atlas + Mongoose ODM       |
-| Autenticación | NextAuth v5 (beta)                 |
+| Autenticación | NextAuth v5                        |
 | Validación    | Zod                                |
 | Rate Limiting | Upstash Redis / In-memory fallback |
 | Estilos       | Tailwind CSS v4                    |
