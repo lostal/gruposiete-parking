@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { format, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +34,7 @@ export function ReservasSidebar({
   onClose,
   onReservationCancelled: _onReservationCancelled,
 }: ReservasSidebarProps) {
+  const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("activas");
@@ -76,7 +78,7 @@ export function ReservasSidebar({
 
       // Recargar la lista y quizas la página
       fetchReservations();
-      window.location.reload();
+      router.refresh(); // Sync server components without full reload
     } catch (error) {
       toast({
         title: "Error",

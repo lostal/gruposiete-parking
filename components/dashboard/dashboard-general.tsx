@@ -13,7 +13,8 @@ import {
   getAvailableSpotsAction,
   getAvailableDaysAction,
 } from "@/app/actions/parking.actions";
-import { useTransition } from "react";
+import { useTransition, useOptimistic } from "react";
+import { useRouter } from "next/navigation";
 
 interface DashboardGeneralProps {
   userId: string;
@@ -41,9 +42,26 @@ export default function DashboardGeneral({
   initialMyReservations,
   initialDaysWithAvailability,
 }: DashboardGeneralProps) {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableSpots, setAvailableSpots] = useState<AvailableSpot[]>([]);
-  const [myReservations] = useState<MyReservation[]>(initialMyReservations);
+
+  // Use optimistic state for instant feedback
+  const [optimisticReservations, setOptimisticReservations] = useOptimistic(
+    initialMyReservations,
+    (
+      state,
+      action: { type: "add" | "remove"; payload: MyReservation | string },
+    ) => {
+      if (action.type === "add") {
+        return [...state, action.payload as MyReservation];
+      } else if (action.type === "remove") {
+        return state.filter((r) => r._id !== action.payload);
+      }
+      return state;
+    },
+  );
+
   // Convert initial strings back to Date objects if needed, or keep as strings
   const [daysWithAvailability, setDaysWithAvailability] = useState<Date[]>(
     initialDaysWithAvailability.map((d) => new Date(d)),
@@ -121,14 +139,22 @@ export default function DashboardGeneral({
           description: `Plaza reservada correctamente`,
         });
 
-        // Update local state
+        toast({
+          title: "¡Reserva exitosa!",
+          description: `Plaza reservada correctamente`,
+        });
+
+        // Optimistically add reservation
+        // We'd ideally need the full object, but for the calendar/list checks we mainly need date and spot
+        // Since we don't have the full DB object yet, we rely on router.refresh()
+        // to get the real data quickly.
+        // But for "instant yellow", we can try to fake it?
+        // Actually, router.refresh() is fast enough usually.
+        // But let's verify. The user complained about "persistence" of old data.
+
+        router.refresh();
         fetchAvailableSpots();
-        // For myReservations, we normally need to refetch.
-        // Since I can't easily fetch (no action for it), I'll reload the page or add an action.
-        // I'll add a simple reload for now using window.location.reload() or proper router.refresh().
-        // Changing to window location reload is abrupt.
-        // I'll settle for optimistic update or nothing?
-        // I'll use router.refresh in a separate effect or just here.
+
         // Needs `useRouter`.
       } catch (error) {
         toast({
@@ -157,8 +183,16 @@ export default function DashboardGeneral({
           description: "Tu reserva ha sido cancelada correctamente",
         });
 
+        toast({
+          title: "Reserva cancelada",
+          description: "Tu reserva ha sido cancelada correctamente",
+        });
+
+        // Optimistically remove
+        setOptimisticReservations({ type: "remove", payload: reservationId });
+
+        router.refresh();
         fetchAvailableSpots();
-        // Refresh needed.
       } catch (error) {
         toast({
           title: "Error",
@@ -263,12 +297,12 @@ export default function DashboardGeneral({
               const isSelected =
                 selectedDate &&
                 format(date, "yyyy-MM-dd") ===
-                format(selectedDate, "yyyy-MM-dd");
+                  format(selectedDate, "yyyy-MM-dd");
               const isPast = date < startOfDay(new Date());
               const isWeekend = !isWeekday(date);
               const isDisabled = isPast || isWeekend;
 
-              const isReserved = myReservations.some(
+              const isReserved = optimisticReservations.some(
                 (res) =>
                   format(new Date(res.date), "yyyy-MM-dd") ===
                   format(date, "yyyy-MM-dd"),
@@ -306,8 +340,9 @@ export default function DashboardGeneral({
                   onClick={() => !isDisabled && setSelectedDate(date)}
                   disabled={isDisabled}
                   className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
-                              ${bgColor} ${textColor} ${border} ${!isDisabled && "hover:scale-105"
-                    }`}
+                              ${bgColor} ${textColor} ${border} ${
+                                !isDisabled && "hover:scale-105"
+                              }`}
                 >
                   {format(date, "d")}
                 </button>
@@ -340,66 +375,66 @@ export default function DashboardGeneral({
             </h3>
 
             {/* Reserva del usuario para esta fecha (si existe) */}
-            {myReservations.find(
+            {optimisticReservations.find(
               (res) =>
                 format(new Date(res.date), "yyyy-MM-dd") ===
                 format(selectedDate, "yyyy-MM-dd"),
             ) && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
-                    Tu Reserva
-                  </h4>
-                  {myReservations
-                    .filter(
-                      (res) =>
-                        format(new Date(res.date), "yyyy-MM-dd") ===
-                        format(selectedDate, "yyyy-MM-dd"),
-                    )
-                    .map((reservation) => (
-                      <div
-                        key={reservation._id}
-                        className="bg-white rounded-2xl p-6 brutal-border brutal-shadow border-2 border-green-500"
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 bg-green-600 rounded-xl brutal-border flex items-center justify-center">
-                              <span className="text-xl font-mono-data font-bold text-white">
-                                {reservation.parkingSpot.location ===
-                                  "SUBTERRANEO"
-                                  ? "S"
-                                  : "E"}
-                                -{reservation.parkingSpot.number}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="font-bold text-primary-900 text-lg">
-                                Plaza {reservation.parkingSpot.number}
-                              </p>
-                              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                                {reservation.parkingSpot.location ===
-                                  "SUBTERRANEO"
-                                  ? "Subterráneo"
-                                  : "Exterior"}
-                              </p>
-                            </div>
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
+                  Tu Reserva
+                </h4>
+                {optimisticReservations
+                  .filter(
+                    (res) =>
+                      format(new Date(res.date), "yyyy-MM-dd") ===
+                      format(selectedDate, "yyyy-MM-dd"),
+                  )
+                  .map((reservation) => (
+                    <div
+                      key={reservation._id}
+                      className="bg-white rounded-2xl p-6 brutal-border brutal-shadow border-2 border-green-500"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-14 h-14 bg-green-600 rounded-xl brutal-border flex items-center justify-center">
+                            <span className="text-xl font-mono-data font-bold text-white">
+                              {reservation.parkingSpot.location ===
+                              "SUBTERRANEO"
+                                ? "S"
+                                : "E"}
+                              -{reservation.parkingSpot.number}
+                            </span>
                           </div>
-                          <span className="inline-block px-3 py-1 rounded-lg bg-green-100 text-green-700 font-bold text-xs uppercase whitespace-nowrap">
-                            Tu Reserva
-                          </span>
+                          <div>
+                            <p className="font-bold text-primary-900 text-lg">
+                              Plaza {reservation.parkingSpot.number}
+                            </p>
+                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
+                              {reservation.parkingSpot.location ===
+                              "SUBTERRANEO"
+                                ? "Subterráneo"
+                                : "Exterior"}
+                            </p>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => handleCancelReservation(reservation._id)}
-                          disabled={isPending}
-                          className="w-full py-3 px-4 rounded-xl bg-white text-red-600 font-bold
+                        <span className="inline-block px-3 py-1 rounded-lg bg-green-100 text-green-700 font-bold text-xs uppercase whitespace-nowrap">
+                          Tu Reserva
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleCancelReservation(reservation._id)}
+                        disabled={isPending}
+                        className="w-full py-3 px-4 rounded-xl bg-white text-red-600 font-bold
                                  border-2 border-red-600 hover:bg-red-50 transition-colors
                                  disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isPending ? "Cancelando..." : "Cancelar Reserva"}
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              )}
+                      >
+                        {isPending ? "Cancelando..." : "Cancelar Reserva"}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
 
             {/* Plazas disponibles */}
             {availableSpots.length > 0 && (
@@ -462,7 +497,7 @@ export default function DashboardGeneral({
 
             {/* Mensaje cuando no hay plazas disponibles ni reserva */}
             {availableSpots.length === 0 &&
-              !myReservations.find(
+              !optimisticReservations.find(
                 (res) =>
                   format(new Date(res.date), "yyyy-MM-dd") ===
                   format(selectedDate, "yyyy-MM-dd"),

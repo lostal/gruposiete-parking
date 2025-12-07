@@ -6,7 +6,8 @@ import { format, startOfDay, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { updateAvailabilityAction } from "@/app/actions/availability.actions";
-import { useTransition } from "react";
+import { useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface ParkingSpot {
   _id: string;
@@ -52,7 +53,17 @@ export default function DashboardDireccion({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const { toast } = useToast();
+
+  // SYNC STATE ON PROP UPDATES (Important for router.refresh())
+  useEffect(() => {
+    setUnavailableDates(
+      initialAvailability
+        .filter((a) => !a.isAvailable)
+        .map((a) => new Date(a.date)),
+    );
+  }, [initialAvailability]);
 
   // No need for fetch callbacks anymore (initial data provided)
   // But we might need to refresh upon mutation.
@@ -97,7 +108,8 @@ export default function DashboardDireccion({
         // Add selected dates to unavailableDates
         setUnavailableDates([...unavailableDates, ...selectedDates]);
         setSelectedDates([]);
-        // Ideally we should refetch to be sure, but this is fine for now
+
+        router.refresh(); // Sync server state
       } catch (error) {
         toast({
           title: "Error",
@@ -166,6 +178,8 @@ export default function DashboardDireccion({
           unavailableDates.filter((d) => !selectedTimeStamps.has(d.getTime())),
         );
         setSelectedDates([]);
+
+        router.refresh();
       } catch (error) {
         toast({
           title: "Error",

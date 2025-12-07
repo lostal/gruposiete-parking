@@ -7,49 +7,7 @@ import {
   unassignSpotAction,
 } from "@/app/actions/admin.actions";
 import { useTransition } from "react";
-
-interface AssignedParkingSpot {
-  _id: string;
-  number: number;
-  location: string;
-}
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  assignedParkingSpot?: AssignedParkingSpot;
-}
-
-interface ParkingSpot {
-  _id: string;
-  number: number;
-  location: string;
-  assignedTo?: string;
-  assignedToName?: string;
-}
-
-interface ReservationUser {
-  _id: string;
-  name: string;
-  email: string;
-}
-
-interface ReservationParkingSpot {
-  _id: string;
-  number: number;
-  location: string;
-}
-
-interface Reservation {
-  _id: string;
-  date: string | Date;
-  status: string;
-  createdAt: string;
-  parkingSpot?: ReservationParkingSpot;
-  user?: ReservationUser;
-}
+import { useRouter } from "next/navigation";
 
 interface DashboardAdminProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,9 +23,13 @@ export default function DashboardAdmin({
   initialParkingSpots,
   initialReservations,
 }: DashboardAdminProps) {
-  const [users] = useState<User[]>(initialUsers);
-  const [parkingSpots] = useState<ParkingSpot[]>(initialParkingSpots);
-  const [reservations] = useState<Reservation[]>(initialReservations);
+  const router = useRouter();
+  // We use props directly to respect server revalidations.
+  // Exception: optimizations if needed, but for Admin, direct props are safer and cleaner.
+  const users = initialUsers;
+  const parkingSpots = initialParkingSpots;
+  const reservations = initialReservations;
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -90,19 +52,12 @@ export default function DashboardAdmin({
           description: "La plaza ha sido asignada correctamente",
         });
 
-        // Optimistic update difficult without complete data structure or refetch.
-        // We rely on revalidatePath for next visit, but here we might want to manually update state?
-        // Updating state locally for complex relations (User <-> Spot) is tedious.
-        // I'll leave it to revalidatePath (next refresh) OR window.location.reload() if strictly needed.
-        // Or I can fetch updated data? I removed API routes.
-        // So I rely on router.refresh() (implicit)? React 19 actions can redirect or refresh.
-        // revalidatePath in Server Action refreshes client components? Yes, if they are children of server components.
-        // So the props `initialUsers` etc. will be updated in `Page`, causing re-render with new props?
-        // YES. If Page re-renders, `DashboardAdmin` receives new props.
-        // BUT `useState(initialUsers)` ignores prop updates unless we use `useEffect` or `key`.
-        // FIX: Use `useEffect` to sync state with props OR use `key` on component in Page.
-        // Using `key={JSON.stringify(initialUsers)}` in Page is expensive.
-        // Using `useEffect` here:
+        toast({
+          title: "Plaza asignada",
+          description: "La plaza ha sido asignada correctamente",
+        });
+
+        router.refresh();
       } catch (error) {
         toast({
           title: "Error",
@@ -127,6 +82,8 @@ export default function DashboardAdmin({
           title: "Plaza desasignada",
           description: "La plaza ha sido liberada correctamente",
         });
+
+        router.refresh();
       } catch (error) {
         toast({
           title: "Error",
