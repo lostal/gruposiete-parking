@@ -10,6 +10,7 @@ import {
   getNewSpotsAvailableDistributionEmail,
 } from "@/lib/email/resend";
 import { formatDate } from "@/lib/utils/dates";
+import { IReservationWithSpot } from "@/types/mongoose.types";
 import mongoose from "mongoose";
 import { logger } from "@/lib/logger";
 
@@ -38,8 +39,9 @@ export async function DELETE(
 
     await dbConnect();
 
-    const reservation =
-      await Reservation.findById(id).populate("parkingSpotId");
+    const reservation = (await Reservation.findById(id).populate(
+      "parkingSpotId",
+    )) as IReservationWithSpot | null;
 
     if (!reservation) {
       return NextResponse.json(
@@ -57,8 +59,7 @@ export async function DELETE(
     }
 
     // Guardar datos antes de cancelar (para enviar emails)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- populated ObjectId from Mongoose
-    const parkingSpot = reservation.parkingSpotId as any;
+    const parkingSpot = reservation.parkingSpotId;
     const reservationDate = reservation.date;
 
     reservation.status = ReservationStatus.CANCELLED;
@@ -80,10 +81,11 @@ export async function DELETE(
           }
 
           if (parkingSpot) {
-            const spotInfo = `${parkingSpot.number} (${parkingSpot.location === "SUBTERRANEO"
-              ? "Subterráneo"
-              : "Exterior"
-              })`;
+            const spotInfo = `${parkingSpot.number} (${
+              parkingSpot.location === "SUBTERRANEO"
+                ? "Subterráneo"
+                : "Exterior"
+            })`;
 
             // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
             try {

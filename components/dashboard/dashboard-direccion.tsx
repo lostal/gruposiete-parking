@@ -46,7 +46,8 @@ export default function DashboardDireccion({
         `/api/availability?parkingSpotId=${parkingSpotId}`,
       );
       if (response.ok) {
-        const data: { isAvailable: boolean; date: string }[] = await response.json();
+        const data: { isAvailable: boolean; date: string }[] =
+          await response.json();
         const unavailable = data
           .filter((a) => !a.isAvailable)
           .map((a) => new Date(a.date));
@@ -57,8 +58,10 @@ export default function DashboardDireccion({
         `/api/reservations?parkingSpotId=${parkingSpotId}`,
       );
       if (resResponse.ok) {
-        const resData: { reservations?: { date: string }[] } = await resResponse.json();
-        const reservationsArray = resData.reservations || (resData as unknown as { date: string }[]);
+        const resData: { reservations?: { date: string }[] } =
+          await resResponse.json();
+        const reservationsArray =
+          resData.reservations || (resData as unknown as { date: string }[]);
         const reserved = reservationsArray.map((r) => new Date(r.date));
         setReservedDates(reserved);
       }
@@ -73,8 +76,6 @@ export default function DashboardDireccion({
       fetchAvailability();
     }
   }, [parkingSpotId, fetchParkingSpot, fetchAvailability]);
-
-
 
   const handleMarkUnavailable = async () => {
     if (selectedDates.length === 0) {
@@ -420,8 +421,9 @@ export default function DashboardDireccion({
                     disabled={isDisabled}
                     title={title}
                     className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
-                              ${bgColor} ${textColor} ${border} ${!isDisabled && "hover:scale-105"
-                      }`}
+                              ${bgColor} ${textColor} ${border} ${
+                                !isDisabled && "hover:scale-105"
+                              }`}
                   >
                     {format(date, "d")}
                   </button>

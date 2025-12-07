@@ -128,16 +128,18 @@ export function ReservasSidebar({
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
-          }`}
+        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+          isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
       {/* Sidebar */}
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-primary-900
-                   transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+                   transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
+                     isOpen ? "translate-x-0" : "translate-x-full"
+                   }`}
       >
         <div className="p-6">
           {/* Header */}
@@ -164,30 +166,33 @@ export function ReservasSidebar({
             <button
               onClick={() => setActiveTab("activas")}
               className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
-                       ${activeTab === "activas"
-                  ? "bg-primary-900 text-white"
-                  : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
-                }`}
+                       ${
+                         activeTab === "activas"
+                           ? "bg-primary-900 text-white"
+                           : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
+                       }`}
             >
               Activas ({getTabCount("activas")})
             </button>
             <button
               onClick={() => setActiveTab("pasadas")}
               className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
-                       ${activeTab === "pasadas"
-                  ? "bg-primary-900 text-white"
-                  : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
-                }`}
+                       ${
+                         activeTab === "pasadas"
+                           ? "bg-primary-900 text-white"
+                           : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
+                       }`}
             >
               Pasadas ({getTabCount("pasadas")})
             </button>
             <button
               onClick={() => setActiveTab("canceladas")}
               className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
-                       ${activeTab === "canceladas"
-                  ? "bg-primary-900 text-white"
-                  : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
-                }`}
+                       ${
+                         activeTab === "canceladas"
+                           ? "bg-primary-900 text-white"
+                           : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
+                       }`}
             >
               Canceladas ({getTabCount("canceladas")})
             </button>
@@ -216,14 +221,16 @@ export function ReservasSidebar({
                 return (
                   <div
                     key={reservation._id}
-                    className={`bg-white rounded-xl p-4 brutal-border brutal-shadow transition-all hover:scale-[1.02] ${isActive ? "hover:shadow-[6px_6px_0_0_#fdc373]" : ""
-                      }`}
+                    className={`bg-white rounded-xl p-4 brutal-border brutal-shadow transition-all hover:scale-[1.02] ${
+                      isActive ? "hover:shadow-[6px_6px_0_0_#fdc373]" : ""
+                    }`}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3 flex-1">
                         <div
-                          className={`w-12 h-12 bg-primary-900 rounded-lg brutal-border flex items-center justify-center shrink-0 ${isActive ? "shadow-[3px_3px_0_0_#fdc373]" : ""
-                            }`}
+                          className={`w-12 h-12 bg-primary-900 rounded-lg brutal-border flex items-center justify-center shrink-0 ${
+                            isActive ? "shadow-[3px_3px_0_0_#fdc373]" : ""
+                          }`}
                         >
                           <span className="text-lg font-mono-data font-bold text-white">
                             {reservation.parkingSpot.location === "SUBTERRANEO"
@@ -249,12 +256,13 @@ export function ReservasSidebar({
                         </div>
                       </div>
                       <span
-                        className={`inline-block px-2 py-1 rounded-lg font-bold text-xs uppercase whitespace-nowrap border-2 ${isCancelled
+                        className={`inline-block px-2 py-1 rounded-lg font-bold text-xs uppercase whitespace-nowrap border-2 ${
+                          isCancelled
                             ? "bg-red-100 text-red-700 border-red-700"
                             : isActive
                               ? "bg-[#fdc373] text-primary-900 border-primary-900"
                               : "bg-gray-100 text-gray-600 border-gray-400"
-                          }`}
+                        }`}
                       >
                         {isCancelled
                           ? "Cancelada"
