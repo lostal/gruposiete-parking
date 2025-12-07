@@ -42,6 +42,7 @@ export default {
         }
 
         return {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mongoose ObjectId type
           id: (user._id as any).toString(),
           name: user.name,
           email: user.email,

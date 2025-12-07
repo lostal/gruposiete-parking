@@ -37,6 +37,7 @@ export async function GET(request: Request) {
 
     await dbConnect();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Mongoose query object
     const query: any = { status: ReservationStatus.ACTIVE };
 
     // SEGURIDAD: Solo ADMIN puede ver reservas de otros usuarios

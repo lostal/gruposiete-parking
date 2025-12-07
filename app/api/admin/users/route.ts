@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 
     await dbConnect();
 
-    const query: any = {};
+    const query: Record<string, string> = {};
     if (role && Object.values(UserRole).includes(role as UserRole)) {
       query.role = role;
     }

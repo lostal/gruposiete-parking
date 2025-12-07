@@ -88,10 +88,10 @@ export async function POST(request: Request) {
       }
 
       // Asignar la plaza al usuario
-      user.assignedParkingSpot = spot._id as any;
+      user.assignedParkingSpot = spot._id as mongoose.Types.ObjectId;
       await user.save({ session: session_db });
 
-      spot.assignedTo = user._id as any;
+      spot.assignedTo = user._id as mongoose.Types.ObjectId;
       spot.assignedToName = user.name;
       await spot.save({ session: session_db });
 

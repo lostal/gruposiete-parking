@@ -57,6 +57,7 @@ export async function DELETE(
     }
 
     // Guardar datos antes de cancelar (para enviar emails)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- populated ObjectId from Mongoose
     const parkingSpot = reservation.parkingSpotId as any;
     const reservationDate = reservation.date;
 
@@ -79,11 +80,10 @@ export async function DELETE(
           }
 
           if (parkingSpot) {
-            const spotInfo = `${parkingSpot.number} (${
-              parkingSpot.location === "SUBTERRANEO"
-                ? "Subterráneo"
-                : "Exterior"
-            })`;
+            const spotInfo = `${parkingSpot.number} (${parkingSpot.location === "SUBTERRANEO"
+              ? "Subterráneo"
+              : "Exterior"
+              })`;
 
             // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
             try {

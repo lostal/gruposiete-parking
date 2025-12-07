@@ -46,10 +46,10 @@ export default function DashboardDireccion({
         `/api/availability?parkingSpotId=${parkingSpotId}`,
       );
       if (response.ok) {
-        const data = await response.json();
+        const data: { isAvailable: boolean; date: string }[] = await response.json();
         const unavailable = data
-          .filter((a: any) => !a.isAvailable)
-          .map((a: any) => new Date(a.date));
+          .filter((a) => !a.isAvailable)
+          .map((a) => new Date(a.date));
         setUnavailableDates(unavailable);
       }
 
@@ -57,9 +57,9 @@ export default function DashboardDireccion({
         `/api/reservations?parkingSpotId=${parkingSpotId}`,
       );
       if (resResponse.ok) {
-        const resData = await resResponse.json();
-        const reservationsArray = resData.reservations || resData;
-        const reserved = reservationsArray.map((r: any) => new Date(r.date));
+        const resData: { reservations?: { date: string }[] } = await resResponse.json();
+        const reservationsArray = resData.reservations || (resData as unknown as { date: string }[]);
+        const reserved = reservationsArray.map((r) => new Date(r.date));
         setReservedDates(reserved);
       }
     } catch (error) {

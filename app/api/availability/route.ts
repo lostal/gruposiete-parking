@@ -137,7 +137,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const results: any[] = [];
+    const results: typeof Availability.prototype[] = [];
     const newlyAvailableDates: Date[] = [];
     const today = startOfDay(new Date());
 
@@ -204,11 +204,10 @@ export async function POST(request: Request) {
             const parkingSpot = await ParkingSpot.findById(parkingSpotId);
 
             if (parkingSpot) {
-              const spotInfo = `${parkingSpot.number} (${
-                parkingSpot.location === "SUBTERRANEO"
+              const spotInfo = `${parkingSpot.number} (${parkingSpot.location === "SUBTERRANEO"
                   ? "Subterráneo"
                   : "Exterior"
-              })`;
+                })`;
 
               // Agrupar todas las fechas
               const formattedDates = newlyAvailableDates.map((date) =>
@@ -218,8 +217,8 @@ export async function POST(request: Request) {
                 formattedDates.length === 1
                   ? formattedDates[0]
                   : formattedDates.slice(0, -1).join(", ") +
-                    " y " +
-                    formattedDates[formattedDates.length - 1];
+                  " y " +
+                  formattedDates[formattedDates.length - 1];
 
               // Enviar UN SOLO email al correo de distribución (sin personalización de nombre)
               try {
