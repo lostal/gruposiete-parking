@@ -231,26 +231,26 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
     <div className="space-y-6">
       {/* Calendario - Centrado y con ancho máximo */}
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
+        <h2 className="text-2xl font-extrabold tracking-tight text-primary-900 mb-4">
           Selecciona un día
         </h2>
 
-        <div className="bg-gradient-to-br from-white via-white to-[#fdc373]/5 rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
+        <div className="bg-linear-to-br from-white via-white to-[#fdc373]/5 rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
           {/* Encabezado del mes */}
           <div className="flex items-center justify-between mb-3">
             <button
               onClick={goToPreviousMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-primary-900 hover:bg-gray-100 transition-colors"
               aria-label="Mes anterior"
             >
               ←
             </button>
-            <h3 className="text-sm font-extrabold text-[#343f48]">
+            <h3 className="text-sm font-extrabold text-primary-900">
               {format(currentMonth, "MMMM yyyy", { locale: es }).toUpperCase()}
             </h3>
             <button
               onClick={goToNextMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-primary-900 hover:bg-gray-100 transition-colors"
               aria-label="Mes siguiente"
             >
               →
@@ -295,16 +295,16 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
               );
 
               let bgColor = "bg-white";
-              let textColor = "text-[#343f48]";
+              let textColor = "text-primary-900";
               let border = "border-2 border-gray-200";
 
               if (isSelected) {
                 bgColor = "bg-blue-100";
-                textColor = "text-[#343f48]";
+                textColor = "text-primary-900";
                 border = "border-2 border-blue-400";
               } else if (isReserved) {
                 bgColor = "bg-[#fdc373]/30";
-                textColor = "text-[#343f48]";
+                textColor = "text-primary-900";
                 border = "border-2 border-[#fdc373]";
               } else if (hasAvailability && !isDisabled) {
                 bgColor = "bg-green-50";
@@ -351,7 +351,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
         {/* Plazas y Reserva para la fecha seleccionada */}
         {selectedDate && (
           <div className="mt-6">
-            <h3 className="text-xl font-extrabold tracking-tight text-[#343f48] mb-4">
+            <h3 className="text-xl font-extrabold tracking-tight text-primary-900 mb-4">
               {format(selectedDate, "PPP", { locale: es })}
             </h3>
 
@@ -362,7 +362,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                 format(selectedDate, "yyyy-MM-dd"),
             ) && (
                 <div className="mb-6">
-                  <h4 className="text-sm font-bold text-[#343f48] uppercase tracking-wider mb-3">
+                  <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
                     Tu Reserva
                   </h4>
                   {myReservations
@@ -388,7 +388,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                               </span>
                             </div>
                             <div>
-                              <p className="font-bold text-[#343f48] text-lg">
+                              <p className="font-bold text-primary-900 text-lg">
                                 Plaza {reservation.parkingSpot.number}
                               </p>
                               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
@@ -420,25 +420,25 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
             {/* Plazas disponibles */}
             {availableSpots.length > 0 && (
               <div>
-                <h4 className="text-sm font-bold text-[#343f48] uppercase tracking-wider mb-3">
+                <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
                   Plazas Disponibles
                 </h4>
                 <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
                   {availableSpots.map((spot) => (
                     <div
                       key={spot._id}
-                      className="bg-gradient-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-accent hover:scale-[1.02] transition-all duration-300"
+                      className="bg-linear-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-accent hover:scale-[1.02] transition-all duration-300"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 bg-[#343f48] rounded-xl brutal-border flex items-center justify-center shadow-[4px_4px_0_0_#fdc373]">
+                          <div className="w-14 h-14 bg-primary-900 rounded-xl brutal-border flex items-center justify-center shadow-[4px_4px_0_0_#fdc373]">
                             <span className="text-xl font-mono-data font-bold text-white">
                               {spot.location === "SUBTERRANEO" ? "S" : "E"}-
                               {spot.number}
                             </span>
                           </div>
                           <div>
-                            <p className="font-bold text-[#343f48] text-lg">
+                            <p className="font-bold text-primary-900 text-lg">
                               Plaza {spot.number}
                             </p>
                             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
@@ -448,7 +448,7 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                             </p>
                           </div>
                         </div>
-                        <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-xs uppercase whitespace-nowrap border-2 border-[#343f48]">
+                        <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-primary-900 font-bold text-xs uppercase whitespace-nowrap border-2 border-primary-900">
                           Disponible
                         </span>
                       </div>
@@ -456,14 +456,14 @@ export default function DashboardGeneral({ userId }: DashboardGeneralProps) {
                         <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
                           Asignada a
                         </p>
-                        <p className="text-sm text-[#343f48] font-medium">
+                        <p className="text-sm text-primary-900 font-medium">
                           {spot.assignedToName}
                         </p>
                       </div>
                       <button
                         onClick={() => handleReserve(spot._id)}
                         disabled={isLoading}
-                        className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-[#343f48] font-bold
+                        className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-primary-900 font-bold
                                  brutal-border brutal-shadow-sm brutal-hover tap-none
                                  hover:shadow-[6px_6px_0_0_#343f48] active:shadow-[2px_2px_0_0_#343f48]
                                  disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200"

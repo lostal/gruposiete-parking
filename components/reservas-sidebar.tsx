@@ -135,7 +135,7 @@ export function ReservasSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-[#343f48]
+        className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-primary-900
                    transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${isOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
@@ -143,7 +143,7 @@ export function ReservasSidebar({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48]">
+              <h2 className="text-2xl font-extrabold tracking-tight text-primary-900">
                 Mis Reservas
               </h2>
               <p className="text-sm text-gray-500 mt-1 font-medium">
@@ -152,7 +152,7 @@ export function ReservasSidebar({
             </div>
             <button
               onClick={onClose}
-              className="px-3 py-2 rounded-lg bg-white text-[#343f48] font-bold text-lg
+              className="px-3 py-2 rounded-lg bg-white text-primary-900 font-bold text-lg
                        brutal-border hover:bg-gray-100 transition-colors"
             >
               ✕
@@ -165,8 +165,8 @@ export function ReservasSidebar({
               onClick={() => setActiveTab("activas")}
               className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
                        ${activeTab === "activas"
-                  ? "bg-[#343f48] text-white"
-                  : "bg-white text-[#343f48] brutal-border hover:bg-[#fdc373]"
+                  ? "bg-primary-900 text-white"
+                  : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
                 }`}
             >
               Activas ({getTabCount("activas")})
@@ -175,8 +175,8 @@ export function ReservasSidebar({
               onClick={() => setActiveTab("pasadas")}
               className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
                        ${activeTab === "pasadas"
-                  ? "bg-[#343f48] text-white"
-                  : "bg-white text-[#343f48] brutal-border hover:bg-[#fdc373]"
+                  ? "bg-primary-900 text-white"
+                  : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
                 }`}
             >
               Pasadas ({getTabCount("pasadas")})
@@ -185,8 +185,8 @@ export function ReservasSidebar({
               onClick={() => setActiveTab("canceladas")}
               className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all
                        ${activeTab === "canceladas"
-                  ? "bg-[#343f48] text-white"
-                  : "bg-white text-[#343f48] brutal-border hover:bg-[#fdc373]"
+                  ? "bg-primary-900 text-white"
+                  : "bg-white text-primary-900 brutal-border hover:bg-[#fdc373]"
                 }`}
             >
               Canceladas ({getTabCount("canceladas")})
@@ -222,7 +222,7 @@ export function ReservasSidebar({
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3 flex-1">
                         <div
-                          className={`w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0 ${isActive ? "shadow-[3px_3px_0_0_#fdc373]" : ""
+                          className={`w-12 h-12 bg-primary-900 rounded-lg brutal-border flex items-center justify-center shrink-0 ${isActive ? "shadow-[3px_3px_0_0_#fdc373]" : ""
                             }`}
                         >
                           <span className="text-lg font-mono-data font-bold text-white">
@@ -233,7 +233,7 @@ export function ReservasSidebar({
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-[#343f48]">
+                          <p className="font-bold text-primary-900">
                             Plaza {reservation.parkingSpot.number}
                           </p>
                           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
@@ -252,7 +252,7 @@ export function ReservasSidebar({
                         className={`inline-block px-2 py-1 rounded-lg font-bold text-xs uppercase whitespace-nowrap border-2 ${isCancelled
                             ? "bg-red-100 text-red-700 border-red-700"
                             : isActive
-                              ? "bg-[#fdc373] text-[#343f48] border-[#343f48]"
+                              ? "bg-[#fdc373] text-primary-900 border-primary-900"
                               : "bg-gray-100 text-gray-600 border-gray-400"
                           }`}
                       >

@@ -249,7 +249,7 @@ export default function DashboardDireccion({
       <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
         <div className="space-y-4">
           <div className="text-6xl">⚠️</div>
-          <h3 className="text-2xl font-extrabold text-[#343f48]">
+          <h3 className="text-2xl font-extrabold text-primary-900">
             No tienes plaza asignada
           </h3>
           <p className="text-gray-500 font-medium">
@@ -266,15 +266,15 @@ export default function DashboardDireccion({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Columna Izquierda - Info Plaza */}
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
+          <h2 className="text-2xl font-extrabold tracking-tight text-primary-900 mb-4">
             Tu Plaza Asignada
           </h2>
 
           {parkingSpot && (
-            <div className="bg-gradient-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
+            <div className="bg-linear-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
               <div className="flex items-center gap-6">
                 {/* Icono de la plaza */}
-                <div className="w-20 h-20 bg-[#343f48] rounded-2xl brutal-border flex items-center justify-center flex-shrink-0 shadow-[6px_6px_0_0_#fdc373]">
+                <div className="w-20 h-20 bg-primary-900 rounded-2xl brutal-border flex items-center justify-center shrink-0 shadow-[6px_6px_0_0_#fdc373]">
                   <span className="text-3xl font-mono-data font-bold text-white">
                     {parkingSpot.location === "SUBTERRANEO" ? "S" : "E"}-
                     {parkingSpot.number}
@@ -283,7 +283,7 @@ export default function DashboardDireccion({
 
                 {/* Info principal */}
                 <div className="flex-1">
-                  <p className="text-2xl font-extrabold text-[#343f48] mb-1">
+                  <p className="text-2xl font-extrabold text-primary-900 mb-1">
                     Plaza {parkingSpot.number}
                   </p>
                   <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-3">
@@ -295,7 +295,7 @@ export default function DashboardDireccion({
                     <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
                       Asignada a
                     </p>
-                    <p className="text-sm font-bold text-[#343f48]">
+                    <p className="text-sm font-bold text-primary-900">
                       {parkingSpot.assignedToName}
                     </p>
                   </div>
@@ -306,7 +306,7 @@ export default function DashboardDireccion({
 
           {/* Mensaje de instrucción - Solo visible en desktop */}
           <div className="hidden lg:block mt-4 p-3 bg-[#fdc373]/20 border-l-4 border-[#fdc373] rounded">
-            <p className="text-xs font-bold text-[#343f48] leading-relaxed">
+            <p className="text-xs font-bold text-primary-900 leading-relaxed">
               Marca los días que dejarás tu plaza libre para que otros la puedan
               reservar
             </p>
@@ -315,37 +315,37 @@ export default function DashboardDireccion({
 
         {/* Columna Derecha - Calendario */}
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-4">
+          <h2 className="text-2xl font-extrabold tracking-tight text-primary-900 mb-4">
             Gestiona tu plaza
           </h2>
 
           {/* Mensaje de instrucción - Solo visible en móvil */}
           <div className="lg:hidden mb-4 p-3 bg-[#fdc373]/20 border-l-4 border-[#fdc373] rounded">
-            <p className="text-xs font-bold text-[#343f48] leading-relaxed">
+            <p className="text-xs font-bold text-primary-900 leading-relaxed">
               Marca los días que dejarás tu plaza libre para que otros la puedan
               reservar
             </p>
           </div>
 
           {/* Calendario */}
-          <div className="bg-gradient-to-br from-white via-white to-[#fdc373]/5 rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
+          <div className="bg-linear-to-br from-white via-white to-[#fdc373]/5 rounded-2xl p-4 brutal-border brutal-shadow min-h-[200px] flex flex-col">
             {/* Encabezado del mes */}
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={goToPreviousMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-primary-900 hover:bg-gray-100 transition-colors"
                 aria-label="Mes anterior"
               >
                 ←
               </button>
-              <h3 className="text-sm font-extrabold text-[#343f48]">
+              <h3 className="text-sm font-extrabold text-primary-900">
                 {format(currentMonth, "MMMM yyyy", {
                   locale: es,
                 }).toUpperCase()}
               </h3>
               <button
                 onClick={goToNextMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[#343f48] hover:bg-gray-100 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg font-bold text-primary-900 hover:bg-gray-100 transition-colors"
                 aria-label="Mes siguiente"
               >
                 →
@@ -383,19 +383,19 @@ export default function DashboardDireccion({
                 const isDisabled = isPast || isWeekend;
 
                 let bgColor = "bg-white";
-                let textColor = "text-[#343f48]";
+                let textColor = "text-primary-900";
                 let border = "border-2 border-gray-200";
                 let title = "";
 
                 if (isSelected) {
                   bgColor = "bg-blue-100";
-                  textColor = "text-[#343f48]";
+                  textColor = "text-primary-900";
                   border = "border-2 border-blue-400";
                   title = "Seleccionado para marcar";
                 } else if (isUnavailable && isReserved) {
                   // Plaza libre que YA fue reservada - NO se puede recuperar
                   bgColor = "bg-[#fdc373]/30";
-                  textColor = "text-[#343f48]";
+                  textColor = "text-primary-900";
                   border = "border-2 border-[#fdc373]";
                   title = "Libre y reservada - No recuperable";
                 } else if (isUnavailable && !isReserved) {
@@ -457,7 +457,7 @@ export default function DashboardDireccion({
                 <button
                   onClick={handleMarkUnavailable}
                   disabled={isLoading}
-                  className="w-full py-3 px-4 rounded-xl bg-[#343f48] text-white font-bold text-sm brutal-border brutal-shadow-sm
+                  className="w-full py-3 px-4 rounded-xl bg-primary-900 text-white font-bold text-sm brutal-border brutal-shadow-sm
                          hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading
@@ -467,7 +467,7 @@ export default function DashboardDireccion({
                 <button
                   onClick={handleMarkAvailable}
                   disabled={isLoading}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-[#343f48] font-bold text-sm brutal-border brutal-shadow-sm
+                  className="w-full py-3 px-4 rounded-xl bg-white text-primary-900 font-bold text-sm brutal-border brutal-shadow-sm
                          hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading
