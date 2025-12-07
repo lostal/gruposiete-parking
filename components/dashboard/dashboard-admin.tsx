@@ -161,11 +161,11 @@ export default function DashboardAdmin() {
     <div className="space-y-8">
       {/* Estadísticas */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
+        <div className="bg-linear-to-br from-white to-blue-50 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Total Usuarios
           </p>
-          <p className="text-4xl font-extrabold text-[#343f48]">
+          <p className="text-4xl font-extrabold text-primary-900">
             {users.length}
           </p>
           <p className="text-sm text-gray-500 mt-1">
@@ -173,26 +173,26 @@ export default function DashboardAdmin() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
+        <div className="bg-linear-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Plazas Totales
           </p>
-          <p className="text-4xl font-extrabold text-[#343f48]">
+          <p className="text-4xl font-extrabold text-primary-900">
             {parkingSpots.length}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            <span className="inline-block px-2 py-0.5 rounded bg-[#fdc373] text-[#343f48] font-bold text-xs mr-1">
+            <span className="inline-block px-2 py-0.5 rounded bg-[#fdc373] text-primary-900 font-bold text-xs mr-1">
               {unassignedSpots.length}
             </span>
             sin asignar
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
+        <div className="bg-linear-to-br from-white to-green-50 rounded-2xl p-6 brutal-border brutal-shadow hover:shadow-[8px_8px_0_0_#fdc373] transition-all duration-300">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Reservas Activas
           </p>
-          <p className="text-4xl font-extrabold text-[#343f48]">
+          <p className="text-4xl font-extrabold text-primary-900">
             {reservations.length}
           </p>
           <p className="text-sm text-gray-500 mt-1">Próximas reservas</p>
@@ -201,7 +201,7 @@ export default function DashboardAdmin() {
 
       {/* Gestión de Usuarios */}
       <div>
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-6">
+        <h2 className="text-2xl font-extrabold tracking-tight text-primary-900 mb-6">
           Gestión de Usuarios
         </h2>
 
@@ -211,7 +211,7 @@ export default function DashboardAdmin() {
             onClick={() => setActiveTab("direccion")}
             className={`px-6 py-3 rounded-lg font-bold text-sm brutal-border transition-all duration-200 ${
               activeTab === "direccion"
-                ? "bg-[#fdc373] text-[#343f48] shadow-[4px_4px_0_0_#343f48]"
+                ? "bg-[#fdc373] text-primary-900 shadow-[4px_4px_0_0_#343f48]"
                 : "bg-white text-gray-500 hover:bg-gray-50"
             }`}
           >
@@ -221,7 +221,7 @@ export default function DashboardAdmin() {
             onClick={() => setActiveTab("general")}
             className={`px-6 py-3 rounded-lg font-bold text-sm brutal-border transition-all duration-200 ${
               activeTab === "general"
-                ? "bg-[#fdc373] text-[#343f48] shadow-[4px_4px_0_0_#343f48]"
+                ? "bg-[#fdc373] text-primary-900 shadow-[4px_4px_0_0_#343f48]"
                 : "bg-white text-gray-500 hover:bg-gray-50"
             }`}
           >
@@ -242,17 +242,17 @@ export default function DashboardAdmin() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b-2 border-[#343f48]">
-                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                    <tr className="border-b-2 border-primary-900">
+                      <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                         Usuario
                       </th>
-                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                      <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                         Email
                       </th>
-                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                      <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                         Plaza Asignada
                       </th>
-                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                      <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                         Acciones
                       </th>
                     </tr>
@@ -260,7 +260,7 @@ export default function DashboardAdmin() {
                   <tbody>
                     {direccionUsers.map((user) => (
                       <tr key={user._id} className="border-b border-gray-200">
-                        <td className="py-4 px-4 font-bold text-[#343f48]">
+                        <td className="py-4 px-4 font-bold text-primary-900">
                           {user.name}
                         </td>
                         <td className="py-4 px-4 text-gray-500 font-medium">
@@ -268,7 +268,7 @@ export default function DashboardAdmin() {
                         </td>
                         <td className="py-4 px-4">
                           {user.assignedParkingSpot ? (
-                            <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-sm border-2 border-[#343f48]">
+                            <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-primary-900 font-bold text-sm border-2 border-primary-900">
                               Plaza {user.assignedParkingSpot.number}
                             </span>
                           ) : (
@@ -284,7 +284,7 @@ export default function DashboardAdmin() {
                                 handleAssignSpot(user._id, e.target.value)
                               }
                               disabled={isLoading}
-                              className="px-4 py-2 rounded-lg bg-white text-[#343f48] font-bold text-sm
+                              className="px-4 py-2 rounded-lg bg-white text-primary-900 font-bold text-sm
                                        brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
                               defaultValue=""
                             >
@@ -337,11 +337,11 @@ export default function DashboardAdmin() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b-2 border-[#343f48]">
-                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                    <tr className="border-b-2 border-primary-900">
+                      <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                         Usuario
                       </th>
-                      <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                      <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                         Email
                       </th>
                     </tr>
@@ -349,7 +349,7 @@ export default function DashboardAdmin() {
                   <tbody>
                     {generalUsers.map((user) => (
                       <tr key={user._id} className="border-b border-gray-200">
-                        <td className="py-4 px-4 font-bold text-[#343f48]">
+                        <td className="py-4 px-4 font-bold text-primary-900">
                           {user.name}
                         </td>
                         <td className="py-4 px-4 text-gray-500 font-medium">
@@ -367,7 +367,7 @@ export default function DashboardAdmin() {
 
       {/* Reservas Recientes */}
       <div>
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48] mb-6">
+        <h2 className="text-2xl font-extrabold tracking-tight text-primary-900 mb-6">
           Reservas Recientes
         </h2>
 
@@ -382,17 +382,17 @@ export default function DashboardAdmin() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b-2 border-[#343f48]">
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                  <tr className="border-b-2 border-primary-900">
+                    <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                       Usuario
                     </th>
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                    <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                       Plaza
                     </th>
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                    <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                       Fecha
                     </th>
-                    <th className="text-left py-4 px-4 font-extrabold text-[#343f48] uppercase text-xs tracking-wider">
+                    <th className="text-left py-4 px-4 font-extrabold text-primary-900 uppercase text-xs tracking-wider">
                       Estado
                     </th>
                   </tr>
@@ -403,7 +403,7 @@ export default function DashboardAdmin() {
                       key={reservation._id}
                       className="border-b border-gray-200"
                     >
-                      <td className="py-4 px-4 font-bold text-[#343f48]">
+                      <td className="py-4 px-4 font-bold text-primary-900">
                         {reservation.user?.name}
                       </td>
                       <td className="py-4 px-4 text-gray-500 font-medium">
