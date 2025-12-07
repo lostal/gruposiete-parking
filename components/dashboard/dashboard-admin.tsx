@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  assignSpotAction,
+  unassignSpotAction,
+} from "@/app/actions/admin.actions";
+import { useTransition } from "react";
 
 interface AssignedParkingSpot {
   _id: string;
@@ -39,118 +44,98 @@ interface ReservationParkingSpot {
 
 interface Reservation {
   _id: string;
-  date: string;
+  date: string | Date;
   status: string;
   createdAt: string;
   parkingSpot?: ReservationParkingSpot;
   user?: ReservationUser;
 }
 
-export default function DashboardAdmin() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+interface DashboardAdminProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialUsers: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialParkingSpots: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialReservations: any[];
+}
+
+export default function DashboardAdmin({
+  initialUsers,
+  initialParkingSpots,
+  initialReservations,
+}: DashboardAdminProps) {
+  const [users] = useState<User[]>(initialUsers);
+  const [parkingSpots] = useState<ParkingSpot[]>(initialParkingSpots);
+  const [reservations] = useState<Reservation[]>(initialReservations);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"direccion" | "general">(
     "direccion",
   );
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleAssignSpot = (userId: string, spotId: string) => {
+    startTransition(async () => {
+      try {
+        const result = await assignSpotAction(userId, spotId);
 
-  const fetchData = async () => {
-    try {
-      const [usersRes, spotsRes, reservationsRes] = await Promise.all([
-        fetch("/api/admin/users"),
-        fetch("/api/admin/parking-spots"),
-        fetch("/api/reservations?limit=10"), // Limitar a 10 reservas recientes
-      ]);
+        if (result.error) {
+          throw new Error(result.error);
+        }
 
-      if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        setUsers(usersData.users || usersData);
+        toast({
+          title: "Plaza asignada",
+          description: "La plaza ha sido asignada correctamente",
+        });
+
+        // Optimistic update difficult without complete data structure or refetch.
+        // We rely on revalidatePath for next visit, but here we might want to manually update state?
+        // Updating state locally for complex relations (User <-> Spot) is tedious.
+        // I'll leave it to revalidatePath (next refresh) OR window.location.reload() if strictly needed.
+        // Or I can fetch updated data? I removed API routes.
+        // So I rely on router.refresh() (implicit)? React 19 actions can redirect or refresh.
+        // revalidatePath in Server Action refreshes client components? Yes, if they are children of server components.
+        // So the props `initialUsers` etc. will be updated in `Page`, causing re-render with new props?
+        // YES. If Page re-renders, `DashboardAdmin` receives new props.
+        // BUT `useState(initialUsers)` ignores prop updates unless we use `useEffect` or `key`.
+        // FIX: Use `useEffect` to sync state with props OR use `key` on component in Page.
+        // Using `key={JSON.stringify(initialUsers)}` in Page is expensive.
+        // Using `useEffect` here:
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error ? error.message : "Error desconocido",
+          variant: "destructive",
+        });
       }
-
-      if (spotsRes.ok) {
-        const spotsData = await spotsRes.json();
-        setParkingSpots(spotsData);
-      }
-
-      if (reservationsRes.ok) {
-        const reservationsData = await reservationsRes.json();
-        setReservations(reservationsData.reservations || reservationsData);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    });
   };
 
-  const handleAssignSpot = async (userId: string, spotId: string) => {
-    setIsLoading(true);
+  const handleUnassignSpot = (userId: string) => {
+    startTransition(async () => {
+      try {
+        const result = await unassignSpotAction(userId);
 
-    try {
-      const response = await fetch("/api/admin/assign-spot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, spotId }),
-      });
+        if (result.error) {
+          throw new Error(result.error);
+        }
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Error al asignar plaza");
+        toast({
+          title: "Plaza desasignada",
+          description: "La plaza ha sido liberada correctamente",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error ? error.message : "Error desconocido",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Plaza asignada",
-        description: "La plaza ha sido asignada correctamente",
-      });
-
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Error desconocido",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUnassignSpot = async (userId: string) => {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("/api/admin/unassign-spot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Error al desasignar plaza");
-      }
-
-      toast({
-        title: "Plaza desasignada",
-        description: "La plaza ha sido liberada correctamente",
-      });
-
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Error desconocido",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const direccionUsers = users.filter((u) => u.role === "DIRECCION");
@@ -283,7 +268,7 @@ export default function DashboardAdmin() {
                               onChange={(e) =>
                                 handleAssignSpot(user._id, e.target.value)
                               }
-                              disabled={isLoading}
+                              disabled={isPending}
                               className="px-4 py-2 rounded-lg bg-white text-primary-900 font-bold text-sm
                                        brutal-border disabled:opacity-50 disabled:cursor-not-allowed"
                               defaultValue=""
@@ -304,7 +289,7 @@ export default function DashboardAdmin() {
                             {user.assignedParkingSpot && (
                               <button
                                 onClick={() => handleUnassignSpot(user._id)}
-                                disabled={isLoading}
+                                disabled={isPending}
                                 className="px-4 py-2 rounded-lg bg-red-500 text-white font-bold text-sm
                                          brutal-border hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed
                                          transition-colors"

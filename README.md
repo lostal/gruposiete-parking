@@ -2,9 +2,10 @@
 
 <div align="center">
 
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
 
 </div>
@@ -13,7 +14,7 @@
 
 Sistema de **reservas inteligente** para plazas de parking (subterráneas y exteriores) de Grupo Siete. Permite a los empleados gestionar sus reservas de manera eficiente, con un control administrativo basado en roles y validaciones robustas que garantizan la disponibilidad y el uso óptimo de los espacios.
 
-Desarrollado con **Next.js 14**, **TypeScript** y **MongoDB**, implementa autenticación segura mediante **NextAuth**, rate limiting distribuido y un sistema de transacciones que previene conflictos en reservas concurrentes.
+Desarrollado con **Next.js 16**, **TypeScript** y **MongoDB**, implementa autenticación segura mediante **NextAuth** y un sistema de transacciones que previene conflictos en reservas concurrentes.
 
 ---
 
@@ -21,65 +22,59 @@ Desarrollado con **Next.js 14**, **TypeScript** y **MongoDB**, implementa autent
 
 ### Diagrama de Flujo
 
-El siguiente diagrama muestra el flujo completo de una petición de reserva a través de las diferentes capas del sistema:
+El siguiente diagrama muestra el flujo simplificado de una petición de reserva mediante **Server Actions**:
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant UI as Client
-    participant MW as Middleware
-    participant API as API Route
-    participant RL as Rate Limiter
+    participant UI as Client Component
+    participant SA as Server Action
     participant ZOD as Zod
     participant MDB as MongoDB
 
     User->>UI: Reservar Plaza
-    UI->>MW: POST /api/reservations
-    MW->>MW: Verify auth cookie
-    MW->>API: Forward request
-    API->>API: auth() + role check
-    API->>RL: checkRateLimit()
-    API->>ZOD: safeParse(body)
-    API->>MDB: Transaction
+    UI->>SA: createReservationAction()
+    SA->>SA: auth() + role check
+    SA->>ZOD: safeParse(data)
+    SA->>MDB: Transaction
     MDB->>MDB: Validate + Create
-    MDB-->>API: Reservation
-    API-->>UI: 200 OK
+    MDB-->>SA: Reservation
+    SA->>SA: revalidatePath()
+    SA-->>UI: Success
     UI-->>User: ¡Confirmado!
 ```
 
 ### Capas del Sistema
 
-| Capa               | Tecnología             | Responsabilidad                                        |
-| ------------------ | ---------------------- | ------------------------------------------------------ |
-| **Middleware**     | Next.js Edge           | Verificación de cookies de sesión, redirección a login |
-| **Auth**           | NextAuth v5            | Validación JWT, gestión de sesiones seguras            |
-| **Rate Limiting**  | Memory / Upstash Redis | Prevención de abusos (10 reservas/5min por usuario)    |
-| **Validation**     | Zod                    | Validación estricta de tipos y formatos antes de DB    |
-| **Business Logic** | TypeScript             | Reglas de negocio (días laborables, fechas válidas)    |
-| **Persistence**    | MongoDB + Mongoose     | Transacciones ACID para prevenir race conditions       |
+| Capa               | Tecnología             | Responsabilidad                                     |
+| ------------------ | ---------------------- | --------------------------------------------------- |
+| **Server Actions** | Next.js Server Actions | Lógica del servidor invocable desde el cliente      |
+| **Auth**           | NextAuth v5            | Validación de sesión y protección de rutas          |
+| **Validation**     | Zod                    | Validación estricta de tipos y formatos             |
+| **Business Logic** | TypeScript             | Reglas de negocio (días laborables, fechas válidas) |
+| **Persistence**    | MongoDB + Mongoose     | Transacciones ACID para prevenir race conditions    |
 
 ### Stack Tecnológico
 
-| Categoría     | Tecnología                         |
-| ------------- | ---------------------------------- |
-| Framework     | Next.js 14 (App Router)            |
-| Lenguaje      | TypeScript                         |
-| Base de Datos | MongoDB Atlas + Mongoose ODM       |
-| Autenticación | NextAuth v5                        |
-| Validación    | Zod                                |
-| Rate Limiting | Upstash Redis / In-memory fallback |
-| Estilos       | Tailwind CSS v4                    |
-| Componentes   | Radix UI Primitives                |
-| Animaciones   | Framer Motion                      |
-| Email         | Resend                             |
-| Testing       | Vitest                             |
+| Categoría     | Tecnología                   |
+| ------------- | ---------------------------- |
+| Framework     | Next.js 16 (App Router)      |
+| Lenguaje      | TypeScript                   |
+| Base de Datos | MongoDB Atlas + Mongoose ODM |
+| Autenticación | NextAuth v5                  |
+| Validación    | Zod                          |
+| Estilos       | Tailwind CSS v4              |
+| Componentes   | Radix UI Primitives          |
+| Animaciones   | Framer Motion                |
+| Email         | Resend                       |
+| Testing       | Vitest                       |
 
 ## ⚡ Características Principales
 
-- **Autenticación Segura**: Sistema de login con validación de emails corporativos, protección contra timing attacks y recuperación de contraseña
-- **Rate Limiting Distribuido**: Implementación con Upstash Redis para prevenir abusos (5 registros/15min, 10 reservas/5min)
+- **Autenticación Segura**: Sistema de login con validación de emails corporativos y recuperación de contraseña
+- **Server Actions**: Lógica de servidor eficiente y tipo-segura sin API intermedia
 - **Transacciones MongoDB**: Previene race conditions en reservas concurrentes mediante reintentos exponenciales
-- **UI Moderna y Responsiva**: Diseño con Tailwind CSS, componentes Radix UI y animaciones Framer Motion
+- **UI Moderna y Responsiva**: Diseño con Tailwind CSS y componentes Radix UI
 - **Sistema de Roles**: Tres niveles de acceso (GENERAL, DIRECCION, ADMIN) con dashboards diferenciados
 - **Notificaciones Email**: Envío automático de confirmaciones mediante Resend
 - **Aplicación PWA**: Mejoras en rendimiento y experiencia de usuario

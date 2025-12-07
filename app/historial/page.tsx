@@ -1,70 +1,28 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { auth } from "@/lib/auth/auth";
+import { redirect } from "next/navigation";
+import { getUserHistory } from "@/lib/services/reservations.service";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { UserRole } from "@/types";
 
-interface Reservation {
-  _id: string;
-  date: string;
-  status: string;
-  createdAt: string;
-  parkingSpot: {
-    number: number;
-    location: string;
-  };
-}
+export default async function HistorialPage() {
+  const session = await auth();
 
-export default function HistorialPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (status === "loading") return;
-
-    // Redirigir si no es usuario GENERAL
-    if (!session || session.user.role !== UserRole.GENERAL) {
-      router.push("/dashboard");
-      return;
-    }
-
-    fetchReservations();
-  }, [session, status, router]);
-
-  const fetchReservations = async () => {
-    try {
-      const response = await fetch("/api/reservations/my-history");
-      if (response.ok) {
-        const data = await response.json();
-        setReservations(data);
-      }
-    } catch (error) {
-      console.error("Error fetching reservations:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Mostrar loading mientras se verifica la sesión
-  if (status === "loading" || isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
-          <p className="text-gray-400 font-medium">Cargando...</p>
-        </div>
-      </div>
-    );
+  if (!session) {
+    redirect("/login");
   }
+
+  if (session.user.role !== UserRole.GENERAL) {
+    redirect("/dashboard");
+  }
+
+  // Fetch all history (past and future)
+  const reservations = await getUserHistory(session.user.id, true);
 
   return (
     <div className="space-y-6">
       <div className="px-2">
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#343f48]">
+        <h1 className="text-3xl font-extrabold tracking-tight text-primary-900">
           Historial de Reservas
         </h1>
         <p className="text-gray-500 mt-1 font-medium">
@@ -76,7 +34,7 @@ export default function HistorialPage() {
         <div className="bg-white rounded-2xl p-12 brutal-border brutal-shadow text-center">
           <div className="text-5xl mb-3">📋</div>
           <p className="text-gray-400 font-medium">
-            No tienes reservas registradas
+            No tienes reservas pasadas para mostrardas
           </p>
         </div>
       ) : (
@@ -101,12 +59,12 @@ export default function HistorialPage() {
 
             return (
               <div
-                key={reservation._id}
+                key={reservation._id.toString()}
                 className="bg-white rounded-xl p-4 brutal-border brutal-shadow"
               >
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-[#343f48] rounded-lg brutal-border flex items-center justify-center flex-shrink-0">
+                    <div className="h-10 w-10 shrink-0 rounded-full bg-primary-900 flex items-center justify-center text-white font-mono-data font-bold text-sm">
                       <span className="text-sm font-mono-data font-bold text-white">
                         {reservation.parkingSpot.location === "SUBTERRANEO"
                           ? "S"
@@ -115,7 +73,7 @@ export default function HistorialPage() {
                       </span>
                     </div>
                     <div>
-                      <p className="font-bold text-[#343f48]">
+                      <p className="font-bold text-primary-900">
                         Plaza {reservation.parkingSpot.number}
                       </p>
                       <p className="text-xs text-gray-500 font-bold uppercase">
@@ -131,7 +89,7 @@ export default function HistorialPage() {
                       <p className="text-sm text-gray-400 uppercase tracking-wide font-bold">
                         Fecha
                       </p>
-                      <p className="font-bold text-[#343f48]">
+                      <p className="font-bold text-primary-900">
                         {format(new Date(reservation.date), "dd/MM/yyyy", {
                           locale: es,
                         })}

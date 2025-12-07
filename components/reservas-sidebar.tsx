@@ -5,6 +5,11 @@ import { format, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 
+import {
+  getMyReservationsHistoryAction,
+  cancelReservationAction,
+} from "@/app/actions/reservation.actions";
+
 interface Reservation {
   _id: string;
   date: string;
@@ -43,11 +48,8 @@ export function ReservasSidebar({
   const fetchReservations = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/reservations/all-history");
-      if (response.ok) {
-        const data = await response.json();
-        setReservations(data);
-      }
+      const data = await getMyReservationsHistoryAction();
+      setReservations(data as unknown as Reservation[]);
     } catch (error) {
       console.error("Error fetching reservations:", error);
     } finally {
@@ -61,12 +63,10 @@ export function ReservasSidebar({
     setIsCancelling(true);
 
     try {
-      const response = await fetch(`/api/reservations/${reservationId}`, {
-        method: "DELETE",
-      });
+      const result = await cancelReservationAction(reservationId);
 
-      if (!response.ok) {
-        throw new Error("Error al cancelar reserva");
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       toast({
@@ -74,12 +74,14 @@ export function ReservasSidebar({
         description: "Tu reserva ha sido cancelada correctamente",
       });
 
-      // Recargar la página para actualizar el calendario del dashboard
+      // Recargar la lista y quizas la página
+      fetchReservations();
       window.location.reload();
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo cancelar la reserva",
+        description:
+          error instanceof Error ? error.message : "Error desconocido",
         variant: "destructive",
       });
     } finally {

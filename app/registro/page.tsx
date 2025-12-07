@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { UserRole } from "@/types";
+import { registerAction, ActionState } from "@/app/actions/auth.actions";
 
 export default function RegistroPage() {
   const [name, setName] = useState("");
@@ -13,7 +14,7 @@ export default function RegistroPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>(UserRole.GENERAL);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -38,53 +39,47 @@ export default function RegistroPage() {
       return;
     }
 
-    setIsLoading(true);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("role", role);
 
-    try {
-      const response = await fetch("/api/auth/registro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          role,
-        }),
-      });
+      try {
+        const result: ActionState = await registerAction(
+          {} as ActionState,
+          formData,
+        );
 
-      const data = await response.json();
+        if (result.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+          return;
+        }
 
-      if (!response.ok) {
+        toast({
+          title: "Registro exitoso",
+          description:
+            role === UserRole.DIRECCION
+              ? "Un administrador debe asignarte una plaza. Mientras tanto, puedes iniciar sesión."
+              : "Ya puedes iniciar sesión con tus credenciales",
+        });
+
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } catch (error) {
         toast({
           title: "Error",
-          description: data.error || "Error al registrar usuario",
+          description: "Ha ocurrido un error inesperado",
           variant: "destructive",
         });
-        return;
       }
-
-      toast({
-        title: "Registro exitoso",
-        description:
-          role === UserRole.DIRECCION
-            ? "Un administrador debe asignarte una plaza. Mientras tanto, puedes iniciar sesión."
-            : "Ya puedes iniciar sesión con tus credenciales",
-      });
-
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ha ocurrido un error inesperado",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -105,7 +100,7 @@ export default function RegistroPage() {
 
         {/* Formulario */}
         <div className="bg-white rounded-3xl p-8 md:p-10 brutal-border brutal-shadow">
-          <h2 className="text-3xl font-extrabold tracking-tight text-[#343f48] mb-8">
+          <h2 className="text-3xl font-extrabold tracking-tight text-primary-900 mb-8">
             Crear Cuenta
           </h2>
 
@@ -114,7 +109,7 @@ export default function RegistroPage() {
             <div className="space-y-3">
               <label
                 htmlFor="name"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Nombre Completo
               </label>
@@ -125,7 +120,7 @@ export default function RegistroPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border placeholder:text-gray-400"
               />
             </div>
@@ -134,7 +129,7 @@ export default function RegistroPage() {
             <div className="space-y-3">
               <label
                 htmlFor="email"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Email
               </label>
@@ -145,7 +140,7 @@ export default function RegistroPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border placeholder:text-gray-400"
               />
             </div>
@@ -154,7 +149,7 @@ export default function RegistroPage() {
             <div className="space-y-3">
               <label
                 htmlFor="role"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Tipo de Usuario
               </label>
@@ -162,7 +157,7 @@ export default function RegistroPage() {
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border"
               >
                 <option value={UserRole.GENERAL}>
@@ -184,7 +179,7 @@ export default function RegistroPage() {
             <div className="space-y-3">
               <label
                 htmlFor="password"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Contraseña
               </label>
@@ -195,7 +190,7 @@ export default function RegistroPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border placeholder:text-gray-400"
               />
             </div>
@@ -204,7 +199,7 @@ export default function RegistroPage() {
             <div className="space-y-3">
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Confirmar Contraseña
               </label>
@@ -215,7 +210,7 @@ export default function RegistroPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border placeholder:text-gray-400"
               />
             </div>
@@ -223,12 +218,12 @@ export default function RegistroPage() {
             {/* Botón */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-5 px-6 rounded-2xl bg-[#fdc373] text-[#343f48] font-bold text-lg
+              disabled={isPending}
+              className="w-full py-5 px-6 rounded-2xl bg-[#fdc373] text-primary-900 font-bold text-lg
                        brutal-border brutal-shadow-sm brutal-hover tap-none
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
+              {isPending ? "Creando cuenta..." : "Crear Cuenta"}
             </button>
           </form>
 
@@ -237,7 +232,7 @@ export default function RegistroPage() {
             <span className="text-gray-500">¿Ya tienes cuenta? </span>
             <Link
               href="/login"
-              className="text-[#343f48] font-bold hover:text-[#fdc373] transition-colors"
+              className="text-primary-900 font-bold hover:text-[#fdc373] transition-colors"
             >
               Inicia sesión
             </Link>

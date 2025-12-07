@@ -1,54 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import { forgotPasswordAction, ActionState } from "@/app/actions/auth.actions";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("email", email);
 
-      const data = await response.json();
+      try {
+        const result: ActionState = await forgotPasswordAction(
+          {} as ActionState,
+          formData,
+        );
 
-      if (!response.ok) {
+        if (result.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setEmailSent(true);
+        toast({
+          title: "Email enviado",
+          description: result.message,
+        });
+      } catch (error) {
         toast({
           title: "Error",
-          description: data.error || "Error al procesar la solicitud",
+          description: "Ha ocurrido un error inesperado",
           variant: "destructive",
         });
-        return;
       }
-
-      setEmailSent(true);
-      toast({
-        title: "Email enviado",
-        description: data.message,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ha ocurrido un error inesperado",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -71,7 +69,7 @@ export default function ForgotPasswordPage() {
         <div className="bg-white rounded-3xl p-8 md:p-10 brutal-border brutal-shadow">
           {!emailSent ? (
             <>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#343f48] mb-3">
+              <h2 className="text-3xl font-extrabold tracking-tight text-primary-900 mb-3">
                 ¿Olvidaste tu contraseña?
               </h2>
               <p className="text-gray-500 mb-8 font-medium">
@@ -83,7 +81,7 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-3">
                   <label
                     htmlFor="email"
-                    className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                    className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
                   >
                     Email
                   </label>
@@ -94,7 +92,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                    className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                              brutal-border placeholder:text-gray-400"
                   />
                 </div>
@@ -102,12 +100,12 @@ export default function ForgotPasswordPage() {
                 {/* Botón */}
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full py-5 px-6 rounded-2xl bg-[#fdc373] text-[#343f48] font-bold text-lg
+                  disabled={isPending}
+                  className="w-full py-5 px-6 rounded-2xl bg-[#fdc373] text-primary-900 font-bold text-lg
                            brutal-border brutal-shadow-sm brutal-hover tap-none
                            disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {isLoading ? "Enviando..." : "Enviar enlace de recuperación"}
+                  {isPending ? "Enviando..." : "Enviar enlace de recuperación"}
                 </button>
               </form>
 
@@ -115,7 +113,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-8 text-center">
                 <Link
                   href="/login"
-                  className="text-[#343f48] font-bold hover:text-[#fdc373] transition-colors"
+                  className="text-primary-900 font-bold hover:text-[#fdc373] transition-colors"
                 >
                   ← Volver al inicio de sesión
                 </Link>
@@ -125,7 +123,7 @@ export default function ForgotPasswordPage() {
             <>
               <div className="text-center space-y-6">
                 <div className="text-6xl">📧</div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-[#343f48]">
+                <h2 className="text-3xl font-extrabold tracking-tight text-primary-900">
                   Revisa tu email
                 </h2>
                 <p className="text-gray-500 font-medium">
@@ -133,10 +131,10 @@ export default function ForgotPasswordPage() {
                   un enlace para restablecer tu contraseña.
                 </p>
                 <div className="bg-[#fdc373]/20 border-l-4 border-[#fdc373] p-4 text-left">
-                  <p className="text-sm text-[#343f48] font-medium">
+                  <p className="text-sm text-primary-900 font-medium">
                     <strong>⚠️ Importante:</strong>
                   </p>
-                  <ul className="text-sm text-[#343f48] mt-2 space-y-1 list-disc list-inside">
+                  <ul className="text-sm text-primary-900 mt-2 space-y-1 list-disc list-inside">
                     <li>El enlace expira en 1 hora</li>
                     <li>Revisa también tu carpeta de spam</li>
                     <li>
@@ -152,7 +150,7 @@ export default function ForgotPasswordPage() {
                       setEmailSent(false);
                       setEmail("");
                     }}
-                    className="w-full py-4 px-6 rounded-xl bg-white text-[#343f48] font-bold
+                    className="w-full py-4 px-6 rounded-xl bg-white text-primary-900 font-bold
                              brutal-border brutal-shadow-sm brutal-hover tap-none"
                   >
                     Intentar con otro email
@@ -160,7 +158,7 @@ export default function ForgotPasswordPage() {
 
                   <Link
                     href="/login"
-                    className="w-full py-4 px-6 rounded-xl bg-[#fdc373] text-[#343f48] font-bold text-center
+                    className="w-full py-4 px-6 rounded-xl bg-[#fdc373] text-primary-900 font-bold text-center
                              brutal-border brutal-shadow-sm brutal-hover tap-none block"
                   >
                     Volver al inicio de sesión

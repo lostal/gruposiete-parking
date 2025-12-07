@@ -7,6 +7,12 @@ import ParkingSpot, { IParkingSpot } from "@/models/ParkingSpot";
 import User from "@/models/User";
 import { ReservationStatus } from "@/types";
 import { logger } from "@/lib/logger";
+import {
+  sendEmail,
+  getNewSpotsAvailableDistributionEmail,
+} from "@/lib/email/resend";
+import { formatDate } from "@/lib/utils/dates";
+import { IReservationWithSpot } from "@/types/mongoose.types";
 
 // Ensure models are registered for populate
 const _ensureModels = [ParkingSpot, User];
@@ -24,6 +30,7 @@ export interface CreateReservationParams {
 export interface PopulatedReservation {
   _id: string;
   date: Date;
+  status: ReservationStatus;
   parkingSpot: IParkingSpot;
   user: { _id: string; name: string; email: string };
 }
@@ -209,6 +216,7 @@ async function populateReservation(
   return {
     _id: populated._id.toString(),
     date: populated.date,
+    status: populated.status,
     parkingSpot: populated.parkingSpotId as unknown as IParkingSpot,
     user: populated.userId as unknown as {
       _id: string;
@@ -362,4 +370,230 @@ export async function createReservation(
     ReservationErrorCode.DATABASE_ERROR,
     500,
   );
+}
+
+// ============================================================================
+// QUERY OPERATIONS
+// ============================================================================
+
+export interface GetReservationsParams {
+  userId?: string;
+  parkingSpotId?: string;
+  upcoming?: boolean;
+  startDate?: Date;
+  endDate?: Date;
+  page?: number;
+  limit?: number;
+  isAdmin?: boolean;
+  requestingUserId?: string;
+}
+
+export interface GetReservationsResult {
+  reservations: PopulatedReservation[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export async function getReservations(
+  params: GetReservationsParams,
+): Promise<GetReservationsResult> {
+  await dbConnect();
+
+  const {
+    userId,
+    parkingSpotId,
+    upcoming,
+    startDate,
+    endDate,
+    page = 1,
+    limit = 50,
+    isAdmin = false,
+    requestingUserId,
+  } = params;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const query: any = { status: ReservationStatus.ACTIVE };
+
+  // SECURITY CHECKS
+  if (userId) {
+    if (userId !== requestingUserId && !isAdmin) {
+      throw new ReservationError(
+        "No autorizado para ver reservas de otros usuarios",
+        ReservationErrorCode.DATABASE_ERROR, // Reusing generic error code or creating new one
+        403,
+      );
+    }
+    query.userId = userId;
+  }
+
+  if (parkingSpotId) {
+    query.parkingSpotId = parkingSpotId;
+  }
+
+  // Date filtering
+  if (upcoming) {
+    query.date = { $gte: startOfDay(new Date()) };
+  } else if (startDate || endDate) {
+    query.date = {};
+    if (startDate) {
+      query.date.$gte = startOfDay(startDate);
+    }
+    if (endDate) {
+      query.date.$lte = endOfDay(endDate);
+    }
+  } else {
+    // Default limit: last 90 days if not admin and no specific filter
+    if (!isAdmin || (!userId && !parkingSpotId)) {
+      const defaultStartDate = new Date();
+      defaultStartDate.setDate(defaultStartDate.getDate() - 90);
+      query.date = { $gte: startOfDay(defaultStartDate) };
+    }
+  }
+
+  const skip = (page - 1) * limit;
+  const total = await Reservation.countDocuments(query);
+
+  const reservations = await Reservation.find(query)
+    .populate("parkingSpotId")
+    .populate("userId", "name email")
+    .sort({ date: 1 })
+    .skip(skip)
+    .limit(limit);
+
+  const formattedReservations = reservations.map((res) => ({
+    _id: res._id.toString(),
+    date: res.date,
+    status: res.status,
+    parkingSpot: res.parkingSpotId as unknown as IParkingSpot,
+    user: res.userId as unknown as {
+      _id: string;
+      name: string;
+      email: string;
+    },
+  }));
+
+  return {
+    reservations: formattedReservations,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
+export async function getUserHistory(
+  userId: string,
+  all: boolean = false,
+): Promise<PopulatedReservation[]> {
+  await dbConnect();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const query: any = { userId };
+
+  if (!all) {
+    // Only upcoming
+    query.date = { $gte: startOfDay(new Date()) };
+  }
+
+  const sort = all ? { date: -1 as const } : { date: 1 as const };
+
+  const reservations = await Reservation.find(query)
+    .populate("parkingSpotId")
+    .sort(sort);
+
+  return reservations.map((res) => ({
+    _id: res._id.toString(),
+    date: res.date,
+    status: res.status,
+    parkingSpot: res.parkingSpotId as unknown as IParkingSpot,
+    user: { _id: userId, name: "", email: "" }, // Not needed for simple history usually, or populate if needed
+  }));
+}
+
+// ============================================================================
+// CANCELLATION
+// ============================================================================
+
+export async function cancelReservation(
+  reservationId: string,
+  requestingUserId: string,
+  isAdmin: boolean,
+): Promise<void> {
+  if (!mongoose.Types.ObjectId.isValid(reservationId)) {
+    throw new ReservationError(
+      "ID de reserva inválido",
+      ReservationErrorCode.DATABASE_ERROR,
+    );
+  }
+
+  await dbConnect();
+
+  const reservation = (await Reservation.findById(reservationId).populate(
+    "parkingSpotId",
+  )) as IReservationWithSpot | null;
+
+  if (!reservation) {
+    throw new ReservationError(
+      "Reserva no encontrada",
+      ReservationErrorCode.DATABASE_ERROR,
+      404,
+    );
+  }
+
+  // Authorization check
+  if (reservation.userId.toString() !== requestingUserId && !isAdmin) {
+    throw new ReservationError(
+      "No autorizado",
+      ReservationErrorCode.DATABASE_ERROR,
+      403,
+    );
+  }
+
+  // Store data for email
+  const parkingSpot = reservation.parkingSpotId;
+  const reservationDate = reservation.date;
+
+  reservation.status = ReservationStatus.CANCELLED;
+  await reservation.save();
+
+  // Send distribution email
+  Promise.resolve()
+    .then(async () => {
+      try {
+        const distributionEmail = process.env.DISTRIBUTION_EMAIL;
+
+        if (!distributionEmail) {
+          logger.warn(
+            "DISTRIBUTION_EMAIL no configurado. Email de notificación no enviado.",
+          );
+          return;
+        }
+
+        if (parkingSpot) {
+          const spotInfo = `${parkingSpot.number} (${
+            parkingSpot.location === "SUBTERRANEO" ? "Subterráneo" : "Exterior"
+          })`;
+
+          await sendEmail({
+            to: distributionEmail,
+            subject: "¡Nuevas plazas disponibles! - Gruposiete Parking",
+            html: getNewSpotsAvailableDistributionEmail(
+              formatDate(reservationDate),
+              [spotInfo],
+            ),
+          });
+        }
+      } catch (emailError) {
+        logger.error("Error sending cancellation emails", emailError as Error);
+      }
+    })
+    .catch((error) => {
+      logger.error("Error in background email task", error as Error);
+    });
 }

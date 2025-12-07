@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 
-interface DashboardDireccionProps {
-  userId: string;
-  parkingSpotId?: string;
-}
+import { updateAvailabilityAction } from "@/app/actions/availability.actions";
+import { useTransition } from "react";
 
 interface ParkingSpot {
   _id: string;
@@ -18,66 +16,51 @@ interface ParkingSpot {
   assignedToName?: string;
 }
 
+interface DashboardDireccionProps {
+  userId: string;
+  parkingSpotId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialParkingSpot: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialAvailability: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialReservations: any[];
+}
+
 export default function DashboardDireccion({
   parkingSpotId,
+  initialParkingSpot,
+  initialAvailability,
+  initialReservations,
 }: DashboardDireccionProps) {
-  const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
+  const [parkingSpot] = useState<ParkingSpot | null>(initialParkingSpot);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [unavailableDates, setUnavailableDates] = useState<Date[]>([]);
-  const [reservedDates, setReservedDates] = useState<Date[]>([]);
+  // Transform initialAvailability (array of IsAvailable: boolean stuff)
+  // `initialAvailability` from `getSpotAvailability` is `Availability[]`.
+  // We need `unavailableDates` (where isAvailable: false).
+  const [unavailableDates, setUnavailableDates] = useState<Date[]>(
+    initialAvailability
+      .filter((a) => !a.isAvailable)
+      .map((a) => new Date(a.date)),
+  );
+  // `initialReservations` from `getReservations` is `PopulatedReservation[]`.
+  // We need `reservedDates`.
+
+  const [reservedDates] = useState<Date[]>(
+    initialReservations.map((r) => new Date(r.date)),
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const fetchParkingSpot = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/parking-spots/${parkingSpotId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setParkingSpot(data);
-      }
-    } catch (error) {
-      console.error("Error fetching parking spot:", error);
-    }
-  }, [parkingSpotId]);
+  // No need for fetch callbacks anymore (initial data provided)
+  // But we might need to refresh upon mutation.
+  // With `revalidatePath` in actions, if we reload, we get new data.
+  // But we want optimistic or local updates.
+  // We can update local state in `handle...` success.
 
-  const fetchAvailability = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `/api/availability?parkingSpotId=${parkingSpotId}`,
-      );
-      if (response.ok) {
-        const data: { isAvailable: boolean; date: string }[] =
-          await response.json();
-        const unavailable = data
-          .filter((a) => !a.isAvailable)
-          .map((a) => new Date(a.date));
-        setUnavailableDates(unavailable);
-      }
-
-      const resResponse = await fetch(
-        `/api/reservations?parkingSpotId=${parkingSpotId}`,
-      );
-      if (resResponse.ok) {
-        const resData: { reservations?: { date: string }[] } =
-          await resResponse.json();
-        const reservationsArray =
-          resData.reservations || (resData as unknown as { date: string }[]);
-        const reserved = reservationsArray.map((r) => new Date(r.date));
-        setReservedDates(reserved);
-      }
-    } catch (error) {
-      console.error("Error fetching availability:", error);
-    }
-  }, [parkingSpotId]);
-
-  useEffect(() => {
-    if (parkingSpotId) {
-      fetchParkingSpot();
-      fetchAvailability();
-    }
-  }, [parkingSpotId, fetchParkingSpot, fetchAvailability]);
-
-  const handleMarkUnavailable = async () => {
+  const handleMarkUnavailable = () => {
     if (selectedDates.length === 0) {
       toast({
         title: "Selecciona fechas",
@@ -86,45 +69,47 @@ export default function DashboardDireccion({
       });
       return;
     }
+    if (!parkingSpotId) return;
 
-    setIsLoading(true);
+    startTransition(async () => {
+      try {
+        const datesStr = selectedDates.map((d) => format(d, "yyyy-MM-dd"));
 
-    try {
-      const response = await fetch("/api/availability", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          parkingSpotId,
-          dates: selectedDates.map((d) => format(d, "yyyy-MM-dd")),
-          isAvailable: false,
-        }),
-      });
+        const result = await updateAvailabilityAction(
+          {},
+          {
+            parkingSpotId,
+            dates: datesStr,
+            isAvailable: false,
+          },
+        );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Error al marcar disponibilidad");
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        toast({
+          title: "Disponibilidad actualizada",
+          description: `Has marcado ${selectedDates.length} día(s) como no disponible`,
+        });
+
+        // Update local state (Optimistic-ish)
+        // Add selected dates to unavailableDates
+        setUnavailableDates([...unavailableDates, ...selectedDates]);
+        setSelectedDates([]);
+        // Ideally we should refetch to be sure, but this is fine for now
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error ? error.message : "Error desconocido",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Disponibilidad actualizada",
-        description: `Has marcado ${selectedDates.length} día(s) como no disponible`,
-      });
-
-      setSelectedDates([]);
-      fetchAvailability();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Error desconocido",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
-  const handleMarkAvailable = async () => {
+  const handleMarkAvailable = () => {
     if (selectedDates.length === 0) {
       toast({
         title: "Selecciona fechas",
@@ -133,6 +118,7 @@ export default function DashboardDireccion({
       });
       return;
     }
+    if (!parkingSpotId) return;
 
     const hasReserved = selectedDates.some((date) =>
       reservedDates.some(
@@ -149,39 +135,45 @@ export default function DashboardDireccion({
       return;
     }
 
-    setIsLoading(true);
+    startTransition(async () => {
+      try {
+        const datesStr = selectedDates.map((d) => format(d, "yyyy-MM-dd"));
 
-    try {
-      const response = await fetch("/api/availability", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          parkingSpotId,
-          dates: selectedDates.map((d) => format(d, "yyyy-MM-dd")),
-          isAvailable: true,
-        }),
-      });
+        const result = await updateAvailabilityAction(
+          {},
+          {
+            parkingSpotId,
+            dates: datesStr,
+            isAvailable: true,
+          },
+        );
 
-      if (!response.ok) {
-        throw new Error("Error al marcar disponibilidad");
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        toast({
+          title: "Disponibilidad actualizada",
+          description: `Has marcado ${selectedDates.length} día(s) como disponible`,
+        });
+
+        // Update local state
+        // Remove selected dates from unavailableDates
+        const selectedTimeStamps = new Set(
+          selectedDates.map((d) => d.getTime()),
+        );
+        setUnavailableDates(
+          unavailableDates.filter((d) => !selectedTimeStamps.has(d.getTime())),
+        );
+        setSelectedDates([]);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar la disponibilidad",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Disponibilidad actualizada",
-        description: `Has marcado ${selectedDates.length} día(s) como disponible`,
-      });
-
-      setSelectedDates([]);
-      fetchAvailability();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar la disponibilidad",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const isWeekday = (date: Date) => {
@@ -458,7 +450,7 @@ export default function DashboardDireccion({
               <div className="mt-4 space-y-2">
                 <button
                   onClick={handleMarkUnavailable}
-                  disabled={isLoading}
+                  disabled={isPending}
                   className="w-full py-3 px-4 rounded-xl bg-primary-900 text-white font-bold text-sm brutal-border brutal-shadow-sm
                          hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -468,7 +460,7 @@ export default function DashboardDireccion({
                 </button>
                 <button
                   onClick={handleMarkAvailable}
-                  disabled={isLoading}
+                  disabled={isPending}
                   className="w-full py-3 px-4 rounded-xl bg-white text-primary-900 font-bold text-sm brutal-border brutal-shadow-sm
                          hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >

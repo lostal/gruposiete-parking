@@ -4,6 +4,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { signOut } from "next-auth/react";
 import { UserRole } from "@/types";
+import {
+  updateUserAction,
+  changePasswordAction,
+  deleteAccountAction,
+} from "@/app/actions/user.actions";
 
 interface ProfileSidebarProps {
   isOpen: boolean;
@@ -43,16 +48,10 @@ export function ProfileSidebar({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
-      });
+      const result = await updateUserAction(name.trim());
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Error al actualizar el nombre");
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       toast({
@@ -89,19 +88,10 @@ export function ProfileSidebar({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
+      const result = await changePasswordAction(currentPassword, newPassword);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Error al cambiar la contraseña");
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       toast({
@@ -137,16 +127,10 @@ export function ProfileSidebar({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/profile", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: deletePassword }),
-      });
+      const result = await deleteAccountAction(deletePassword);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Error al eliminar la cuenta");
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       toast({
@@ -189,7 +173,7 @@ export function ProfileSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-[#343f48]
+        className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-primary-900
                    transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
                      isOpen ? "translate-x-0" : "translate-x-full"
                    }`}
@@ -198,7 +182,7 @@ export function ProfileSidebar({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-[#343f48]">
+              <h2 className="text-2xl font-extrabold tracking-tight text-primary-900">
                 Mi Perfil
               </h2>
               <p className="text-sm text-gray-500 mt-1 font-medium">
@@ -207,7 +191,7 @@ export function ProfileSidebar({
             </div>
             <button
               onClick={onClose}
-              className="px-3 py-2 rounded-lg bg-white text-[#343f48] font-bold text-lg
+              className="px-3 py-2 rounded-lg bg-white text-primary-900 font-bold text-lg
                        brutal-border hover:bg-gray-100 transition-colors"
             >
               ✕
@@ -215,17 +199,17 @@ export function ProfileSidebar({
           </div>
 
           {/* User Info */}
-          <div className="bg-[#343f48] rounded-2xl p-6 brutal-border mb-6">
+          <div className="bg-primary-900 rounded-2xl p-6 brutal-border mb-6">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <span className="text-2xl font-extrabold text-[#343f48]">
+                <span className="text-2xl font-extrabold text-primary-900">
                   {userName.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
                 <p className="font-bold text-white text-lg">{userName}</p>
                 <p className="text-sm text-gray-300">{userEmail}</p>
-                <span className="inline-block mt-1 px-2 py-1 rounded-lg bg-[#fdc373] text-[#343f48] font-bold text-xs uppercase">
+                <span className="inline-block mt-1 px-2 py-1 rounded-lg bg-[#fdc373] text-primary-900 font-bold text-xs uppercase">
                   {userRole === UserRole.GENERAL ? "General" : "Dirección"}
                 </span>
               </div>
@@ -236,7 +220,7 @@ export function ProfileSidebar({
           <div className="space-y-6">
             {/* Sección: Editar Nombre */}
             <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
-              <h3 className="text-lg font-extrabold text-[#343f48] mb-4">
+              <h3 className="text-lg font-extrabold text-primary-900 mb-4">
                 Cambiar Nombre
               </h3>
               <form onSubmit={handleUpdateName} className="space-y-4">
@@ -248,7 +232,7 @@ export function ProfileSidebar({
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-[#343f48] focus:outline-none font-medium"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-primary-900 focus:outline-none font-medium"
                     placeholder="Tu nombre"
                     disabled={isLoading}
                   />
@@ -256,7 +240,7 @@ export function ProfileSidebar({
                 <button
                   type="submit"
                   disabled={isLoading || name.trim() === userName}
-                  className="w-full px-4 py-3 rounded-xl bg-[#343f48] text-white font-bold
+                  className="w-full px-4 py-3 rounded-xl bg-primary-900 text-white font-bold
                            brutal-border brutal-shadow-sm brutal-hover tap-none
                            disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -267,7 +251,7 @@ export function ProfileSidebar({
 
             {/* Sección: Cambiar Contraseña */}
             <div className="bg-white rounded-2xl p-6 brutal-border brutal-shadow">
-              <h3 className="text-lg font-extrabold text-[#343f48] mb-4">
+              <h3 className="text-lg font-extrabold text-primary-900 mb-4">
                 Cambiar Contraseña
               </h3>
               <form onSubmit={handleChangePassword} className="space-y-4">
@@ -279,7 +263,7 @@ export function ProfileSidebar({
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-[#343f48] focus:outline-none font-medium"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-primary-900 focus:outline-none font-medium"
                     placeholder="Tu contraseña actual"
                     disabled={isLoading}
                   />
@@ -292,7 +276,7 @@ export function ProfileSidebar({
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-[#343f48] focus:outline-none font-medium"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-primary-900 focus:outline-none font-medium"
                     placeholder="Mínimo 8 caracteres"
                     disabled={isLoading}
                   />
@@ -300,7 +284,7 @@ export function ProfileSidebar({
                 <button
                   type="submit"
                   disabled={isLoading || !currentPassword || !newPassword}
-                  className="w-full px-4 py-3 rounded-xl bg-[#343f48] text-white font-bold
+                  className="w-full px-4 py-3 rounded-xl bg-primary-900 text-white font-bold
                            brutal-border brutal-shadow-sm brutal-hover tap-none
                            disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -357,7 +341,7 @@ export function ProfileSidebar({
                         setDeletePassword("");
                       }}
                       disabled={isLoading}
-                      className="flex-1 px-4 py-3 rounded-xl bg-white text-[#343f48] font-bold
+                      className="flex-1 px-4 py-3 rounded-xl bg-white text-primary-900 font-bold
                                brutal-border hover:bg-gray-100 transition-colors
                                disabled:opacity-50 disabled:cursor-not-allowed"
                     >

@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import { resetPasswordAction, ActionState } from "@/app/actions/auth.actions";
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [token, setToken] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,54 +51,42 @@ function ResetPasswordContent() {
       return;
     }
 
-    setIsLoading(true);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("token", token);
+      formData.append("password", password);
 
-    try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          password,
-        }),
-      });
+      try {
+        const result: ActionState = await resetPasswordAction(
+          {} as ActionState,
+          formData,
+        );
 
-      const data = await response.json();
+        if (result.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+          return;
+        }
 
-      if (!response.ok) {
         toast({
-          title: "Error",
-          description: data.error || "Error al restablecer la contraseña",
-          variant: "destructive",
+          title: "Contraseña restablecida",
+          description: result.message,
         });
 
-        // Si el token expiró, redirigir a solicitar uno nuevo
-        if (response.status === 400) {
-          setTimeout(() => router.push("/forgot-password"), 3000);
-        }
-        return;
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Ha ocurrido un error inesperado",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Contraseña restablecida",
-        description: data.message,
-      });
-
-      // Redirigir al login
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ha ocurrido un error inesperado",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   if (!token) {
@@ -128,7 +117,7 @@ function ResetPasswordContent() {
 
         {/* Formulario */}
         <div className="bg-white rounded-3xl p-8 md:p-10 brutal-border brutal-shadow">
-          <h2 className="text-3xl font-extrabold tracking-tight text-[#343f48] mb-3">
+          <h2 className="text-3xl font-extrabold tracking-tight text-primary-900 mb-3">
             Nueva Contraseña
           </h2>
           <p className="text-gray-500 mb-8 font-medium">
@@ -140,7 +129,7 @@ function ResetPasswordContent() {
             <div className="space-y-3">
               <label
                 htmlFor="password"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Nueva Contraseña
               </label>
@@ -151,7 +140,7 @@ function ResetPasswordContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border placeholder:text-gray-400"
               />
             </div>
@@ -160,7 +149,7 @@ function ResetPasswordContent() {
             <div className="space-y-3">
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-bold text-[#343f48] uppercase tracking-wide"
+                className="block text-sm font-bold text-primary-900 uppercase tracking-wide"
               >
                 Confirmar Contraseña
               </label>
@@ -171,7 +160,7 @@ function ResetPasswordContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full py-4 px-5 rounded-xl bg-white text-[#343f48] font-medium
+                className="w-full py-4 px-5 rounded-xl bg-white text-primary-900 font-medium
                          brutal-border placeholder:text-gray-400"
               />
             </div>
@@ -179,10 +168,10 @@ function ResetPasswordContent() {
             {/* Indicador de seguridad */}
             {password.length > 0 && (
               <div className="bg-[#fdc373]/20 border-l-4 border-[#fdc373] p-3">
-                <p className="text-xs text-[#343f48] font-medium">
+                <p className="text-xs text-primary-900 font-medium">
                   Seguridad de la contraseña:
                 </p>
-                <ul className="text-xs text-[#343f48] mt-1 space-y-1">
+                <ul className="text-xs text-primary-900 mt-1 space-y-1">
                   <li
                     className={
                       password.length >= 8 ? "text-green-600" : "text-gray-500"
@@ -209,12 +198,12 @@ function ResetPasswordContent() {
             {/* Botón */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-5 px-6 rounded-2xl bg-[#fdc373] text-[#343f48] font-bold text-lg
+              disabled={isPending}
+              className="w-full py-5 px-6 rounded-2xl bg-[#fdc373] text-primary-900 font-bold text-lg
                        brutal-border brutal-shadow-sm brutal-hover tap-none
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLoading ? "Restableciendo..." : "Restablecer Contraseña"}
+              {isPending ? "Restableciendo..." : "Restablecer Contraseña"}
             </button>
           </form>
 
@@ -222,7 +211,7 @@ function ResetPasswordContent() {
           <div className="mt-8 text-center">
             <Link
               href="/login"
-              className="text-[#343f48] font-bold hover:text-[#fdc373] transition-colors"
+              className="text-primary-900 font-bold hover:text-[#fdc373] transition-colors"
             >
               ← Volver al inicio de sesión
             </Link>
