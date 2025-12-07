@@ -17,9 +17,9 @@ Desarrollado con **Next.js 14**, **TypeScript** y **MongoDB**, implementa autent
 
 ---
 
-## 🏗️ Technical Architecture
+## 🏗️ Arquitectura Técnica
 
-### Request Flow Diagram
+### Diagrama de Flujo
 
 El siguiente diagrama muestra el flujo completo de una petición de reserva a través de las diferentes capas del sistema:
 
@@ -63,7 +63,7 @@ sequenceDiagram
 | Categoría     | Tecnología                         |
 | ------------- | ---------------------------------- |
 | Framework     | Next.js 14 (App Router)            |
-| Lenguaje      | TypeScript (strict mode)           |
+| Lenguaje      | TypeScript                         |
 | Base de Datos | MongoDB Atlas + Mongoose ODM       |
 | Autenticación | NextAuth v5                        |
 | Validación    | Zod                                |
