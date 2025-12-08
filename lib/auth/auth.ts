@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 import { UserRole } from "@/types";
 import { AUTH_CONSTANTS } from "@/lib/constants";
+import dbConnect from "@/lib/db/mongodb";
+import User from "@/models/User";
 
 // Helper para validar que el rol es válido
 function isValidRole(role: unknown): role is UserRole {
@@ -55,15 +57,40 @@ export const {
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        // Verificar nuevamente antes de asignar a la sesión
-        if (isValidRole(token.role)) {
-          session.user.role = token.role;
-        } else {
-          session.user.role = UserRole.GENERAL;
+      if (session.user && token.id) {
+        // Fetch fresh user data from DB to reflect profile changes
+        try {
+          await dbConnect();
+          const dbUser = await User.findById(token.id)
+            .select("name email role assignedParkingSpot")
+            .lean();
+
+          if (dbUser) {
+            session.user.name = dbUser.name;
+            session.user.email = dbUser.email;
+            session.user.role = isValidRole(dbUser.role)
+              ? dbUser.role
+              : UserRole.GENERAL;
+            session.user.assignedParkingSpot =
+              dbUser.assignedParkingSpot?.toString();
+          } else {
+            // User was deleted, use token data as fallback
+            session.user.role = isValidRole(token.role)
+              ? token.role
+              : UserRole.GENERAL;
+            session.user.assignedParkingSpot =
+              token.assignedParkingSpot as string;
+          }
+        } catch (error) {
+          console.error("Error fetching user in session callback:", error);
+          // Fallback to token data
+          session.user.role = isValidRole(token.role)
+            ? token.role
+            : UserRole.GENERAL;
+          session.user.assignedParkingSpot =
+            token.assignedParkingSpot as string;
         }
         session.user.id = token.id as string;
-        session.user.assignedParkingSpot = token.assignedParkingSpot as string;
       }
       return session;
     },

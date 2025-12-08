@@ -26,9 +26,22 @@ export async function updateUserAction(name: string): Promise<ActionState> {
     }
 
     await dbConnect();
-    await User.findByIdAndUpdate(session.user.id, { name: name.trim() });
 
+    // Use { new: true } to get the updated document and verify update happened
+    const updatedUser = await User.findByIdAndUpdate(
+      session.user.id,
+      { name: name.trim() },
+      { new: true },
+    );
+
+    if (!updatedUser) {
+      return { error: "Usuario no encontrado" };
+    }
+
+    // Revalidate all paths where user data is displayed
     revalidatePath("/dashboard");
+    revalidatePath("/");
+
     return { success: true, message: "Nombre actualizado" };
   } catch (error) {
     console.error("Error updating profile:", error);

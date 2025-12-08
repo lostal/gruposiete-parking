@@ -110,14 +110,19 @@ export async function getMyReservationsHistoryAction() {
 
   const history = await getUserHistory(session.user.id, true);
 
-  // Serialize dates to strings to match client expectations
-  return history.map((h) => ({
-    ...h,
+  // Serialize to break circular references from Mongoose documents
+  const serialized = history.map((h) => ({
     _id: h._id.toString(),
-    date: h.date.toISOString(),
-    user: {
-      ...h.user,
-      _id: h.user._id.toString(),
-    },
+    date: h.date instanceof Date ? h.date.toISOString() : h.date,
+    status: h.status,
+    parkingSpot: h.parkingSpot
+      ? {
+          _id: h.parkingSpot._id?.toString() || "",
+          number: h.parkingSpot.number,
+          location: h.parkingSpot.location,
+        }
+      : null,
   }));
+
+  return serialized;
 }

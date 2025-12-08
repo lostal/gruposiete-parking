@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 import {
   createReservationAction,
@@ -15,6 +16,7 @@ import {
 } from "@/app/actions/parking.actions";
 import { useTransition, useOptimistic } from "react";
 import { useRouter } from "next/navigation";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface DashboardGeneralProps {
   userId: string;
@@ -67,10 +69,15 @@ export default function DashboardGeneral({
     initialDaysWithAvailability.map((d) => new Date(d)),
   );
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isLoading, setIsLoading] = useState(false); // Kept for legacy, but replaced usage with isPending
+  const [loadingSpotId, setLoadingSpotId] = useState<string | null>(null);
+  const [cancellingReservationId, setCancellingReservationId] = useState<
+    string | null
+  >(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+
+  // Auto-animate refs for smooth list transitions
+  const [spotsListRef] = useAutoAnimate<HTMLDivElement>();
 
   const fetchAvailableSpots = useCallback(async () => {
     if (!selectedDate) return;
@@ -120,14 +127,40 @@ export default function DashboardGeneral({
   const handleReserve = (spotId: string) => {
     if (!selectedDate) return;
 
+    // Find the spot for optimistic update
+    const spot = availableSpots.find((s) => s._id === spotId);
+    if (!spot) return;
+
+    setLoadingSpotId(spotId);
+
+    // Create optimistic reservation object
+    const optimisticReservation: MyReservation = {
+      _id: `temp-${Date.now()}`,
+      date: selectedDate.toISOString(),
+      parkingSpot: {
+        number: spot.number,
+        location: spot.location,
+      },
+    };
+
+    // Capture spot value for potential rollback (closure captures it)
+    const spotForRollback = { ...spot };
+
     startTransition(async () => {
+      // OPTIMISTIC: Add reservation immediately for instant feedback (inside transition)
+      setOptimisticReservations({
+        type: "add",
+        payload: optimisticReservation,
+      });
+
+      // Remove from available spots immediately
+      setAvailableSpots((prev) => prev.filter((s) => s._id !== spotId));
+
       try {
         const formData = new FormData();
         formData.append("parkingSpotId", spotId);
         formData.append("date", format(selectedDate, "yyyy-MM-dd"));
 
-        // Allow passing formData or object? createReservationAction takes (state, formData).
-        // I need to mock state.
         const result = await createReservationAction({}, formData);
 
         if (result.error) {
@@ -136,33 +169,33 @@ export default function DashboardGeneral({
 
         toast({
           title: "¡Reserva exitosa!",
-          description: `Plaza reservada correctamente`,
+          description: `Plaza ${spot.number} reservada correctamente`,
         });
-
-        toast({
-          title: "¡Reserva exitosa!",
-          description: `Plaza reservada correctamente`,
-        });
-
-        // Optimistically add reservation
-        // We'd ideally need the full object, but for the calendar/list checks we mainly need date and spot
-        // Since we don't have the full DB object yet, we rely on router.refresh()
-        // to get the real data quickly.
-        // But for "instant yellow", we can try to fake it?
-        // Actually, router.refresh() is fast enough usually.
-        // But let's verify. The user complained about "persistence" of old data.
 
         router.refresh();
-        fetchAvailableSpots();
-
-        // Needs `useRouter`.
       } catch (error) {
+        // ROLLBACK: Revert optimistic update on error
+        setOptimisticReservations({
+          type: "remove",
+          payload: optimisticReservation._id,
+        });
+        // Use captured spot value for rollback, but check if it doesn't already exist
+        setAvailableSpots((prev) => {
+          // Prevent duplicates - only add back if not already present
+          if (prev.some((s) => s._id === spotForRollback._id)) {
+            return prev;
+          }
+          return [...prev, spotForRollback];
+        });
+
         toast({
           title: "Error al reservar",
           description:
             error instanceof Error ? error.message : "Error desconocido",
           variant: "destructive",
         });
+      } finally {
+        setLoadingSpotId(null);
       }
     });
   };
@@ -170,7 +203,18 @@ export default function DashboardGeneral({
   const handleCancelReservation = (reservationId: string) => {
     if (!confirm("¿Estás seguro de cancelar esta reserva?")) return;
 
+    // Find reservation for potential rollback
+    const reservation = optimisticReservations.find(
+      (r) => r._id === reservationId,
+    );
+
+    // Track which reservation is being cancelled
+    setCancellingReservationId(reservationId);
+
     startTransition(async () => {
+      // OPTIMISTIC: Remove immediately for instant feedback (inside transition)
+      setOptimisticReservations({ type: "remove", payload: reservationId });
+
       try {
         const result = await cancelReservationAction(reservationId);
 
@@ -183,22 +227,21 @@ export default function DashboardGeneral({
           description: "Tu reserva ha sido cancelada correctamente",
         });
 
-        toast({
-          title: "Reserva cancelada",
-          description: "Tu reserva ha sido cancelada correctamente",
-        });
-
-        // Optimistically remove
-        setOptimisticReservations({ type: "remove", payload: reservationId });
-
         router.refresh();
         fetchAvailableSpots();
       } catch (error) {
+        // ROLLBACK: Restore reservation on error
+        if (reservation) {
+          setOptimisticReservations({ type: "add", payload: reservation });
+        }
+
         toast({
           title: "Error",
           description: "No se pudo cancelar la reserva",
           variant: "destructive",
         });
+      } finally {
+        setCancellingReservationId(null);
       }
     });
   };
@@ -424,12 +467,20 @@ export default function DashboardGeneral({
                       </div>
                       <button
                         onClick={() => handleCancelReservation(reservation._id)}
-                        disabled={isPending}
+                        disabled={cancellingReservationId === reservation._id}
                         className="w-full py-3 px-4 rounded-xl bg-white text-red-600 font-bold
                                  border-2 border-red-600 hover:bg-red-50 transition-colors
-                                 disabled:opacity-50 disabled:cursor-not-allowed"
+                                 disabled:opacity-50 disabled:cursor-not-allowed
+                                 flex items-center justify-center gap-2"
                       >
-                        {isPending ? "Cancelando..." : "Cancelar Reserva"}
+                        {cancellingReservationId === reservation._id ? (
+                          <>
+                            <span className="brutal-spinner" />
+                            Cancelando...
+                          </>
+                        ) : (
+                          "Cancelar Reserva"
+                        )}
                       </button>
                     </div>
                   ))}
@@ -442,7 +493,10 @@ export default function DashboardGeneral({
                 <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
                   Plazas Disponibles
                 </h4>
-                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+                <div
+                  ref={spotsListRef}
+                  className="grid gap-4 sm:grid-cols-1 md:grid-cols-2"
+                >
                   {availableSpots.map((spot) => (
                     <div
                       key={spot._id}
@@ -481,13 +535,21 @@ export default function DashboardGeneral({
                       </div>
                       <button
                         onClick={() => handleReserve(spot._id)}
-                        disabled={isPending}
+                        disabled={loadingSpotId === spot._id || isPending}
                         className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-primary-900 font-bold
                                  brutal-border brutal-shadow-sm brutal-hover tap-none
                                  hover:shadow-[6px_6px_0_0_#343f48] active:shadow-[2px_2px_0_0_#343f48]
-                                 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200"
+                                 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200
+                                 flex items-center justify-center gap-2"
                       >
-                        {isPending ? "Reservando..." : "Reservar"}
+                        {loadingSpotId === spot._id ? (
+                          <>
+                            <span className="brutal-spinner brutal-spinner-light" />
+                            Reservando...
+                          </>
+                        ) : (
+                          "Reservar"
+                        )}
                       </button>
                     </div>
                   ))}
@@ -500,14 +562,8 @@ export default function DashboardGeneral({
               !optimisticReservations.find(
                 (res) =>
                   format(new Date(res.date), "yyyy-MM-dd") ===
-                  format(selectedDate, "yyyy-MM-dd"),
-              ) && (
-                <div className="bg-white rounded-2xl p-8 brutal-border brutal-shadow text-center">
-                  <p className="text-gray-400 font-medium">
-                    No hay plazas disponibles para esta fecha
-                  </p>
-                </div>
-              )}
+                  format(selectedDate!, "yyyy-MM-dd"),
+              ) && <EmptyState variant="no-spots" />}
           </div>
         )}
       </div>

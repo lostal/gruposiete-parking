@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import RegisterServiceWorker from "@/components/pwa/RegisterServiceWorker";
+import { NavigationProgress } from "@/components/layout/navigation-progress";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -56,6 +57,7 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={inter.className}>
+        <NavigationProgress />
         {children}
         <RegisterServiceWorker />
         <Toaster />

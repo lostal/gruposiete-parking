@@ -13,6 +13,9 @@ importers:
       "@fontsource/space-mono":
         specifier: ^5.2.9
         version: 5.2.9
+      "@formkit/auto-animate":
+        specifier: ^0.9.0
+        version: 0.9.0
       "@radix-ui/react-avatar":
         specifier: ^1.1.11
         version: 1.1.11(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -67,6 +70,9 @@ importers:
       next-auth:
         specifier: 5.0.0-beta.30
         version: 5.0.0-beta.30(next@16.0.7(@babel/core@7.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)
+      nprogress:
+        specifier: ^0.2.0
+        version: 0.2.0
       react:
         specifier: ^19.2.1
         version: 19.2.1
@@ -98,6 +104,9 @@ importers:
       "@types/node":
         specifier: ^24.10.1
         version: 24.10.1
+      "@types/nprogress":
+        specifier: ^0.2.3
+        version: 0.2.3
       "@types/react":
         specifier: ^19.2.7
         version: 19.2.7
@@ -882,6 +891,12 @@ packages:
     resolution:
       {
         integrity: sha512-b61faFOHEISQ/pD25G+cfGY9o/WW6lRv6hBQQfpWvEJ4y1V+S4gmth95EVyBE2VL3qDYHeVQ8nBzrplzdXTDDg==,
+      }
+
+  "@formkit/auto-animate@0.9.0":
+    resolution:
+      {
+        integrity: sha512-VhP4zEAacXS3dfTpJpJ88QdLqMTcabMg0jwpOSxZ/VzfQVfl3GkZSCZThhGC5uhq/TxPHPzW0dzr4H9Bb1OgKA==,
       }
 
   "@humanfs/core@0.19.1":
@@ -2190,6 +2205,12 @@ packages:
     resolution:
       {
         integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==,
+      }
+
+  "@types/nprogress@0.2.3":
+    resolution:
+      {
+        integrity: sha512-k7kRA033QNtC+gLc4VPlfnue58CM1iQLgn1IMAU8VPHGOj7oIHPp9UlhedEnD/Gl8evoCjwkZjlBORtZ3JByUA==,
       }
 
   "@types/react-dom@19.2.3":
@@ -4331,6 +4352,12 @@ packages:
         integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==,
       }
 
+  nprogress@0.2.0:
+    resolution:
+      {
+        integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==,
+      }
+
   oauth4webapi@3.8.3:
     resolution:
       {
@@ -5744,6 +5771,8 @@ snapshots:
 
   "@fontsource/space-mono@5.2.9": {}
 
+  "@formkit/auto-animate@0.9.0": {}
+
   "@humanfs/core@0.19.1": {}
 
   "@humanfs/node@0.16.7":
@@ -6492,6 +6521,8 @@ snapshots:
   "@types/node@24.10.1":
     dependencies:
       undici-types: 7.16.0
+
+  "@types/nprogress@0.2.3": {}
 
   "@types/react-dom@19.2.3(@types/react@19.2.7)":
     dependencies:
@@ -7956,6 +7987,8 @@ snapshots:
       - babel-plugin-macros
 
   node-releases@2.0.27: {}
+
+  nprogress@0.2.0: {}
 
   oauth4webapi@3.8.3: {}
 
