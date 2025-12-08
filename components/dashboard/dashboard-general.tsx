@@ -398,7 +398,7 @@ export default function DashboardGeneral({
           </div>
 
           {/* Leyenda */}
-          <div className="mt-auto pt-3 border-t-2 border-gray-100 space-y-1.5">
+          <div className="mt-auto pt-3 space-y-1.5">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-[#fdc373]/30 border-2 border-[#fdc373]"></div>
               <span className="text-[10px] text-gray-600 font-medium">

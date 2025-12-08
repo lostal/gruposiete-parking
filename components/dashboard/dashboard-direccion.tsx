@@ -427,9 +427,8 @@ export default function DashboardDireccion({
                     disabled={isDisabled}
                     title={title}
                     className={`aspect-square flex items-center justify-center rounded-lg font-bold text-xs transition-all
-                              ${bgColor} ${textColor} ${border} ${
-                                !isDisabled && "hover:scale-105"
-                              }`}
+                              ${bgColor} ${textColor} ${border} ${!isDisabled && "hover:scale-105"
+                      }`}
                   >
                     {format(date, "d")}
                   </button>
@@ -438,7 +437,7 @@ export default function DashboardDireccion({
             </div>
 
             {/* Leyenda compacta */}
-            <div className="mt-auto pt-3 border-t-2 border-gray-100 space-y-1.5">
+            <div className="mt-auto pt-3 space-y-1.5">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-white border-2 border-gray-200 rounded"></div>
                 <span className="text-[10px] text-gray-600 font-medium">
