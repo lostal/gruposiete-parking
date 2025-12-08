@@ -492,16 +492,18 @@ export default function DashboardGeneral({
               )}
 
             {/* Plazas disponibles */}
+            <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
+              Plazas Disponibles
+            </h4>
             {(isLoadingSpots || availableSpots.length > 0) && (
               <div>
-                <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
-                  Plazas Disponibles
-                </h4>
                 {isLoadingSpots ? (
                   <div
                     key="skeleton-container"
                     className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 animate-fade-in-up"
                   >
+                    <SpotCardSkeleton />
+                    <SpotCardSkeleton />
                     <SpotCardSkeleton />
                     <SpotCardSkeleton />
                   </div>

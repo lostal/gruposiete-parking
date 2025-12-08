@@ -26,7 +26,7 @@ export default async function Home() {
             />
             <div className="flex items-center gap-3">
               <div className="h-[3px] w-16 bg-[#fdc373] rounded-full"></div>
-              <h1 className="text-3xl font-extrabold text-[#343f48] tracking-tight">
+              <h1 className="text-3xl font-extrabold text-primary-900 tracking-tight">
                 PARKING
               </h1>
               <div className="h-[3px] w-16 bg-[#fdc373] rounded-full"></div>
@@ -38,7 +38,7 @@ export default async function Home() {
         <div className="space-y-4">
           <Link href="/login" className="block">
             <button
-              className="w-full py-5 px-6 rounded-2xl bg-[#343f48] text-white font-bold text-lg
+              className="w-full py-5 px-6 rounded-2xl bg-primary-900 text-white font-bold text-lg
                              brutal-border brutal-shadow brutal-hover tap-none"
             >
               Iniciar Sesión
@@ -47,7 +47,7 @@ export default async function Home() {
 
           <Link href="/registro" className="block">
             <button
-              className="w-full py-5 px-6 rounded-2xl bg-white text-[#343f48] font-bold text-lg
+              className="w-full py-5 px-6 rounded-2xl bg-white text-primary-900 font-bold text-lg
                              brutal-border brutal-shadow brutal-hover tap-none"
             >
               Crear Cuenta
