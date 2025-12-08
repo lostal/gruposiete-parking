@@ -491,86 +491,84 @@ export default function DashboardGeneral({
                 </div>
               )}
 
-            {/* Plazas disponibles - Loading */}
-            {isLoadingSpots && (
-              <div>
-                <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
-                  Plazas Disponibles
-                </h4>
-                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-                  <SpotCardSkeleton />
-                  <SpotCardSkeleton />
-                </div>
-              </div>
-            )}
-
             {/* Plazas disponibles */}
-            {!isLoadingSpots && availableSpots.length > 0 && (
+            {(isLoadingSpots || availableSpots.length > 0) && (
               <div>
                 <h4 className="text-sm font-bold text-primary-900 uppercase tracking-wider mb-3">
                   Plazas Disponibles
                 </h4>
-                <div
-                  ref={spotsListRef}
-                  className="grid gap-4 sm:grid-cols-1 md:grid-cols-2"
-                >
-                  {availableSpots.map((spot) => (
-                    <div
-                      key={spot._id}
-                      className="bg-linear-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-accent hover:scale-[1.02] transition-all duration-300"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 bg-primary-900 rounded-xl brutal-border flex items-center justify-center shadow-[4px_4px_0_0_#fdc373]">
-                            <span className="text-xl font-mono-data font-bold text-white">
-                              {spot.location === "SUBTERRANEO" ? "S" : "E"}-
-                              {spot.number}
-                            </span>
+                {isLoadingSpots ? (
+                  <div
+                    key="skeleton-container"
+                    className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 animate-fade-in-up"
+                  >
+                    <SpotCardSkeleton />
+                    <SpotCardSkeleton />
+                  </div>
+                ) : (
+                  <div
+                    key="data-container"
+                    ref={spotsListRef}
+                    className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 animate-fade-in-up"
+                  >
+                    {availableSpots.map((spot) => (
+                      <div
+                        key={spot._id}
+                        className="bg-linear-to-br from-white to-[#fdc373]/10 rounded-2xl p-6 brutal-border brutal-shadow hover:brutal-shadow-accent hover:scale-[1.02] transition-all duration-300"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 bg-primary-900 rounded-xl brutal-border flex items-center justify-center shadow-[4px_4px_0_0_#fdc373]">
+                              <span className="text-xl font-mono-data font-bold text-white">
+                                {spot.location === "SUBTERRANEO" ? "S" : "E"}-
+                                {spot.number}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-bold text-primary-900 text-lg">
+                                Plaza {spot.number}
+                              </p>
+                              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
+                                {spot.location === "SUBTERRANEO"
+                                  ? "Subterráneo"
+                                  : "Exterior"}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-primary-900 text-lg">
-                              Plaza {spot.number}
-                            </p>
-                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                              {spot.location === "SUBTERRANEO"
-                                ? "Subterráneo"
-                                : "Exterior"}
-                            </p>
-                          </div>
+                          <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-primary-900 font-bold text-xs uppercase whitespace-nowrap border-2 border-primary-900">
+                            Disponible
+                          </span>
                         </div>
-                        <span className="inline-block px-3 py-1 rounded-lg bg-[#fdc373] text-primary-900 font-bold text-xs uppercase whitespace-nowrap border-2 border-primary-900">
-                          Disponible
-                        </span>
-                      </div>
-                      <div className="mb-4">
-                        <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
-                          Asignada a
-                        </p>
-                        <p className="text-sm text-primary-900 font-medium">
-                          {spot.assignedToName}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleReserve(spot._id)}
-                        disabled={loadingSpotId === spot._id || isPending}
-                        className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-primary-900 font-bold
+                        <div className="mb-4">
+                          <p className="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">
+                            Asignada a
+                          </p>
+                          <p className="text-sm text-primary-900 font-medium">
+                            {spot.assignedToName}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleReserve(spot._id)}
+                          disabled={loadingSpotId === spot._id || isPending}
+                          className="w-full py-3 px-4 rounded-xl bg-[#fdc373] text-primary-900 font-bold
                                  brutal-border brutal-shadow-sm brutal-hover tap-none
                                  hover:shadow-[6px_6px_0_0_#343f48] active:shadow-[2px_2px_0_0_#343f48]
                                  disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200
                                  flex items-center justify-center gap-2"
-                      >
-                        {loadingSpotId === spot._id ? (
-                          <>
-                            <span className="brutal-spinner brutal-spinner-light" />
-                            Reservando...
-                          </>
-                        ) : (
-                          "Reservar"
-                        )}
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                        >
+                          {loadingSpotId === spot._id ? (
+                            <>
+                              <span className="brutal-spinner brutal-spinner-light" />
+                              Reservando...
+                            </>
+                          ) : (
+                            "Reservar"
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
