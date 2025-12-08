@@ -10,7 +10,7 @@ import {
 } from "@/lib/services/reservations.service";
 import { CreateReservationSchema } from "@/lib/schemas/reservation.schema";
 import { revalidatePath } from "next/cache";
-import { startOfDay } from "date-fns";
+import { parseDateStringUTC } from "@/lib/utils/dates";
 
 import { checkRateLimitRedis } from "@/lib/ratelimit-redis";
 
@@ -64,7 +64,7 @@ export async function createReservationAction(
     await createReservation({
       userId: session.user.id,
       parkingSpotId: validation.data.parkingSpotId,
-      date: startOfDay(new Date(validation.data.date)),
+      date: parseDateStringUTC(validation.data.date),
     });
 
     revalidatePath("/dashboard");

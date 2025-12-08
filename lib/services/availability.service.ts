@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { startOfDay, endOfDay } from "date-fns";
+import { endOfDay } from "date-fns";
 import dbConnect from "@/lib/db/mongodb";
 import Availability from "@/models/Availability";
 import Reservation from "@/models/Reservation";
@@ -10,13 +10,17 @@ import {
   sendEmail,
   getNewSpotsAvailableDistributionEmail,
 } from "@/lib/email/resend";
-import { formatDate } from "@/lib/utils/dates";
+import {
+  formatDate,
+  parseDateStringUTC,
+  toUTCMidnight,
+} from "@/lib/utils/dates";
 import { AVAILABILITY_CONSTANTS, isWeekday } from "@/lib/constants";
 
 export interface UpdateAvailabilityParams {
   parkingSpotId: string;
   dates: string[];
-  isAvailable: boolean;
+  ownerIsUsing: boolean;
   userId: string;
   userRole: UserRole;
 }
@@ -31,7 +35,7 @@ export class AvailabilityError extends Error {
 export async function updateAvailability(
   params: UpdateAvailabilityParams,
 ): Promise<void> {
-  const { parkingSpotId, dates, isAvailable, userId, userRole } = params;
+  const { parkingSpotId, dates, ownerIsUsing, userId, userRole } = params;
 
   if (!parkingSpotId || !dates || !Array.isArray(dates)) {
     throw new AvailabilityError("Datos inválidos");
@@ -67,9 +71,10 @@ export async function updateAvailability(
     }
   }
 
-  if (isAvailable) {
+  // Si el dueño quiere recuperar la plaza (marcarla como que él la usará)
+  if (ownerIsUsing) {
     for (const dateStr of dates) {
-      const date = startOfDay(new Date(dateStr));
+      const date = parseDateStringUTC(dateStr);
       const hasReservation = await Reservation.findOne({
         parkingSpotId,
         date: { $gte: date, $lt: endOfDay(date) },
@@ -85,10 +90,10 @@ export async function updateAvailability(
   }
 
   const newlyAvailableDates: Date[] = [];
-  const today = startOfDay(new Date());
+  const today = toUTCMidnight(new Date());
 
   for (const dateStr of dates) {
-    const date = startOfDay(new Date(dateStr));
+    const date = parseDateStringUTC(dateStr);
 
     if (date < today) {
       throw new AvailabilityError(
@@ -108,20 +113,21 @@ export async function updateAvailability(
     });
 
     const wasAvailableForReservation =
-      existingAvailability && existingAvailability.isAvailable === false;
+      existingAvailability && existingAvailability.ownerIsUsing === false;
 
     await Availability.findOneAndUpdate(
       { parkingSpotId, date },
       {
         parkingSpotId,
         date,
-        isAvailable,
+        ownerIsUsing,
         markedBy: userId,
       },
       { upsert: true, new: true },
     );
 
-    if (!isAvailable && !wasAvailableForReservation) {
+    // Si el dueño deja libre la plaza (ownerIsUsing=false) y antes no estaba libre
+    if (!ownerIsUsing && !wasAvailableForReservation) {
       newlyAvailableDates.push(date);
     }
   }
@@ -194,7 +200,7 @@ export async function getSpotAvailability(
   await dbConnect();
   return Availability.find({
     parkingSpotId,
-    date: { $gte: startOfDay(new Date()) },
+    date: { $gte: toUTCMidnight(new Date()) },
   })
     .sort({ date: 1 })
     .lean();

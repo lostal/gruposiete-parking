@@ -36,12 +36,12 @@ export default function DashboardDireccion({
 }: DashboardDireccionProps) {
   const [parkingSpot] = useState<ParkingSpot | null>(initialParkingSpot);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  // Transform initialAvailability (array of IsAvailable: boolean stuff)
+  // Transform initialAvailability (array of ownerIsUsing: boolean stuff)
   // `initialAvailability` from `getSpotAvailability` is `Availability[]`.
-  // We need `unavailableDates` (where isAvailable: false).
+  // We need dates where ownerIsUsing = false (plaza libre para reservar).
   const [unavailableDates, setUnavailableDates] = useState<Date[]>(
     initialAvailability
-      .filter((a) => !a.isAvailable)
+      .filter((a) => !a.ownerIsUsing)
       .map((a) => new Date(a.date)),
   );
   // `initialReservations` from `getReservations` is `PopulatedReservation[]`.
@@ -60,7 +60,7 @@ export default function DashboardDireccion({
   useEffect(() => {
     setUnavailableDates(
       initialAvailability
-        .filter((a) => !a.isAvailable)
+        .filter((a) => !a.ownerIsUsing)
         .map((a) => new Date(a.date)),
     );
   }, [initialAvailability]);
@@ -91,7 +91,7 @@ export default function DashboardDireccion({
           {
             parkingSpotId,
             dates: datesStr,
-            isAvailable: false,
+            ownerIsUsing: false, // El dueño NO usará → plaza libre para reservar
           },
         );
 
@@ -156,7 +156,7 @@ export default function DashboardDireccion({
           {
             parkingSpotId,
             dates: datesStr,
-            isAvailable: true,
+            ownerIsUsing: true, // El dueño SÍ usará → plaza NO disponible
           },
         );
 

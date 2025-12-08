@@ -3,8 +3,11 @@
 import { auth } from "@/lib/auth/auth";
 import dbConnect from "@/lib/db/mongodb";
 import User from "@/models/User";
+import Reservation from "@/models/Reservation";
+import { ReservationStatus } from "@/types";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
+import { startOfDay } from "date-fns";
 import { unassignSpotFromUser } from "@/lib/services/admin.service";
 
 export type ActionState = {
@@ -90,15 +93,18 @@ export async function deleteAccountAction(
       await unassignSpotFromUser(user._id.toString());
     }
 
-    // Also cancel all active reservations?
-    // Implementation needed.
-    // Ideally yes.
-    // I won't implement that complex logic here unless required, assuming unassign is main concern.
-    // If they have reservations, they become orphaned or invalid?
-    // Reservations have `user` field. If user deleted...
-    // Mongoose doesn't cascade delete.
-    // For now, I'll delete the user.
+    // Cancel all future active reservations to prevent "zombie" reservations
+    const today = startOfDay(new Date());
+    await Reservation.updateMany(
+      {
+        userId: user._id,
+        date: { $gte: today },
+        status: ReservationStatus.ACTIVE,
+      },
+      { status: ReservationStatus.CANCELLED },
+    );
 
+    // Delete the user
     await User.findByIdAndDelete(session.user.id);
 
     return { success: true, message: "Cuenta eliminada" };

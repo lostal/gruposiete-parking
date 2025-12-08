@@ -150,10 +150,11 @@ async function checkUserHasNoActiveReservation(
 async function checkSpotIsMarkedAvailable(
   ctx: TransactionContext,
 ): Promise<void> {
+  // Buscar si el dueño ha marcado que NO usará la plaza (ownerIsUsing = false)
   const availability = await Availability.findOne({
     parkingSpotId: ctx.parkingSpotId,
     date: { $gte: ctx.date, $lt: endOfDay(ctx.date) },
-    isAvailable: false,
+    ownerIsUsing: false,
   }).session(ctx.session);
 
   if (!availability) {
@@ -577,8 +578,9 @@ export async function cancelReservation(
         }
 
         if (parkingSpot) {
-          const spotInfo = `${parkingSpot.number} (${parkingSpot.location === "SUBTERRANEO" ? "Subterráneo" : "Exterior"
-            })`;
+          const spotInfo = `${parkingSpot.number} (${
+            parkingSpot.location === "SUBTERRANEO" ? "Subterráneo" : "Exterior"
+          })`;
 
           await sendEmail({
             to: distributionEmail,

@@ -48,7 +48,7 @@ export interface Availability {
   _id: string;
   parkingSpotId: string;
   date: Date;
-  isAvailable: boolean;
+  ownerIsUsing: boolean;
   markedBy: string;
 }
 

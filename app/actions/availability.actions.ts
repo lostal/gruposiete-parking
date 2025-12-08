@@ -17,7 +17,7 @@ export type ActionState = {
 export type UpdateAvailabilityPayload = {
   parkingSpotId: string;
   dates: string[];
-  isAvailable: boolean;
+  ownerIsUsing: boolean;
 };
 
 export async function updateAvailabilityAction(
@@ -40,7 +40,7 @@ export async function updateAvailabilityAction(
     await updateAvailability({
       parkingSpotId: payload.parkingSpotId,
       dates: payload.dates,
-      isAvailable: payload.isAvailable,
+      ownerIsUsing: payload.ownerIsUsing,
       userId: session.user.id,
       userRole: session.user.role,
     });

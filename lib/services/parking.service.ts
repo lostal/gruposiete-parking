@@ -17,9 +17,10 @@ export async function getAvailableDays(
   // Defined type to avoid any
   type SpotDate = { parkingSpotId: { toString(): string }; date: Date };
 
-  const unavailableByDate = (await Availability.find({
+  // Plazas donde el dueño NO las usará (disponibles para reservar)
+  const availableByDate = (await Availability.find({
     date: { $gte: start, $lte: end },
-    isAvailable: false,
+    ownerIsUsing: false,
   })
     .select("parkingSpotId date")
     .lean()) as unknown as SpotDate[];
@@ -33,21 +34,21 @@ export async function getAvailableDays(
 
   const dateMap = new Map<
     string,
-    { unavailable: Set<string>; reserved: Set<string> }
+    { available: Set<string>; reserved: Set<string> }
   >();
 
-  unavailableByDate.forEach((avail) => {
+  availableByDate.forEach((avail) => {
     const dateKey = format(new Date(avail.date), "yyyy-MM-dd");
     if (!dateMap.has(dateKey)) {
-      dateMap.set(dateKey, { unavailable: new Set(), reserved: new Set() });
+      dateMap.set(dateKey, { available: new Set(), reserved: new Set() });
     }
-    dateMap.get(dateKey)!.unavailable.add(avail.parkingSpotId.toString());
+    dateMap.get(dateKey)!.available.add(avail.parkingSpotId.toString());
   });
 
   reservationsByDate.forEach((res) => {
     const dateKey = format(new Date(res.date), "yyyy-MM-dd");
     if (!dateMap.has(dateKey)) {
-      dateMap.set(dateKey, { unavailable: new Set(), reserved: new Set() });
+      dateMap.set(dateKey, { available: new Set(), reserved: new Set() });
     }
     dateMap.get(dateKey)!.reserved.add(res.parkingSpotId.toString());
   });
@@ -55,7 +56,7 @@ export async function getAvailableDays(
   const daysWithAvailability: string[] = [];
 
   dateMap.forEach((data, dateKey) => {
-    const availableSpots = Array.from(data.unavailable).filter(
+    const availableSpots = Array.from(data.available).filter(
       (spotId) => !data.reserved.has(spotId),
     );
     if (availableSpots.length > 0) {
@@ -71,9 +72,10 @@ export async function getAvailableSpots(date: Date): Promise<IParkingSpot[]> {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
 
-  const unavailable = await Availability.find({
+  // Plazas donde el dueño NO las usará (disponibles para reservar)
+  const available = await Availability.find({
     date: { $gte: dayStart, $lt: dayEnd },
-    isAvailable: false,
+    ownerIsUsing: false,
   }).select("parkingSpotId");
 
   const reserved = await Reservation.find({
@@ -81,10 +83,10 @@ export async function getAvailableSpots(date: Date): Promise<IParkingSpot[]> {
     status: "ACTIVE",
   }).select("parkingSpotId");
 
-  const unavailableIds = unavailable.map((a) => a.parkingSpotId.toString());
+  const availableIds = available.map((a) => a.parkingSpotId.toString());
   const reservedIds = reserved.map((r) => r.parkingSpotId.toString());
 
-  const availableSpotIds = unavailableIds.filter(
+  const availableSpotIds = availableIds.filter(
     (id) => !reservedIds.includes(id),
   );
 

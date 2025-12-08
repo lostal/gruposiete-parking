@@ -167,16 +167,18 @@ export function ProfileSidebar({
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
-          }`}
+        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+          isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
       {/* Sidebar */}
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[500px] bg-white border-l-[3px] border-primary-900
-                   transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+                   transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
+                     isOpen ? "translate-x-0" : "translate-x-full"
+                   }`}
       >
         <div className="p-6">
           {/* Header */}
